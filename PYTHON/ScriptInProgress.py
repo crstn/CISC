@@ -6,14 +6,17 @@ import pandas as pd
 print 'Starting at: '
 print datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
 
-dir = os.path.dirname(__file__)
-WUP = pd.read_csv(os.path.join(dir, "../Data/DESA/WUP2014Urban.csv"))
+filedir = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
+# this is the root folder of this project:
+dir = os.path.abspath(os.path.join(filedir, os.pardir))
+
+WUP = pd.read_csv(os.path.join(dir, "Data/DESA/WUP2014Urban.csv"))
 indexed_WUP = WUP.set_index("Country Code")
 
-WTP = pd.read_csv(os.path.join(dir, "../Data/DESA/WTP2014.csv"))
+WTP = pd.read_csv(os.path.join(dir, "Data/DESA/WTP2014.csv"))
 indexed_WTP = WTP.set_index("Country Code")
 
-path = os.path.join(dir, "../LIVE")
+path = os.path.join(dir, "LIVE")
 countryList = []
 dirList = os.listdir(path+"/NumPy_GLUR")
 for i in dirList:
@@ -58,7 +61,7 @@ for i in countryList:
 #        print
 #        print "There are ", len(rural_cell_list), "rural cells in the array."
 
-    MASTER.main(path, i, urban_cell_list, rural_cell_list, pop_array, modelruns)
+    MASTER.main(path, i, urban_cell_list, rural_cell_list, pop_array, indexed_WUP, indexed_WTP, modelruns)
 
     currentthread = currentthread + 1
     if currentthread > numthreads:

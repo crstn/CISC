@@ -2,20 +2,12 @@ import os, random, datetime
 import numpy as np
 import pandas as pd
 
-def main(path, countryCode, urb_cell, rur_cell, pop_array, RUNS):
+def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_WTP, RUNS):
 
 
     saveLoc = path+"/Output_"+countryCode
 
-    os.chdir(os.path.expanduser(path))
-
-    WUP = pd.read_csv(os.path.expanduser("/Users/carsten/CISC/Data/DESA/WUP2014Urban.csv"))
-    indexed_WUP = WUP.set_index("Country Code")
-
-    WTP = pd.read_csv(os.path.expanduser("/Users/carsten/CISC/Data/DESA/WTP2014.csv"))
-    indexed_WTP = WTP.set_index("Country Code")
-
-
+    # os.chdir(os.path.expanduser(path))
 
     #=================================================================================================
     # Define functions for population growth
