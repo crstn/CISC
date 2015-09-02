@@ -1,4 +1,4 @@
-modelruns=1 # just set this parameter, everything else is automatic
+modelruns=1 # just set this parameter, everything else is automagic
 
 processors=`getconf _NPROCESSORS_ONLN`  # automatically figures out the number of processor cores
 for i in $(seq 1 $processors);

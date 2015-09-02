@@ -224,7 +224,7 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
             print " "
             print "Oops! Something crashed. Maybe the country code was not in our CSV files?"
             print " "
-            print error
+            print "Error message: ", error
             print " "
 
     print "Done"
