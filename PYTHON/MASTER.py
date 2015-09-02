@@ -94,7 +94,7 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
     # Running the  program
     #=================================================================================================
 
-    print "Beginning Analysis at:"
+    print "Beginning Analysis for country code ", countryCode, " at:"
     print datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
     print ""
 
@@ -116,109 +116,116 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
 
     print "Growing Population"
     for runCount in range(RUNS):
-        print runCount
+        print "Run no. ", runCount
 
+        try:  # some country codes are not in the csv, we just skip over them here:
 
-        start_urban_change = Start_Urban_Choice(indexed_WUP, urban_pop_00)
-        print start_urban_change
-
-        if start_urban_change > 0:
-            for person in xrange(start_urban_change):
-                urban_change_cell = Select_Random_Urban_Cell(urb_cell)
-
-                pop_array = Grow_Urban_Population(pop_array, urban_change_cell)
-
-        if start_urban_change < 0:
+            start_urban_change = Start_Urban_Choice(indexed_WUP, urban_pop_00)
             print start_urban_change
-            counter = 0
-            print "Shrinking urban population to reconcile discrpeancy"
-            while counter < abs(start_urban_change):
-                urban_change_cell = Select_Random_Urban_Cell(urb_cell)
-                if pop_array[urban_change_cell] > 0:
-                    pop_array = Shrink_Urban_Population(pop_array, urban_change_cell)
-                    counter += 1
-                else:
-                    continue
-        if start_urban_change == 0:
-            pass
 
-        start_rural_change = Start_Rural_Choice(indexed_WUP, indexed_WTP, rural_pop_00)
-        print start_rural_change
-        if start_rural_change > 0:
-            print "Growing rural population to reconcile discrepancy"
-            for person in xrange(start_rural_change):
-                rural_change_cell = Select_Random_Rural_Cell(rur_cell)
-
-                pop_array = Grow_Rural_Population(pop_array, rural_change_cell)
-
-        if start_rural_change < 0:
-            print "Shrinking rural population to reconcile discrepancy"
-            counter = 0
-            while counter < abs(start_rural_change):
-                rural_change_cell = Select_Random_Rural_Cell(rur_cell)
-                if pop_array[rural_change_cell] > 0:
-                    pop_array = Shrink_Rural_Population(pop_array, rural_change_cell)
-                    counter += 1
-                else:
-                    continue
-        if start_rural_change == 0:
-            pass
-        print "Done reconciling pop_array - UN_DESA discrepancy"
-
-
-        year = 2015
-        print year
-        while year <= 2050:
-           urban_change =  Urban_Change_Choice(indexed_WUP, countryCode, year)
-           print "For country code", countryCode, "in year", year, "the urban population change is", urban_change
-
-           if urban_change > 0:
-                for person in xrange(urban_change):
+            if start_urban_change > 0:
+                for person in xrange(start_urban_change):
                     urban_change_cell = Select_Random_Urban_Cell(urb_cell)
 
                     pop_array = Grow_Urban_Population(pop_array, urban_change_cell)
 
-           if urban_change < 0:
+            if start_urban_change < 0:
+                print start_urban_change
                 counter = 0
-                while counter < abs(urban_change):
+                print "Shrinking urban population to reconcile discrpeancy"
+                while counter < abs(start_urban_change):
                     urban_change_cell = Select_Random_Urban_Cell(urb_cell)
-                    if (pop_array[urban_change_cell] > 0):
+                    if pop_array[urban_change_cell] > 0:
                         pop_array = Shrink_Urban_Population(pop_array, urban_change_cell)
                         counter += 1
                     else:
                         continue
-
-           if urban_change == 0:
+            if start_urban_change == 0:
                 pass
 
-
-           rural_change = Rural_Change_Choice(indexed_WUP, indexed_WTP, countryCode, year)
-           print "For country code", countryCode, "in year", year, "the rural population change is", rural_change
-
-           if rural_change > 0:
-               for person in xrange(rural_change):
-                   rural_change_cell = Select_Random_Rural_Cell(rur_cell)
-
-                   pop_array = Grow_Rural_Population(pop_array, rural_change_cell)
-
-           if rural_change < 0:
-                counter = 0
-                while counter < abs(rural_change):
-                    print "Rural growth counter:", counter
+            start_rural_change = Start_Rural_Choice(indexed_WUP, indexed_WTP, rural_pop_00)
+            print start_rural_change
+            if start_rural_change > 0:
+                print "Growing rural population to reconcile discrepancy"
+                for person in xrange(start_rural_change):
                     rural_change_cell = Select_Random_Rural_Cell(rur_cell)
-                    if (pop_array[rural_change_cell] > 0):
+
+                    pop_array = Grow_Rural_Population(pop_array, rural_change_cell)
+
+            if start_rural_change < 0:
+                print "Shrinking rural population to reconcile discrepancy"
+                counter = 0
+                while counter < abs(start_rural_change):
+                    rural_change_cell = Select_Random_Rural_Cell(rur_cell)
+                    if pop_array[rural_change_cell] > 0:
                         pop_array = Shrink_Rural_Population(pop_array, rural_change_cell)
                         counter += 1
                     else:
                         continue
-           if rural_change == 0 :
-               pass
-           Export_Array_for_Year(pop_array, year, runCount)
-
-           print "Done with growth for year", year, ", run", runCount
-           year += 5
+            if start_rural_change == 0:
+                pass
+            print "Done reconciling pop_array - UN_DESA discrepancy"
 
 
+            year = 2015
+            print year
+            while year <= 2050:
+               urban_change =  Urban_Change_Choice(indexed_WUP, countryCode, year)
+               print "For country code", countryCode, "in year", year, "the urban population change is", urban_change
+
+               if urban_change > 0:
+                    for person in xrange(urban_change):
+                        urban_change_cell = Select_Random_Urban_Cell(urb_cell)
+
+                        pop_array = Grow_Urban_Population(pop_array, urban_change_cell)
+
+               if urban_change < 0:
+                    counter = 0
+                    while counter < abs(urban_change):
+                        urban_change_cell = Select_Random_Urban_Cell(urb_cell)
+                        if (pop_array[urban_change_cell] > 0):
+                            pop_array = Shrink_Urban_Population(pop_array, urban_change_cell)
+                            counter += 1
+                        else:
+                            continue
+
+               if urban_change == 0:
+                    pass
+
+
+               rural_change = Rural_Change_Choice(indexed_WUP, indexed_WTP, countryCode, year)
+               print "For country code", countryCode, "in year", year, "the rural population change is", rural_change
+
+               if rural_change > 0:
+                   for person in xrange(rural_change):
+                       rural_change_cell = Select_Random_Rural_Cell(rur_cell)
+
+                       pop_array = Grow_Rural_Population(pop_array, rural_change_cell)
+
+               if rural_change < 0:
+                    counter = 0
+                    while counter < abs(rural_change):
+                        # print "Rural growth counter:", counter
+                        rural_change_cell = Select_Random_Rural_Cell(rur_cell)
+                        if (pop_array[rural_change_cell] > 0):
+                            pop_array = Shrink_Rural_Population(pop_array, rural_change_cell)
+                            counter += 1
+                        else:
+                            continue
+               if rural_change == 0 :
+                   pass
+               Export_Array_for_Year(pop_array, year, runCount)
+
+               print "Done with growth for year", year, ", run", runCount
+               year += 5
+
+        except Exception as error:
+            print " --- "
+            print " "
+            print "Oops! Something crashed. Maybe the country code was not in our CSV files?"
+            print " "
+            print error
+            print " "
 
     print "Done"
 
