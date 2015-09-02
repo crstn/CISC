@@ -1,5 +1,4 @@
-import os, datetime, sys
-import MASTER
+import os, datetime, sys, operator, MASTER
 import numpy as np
 import pandas as pd
 
@@ -18,10 +17,18 @@ indexed_WTP = WTP.set_index("Country Code")
 
 path = os.path.join(dir, "LIVE")
 countryList = []
-dirList = os.listdir(path+"/NumPy_GLUR")
-for i in dirList:
-    x = i[5:]
-    y = x[:-4]
+# dirList = os.listdir(path+"/NumPy_GLUR")
+
+# let's get all GLUR files, order by size. This will make sure that the large files are evenly distributed across
+# multiple processes, and we don't accidentally put all large countries in one process
+dirListUnsorted  = [ [files, os.path.getsize(path+"/NumPy_GLUR/"+files)] for files in os.listdir(path+"/NumPy_GLUR") ]
+
+dirList = sorted(dirListUnsorted, key=operator.itemgetter(1))
+
+for fileItem in dirList:
+    i = fileItem[0] # fetch file name
+    x = i[5:]       # remove prefix ...
+    y = x[:-4]      # ... and extension
     countryList.append(y)
 
 # print "List of country codes:"
@@ -38,30 +45,39 @@ currentthread = 1
 
 for i in countryList:
     if currentthread == thisthread:
-#        print i
-        glur_array = np.load(GLURPath+"/GLUR_"+i+".npy")
-        pop_array = np.load(PopPath+"/Pop00_"+i+".npy")
 
-        urban_cell_list = []
-        rural_cell_list = []
+        try:
+            glur_array = np.load(GLURPath+"/GLUR_"+i+".npy")
+            pop_array = np.load(PopPath+"/Pop00_"+i+".npy")
 
-#        print "Creating lists of urban and rural cells."
-        it = np.nditer(glur_array, flags=['multi_index'])
-        while not it.finished:
-            for x in it:
-                if x == 2:
-                    urban_cell_list.append(it.multi_index)
-                elif x == 1:
-                    rural_cell_list.append(it.multi_index)
-            it.iternext()
+            urban_cell_list = []
+            rural_cell_list = []
 
-#        print "Lists of urban and rural cells compiled at:"
-#        print datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
-#        print "There are ", len(urban_cell_list), "urban cells in the array."
-#        print
-#        print "There are ", len(rural_cell_list), "rural cells in the array."
+    #        print "Creating lists of urban and rural cells."
+            it = np.nditer(glur_array, flags=['multi_index'])
+            while not it.finished:
+                for x in it:
+                    if x == 2:
+                        urban_cell_list.append(it.multi_index)
+                    elif x == 1:
+                        rural_cell_list.append(it.multi_index)
+                it.iternext()
 
-    MASTER.main(path, i, urban_cell_list, rural_cell_list, pop_array, indexed_WUP, indexed_WTP, modelruns)
+    #        print "Lists of urban and rural cells compiled at:"
+    #        print datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+    #        print "There are ", len(urban_cell_list), "urban cells in the array."
+    #        print
+    #        print "There are ", len(rural_cell_list), "rural cells in the array."
+
+            MASTER.main(path, i, urban_cell_list, rural_cell_list, pop_array, indexed_WUP, indexed_WTP, modelruns)
+
+        except Exception as error:
+            print " --- "
+            print " "
+            print "Oops! Something crashed. Maybe the glur_array or pop_array could not be loaded?"
+            print " "
+            print "Error message: ", error
+            print " "
 
     currentthread = currentthread + 1
     if currentthread > numthreads:
