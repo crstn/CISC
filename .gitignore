@@ -1,3 +1,7 @@
 /LIVE
 /Data
 PYTHON/*.log
+
+*.log
+
+PYTHON/ScriptInProgress.pyc
