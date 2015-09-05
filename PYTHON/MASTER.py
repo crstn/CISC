@@ -7,11 +7,15 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
 
     saveLoc = path+"/Output_"+countryCode
 
-    # os.chdir(os.path.expanduser(path))
+    # let's keep this fixed for now.
+    populationGrowAndShrinkFactor = 1.0
 
     #=================================================================================================
     # Define functions for population growth
     #=================================================================================================
+
+    def logger(text)
+        print datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")," - ",text
 
     def Start_Urban_Choice(IndexedWUP, Urb2000):
         x = int(countryCode)
@@ -55,34 +59,8 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
         return RuralChange
 
 
-    def Select_Random_Urban_Cell(UrbanCellList):
-        UrbanChangeCell = UrbanCellList[random.randint(0, (len(UrbanCellList) - 1))]
-        return UrbanChangeCell
-
-
-    def Select_Random_Rural_Cell(RuralCellList):
-        RuralChangeCell = RuralCellList[random.randint(0, (len(RuralCellList) - 1))]
-        return RuralChangeCell
-
-
-    def Grow_Urban_Population(popArray, UrbanChangeCell):
-        popArray[UrbanChangeCell] += 1.0
-        return popArray
-
-
-    def Shrink_Urban_Population(popArray, UrbanChangeCell):
-        popArray[UrbanChangeCell] -= 1.0
-        return popArray
-
-
-    def Grow_Rural_Population(popArray, RuralChangeCell):
-        popArray[RuralChangeCell] += 1.0
-        return popArray
-
-
-    def Shrink_Rural_Population(popArray, RuralChangeCell):
-        popArray[RuralChangeCell] -= 1.0
-        return popArray
+    def Select_Random_Cell(CellList):
+        return CellList[random.randint(0, (len(CellList) - 1))]
 
 
     def Export_Array_for_Year(popArray, year, run):
@@ -94,8 +72,7 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
     # Running the  program
     #=================================================================================================
 
-    print "Beginning Analysis for country code ", countryCode, " at:"
-    print datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+    print "Beginning Analysis for country ", countryCode, " at:", datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
     print ""
 
 
@@ -125,18 +102,19 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
 
             if start_urban_change > 0:
                 for person in xrange(start_urban_change):
-                    urban_change_cell = Select_Random_Urban_Cell(urb_cell)
-
-                    pop_array = Grow_Urban_Population(pop_array, urban_change_cell)
+                    urban_change_cell = Select_Random_Cell(urb_cell)
+                    # grow urban population
+                    popArray[UrbanChangeCell] += 1.0
 
             if start_urban_change < 0:
                 print start_urban_change
                 counter = 0
-                print "Shrinking urban population to reconcile discrpeancy"
+                print "Shrinking urban population to reconcile discrepancy"
                 while counter < abs(start_urban_change):
-                    urban_change_cell = Select_Random_Urban_Cell(urb_cell)
+                    urban_change_cell = Select_Random_Cell(urb_cell)
                     if pop_array[urban_change_cell] > 0:
-                        pop_array = Shrink_Urban_Population(pop_array, urban_change_cell)
+                        # shrinking urban population
+                        popArray[urban_change_cell] -= 1.0
                         counter += 1
                     else:
                         continue
@@ -148,17 +126,19 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
             if start_rural_change > 0:
                 print "Growing rural population to reconcile discrepancy"
                 for person in xrange(start_rural_change):
-                    rural_change_cell = Select_Random_Rural_Cell(rur_cell)
+                    rural_change_cell = Select_Random_Cell(rur_cell)
 
-                    pop_array = Grow_Rural_Population(pop_array, rural_change_cell)
+                    # grow rural population
+                    popArray[RuralChangeCell] += 1.0
 
             if start_rural_change < 0:
                 print "Shrinking rural population to reconcile discrepancy"
                 counter = 0
                 while counter < abs(start_rural_change):
-                    rural_change_cell = Select_Random_Rural_Cell(rur_cell)
+                    rural_change_cell = Select_Random_Cell(rur_cell)
                     if pop_array[rural_change_cell] > 0:
-                        pop_array = Shrink_Rural_Population(pop_array, rural_change_cell)
+                        # shrink rural population
+                        popArray[RuralChangeCell] -= 1.0
                         counter += 1
                     else:
                         continue
@@ -175,16 +155,18 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
 
                if urban_change > 0:
                     for person in xrange(urban_change):
-                        urban_change_cell = Select_Random_Urban_Cell(urb_cell)
+                        urban_change_cell = Select_Random_Cell(urb_cell)
 
-                        pop_array = Grow_Urban_Population(pop_array, urban_change_cell)
+                        # grow urban population
+                        popArray[UrbanChangeCell] += 1.0
 
                if urban_change < 0:
                     counter = 0
                     while counter < abs(urban_change):
-                        urban_change_cell = Select_Random_Urban_Cell(urb_cell)
+                        urban_change_cell = Select_Random_Cell(urb_cell)
                         if (pop_array[urban_change_cell] > 0):
-                            pop_array = Shrink_Urban_Population(pop_array, urban_change_cell)
+                            # shrinking urban population
+                            popArray[urban_change_cell] -= 1.0
                             counter += 1
                         else:
                             continue
@@ -198,17 +180,19 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
 
                if rural_change > 0:
                    for person in xrange(rural_change):
-                       rural_change_cell = Select_Random_Rural_Cell(rur_cell)
+                       rural_change_cell = Select_Random_Cell(rur_cell)
 
-                       pop_array = Grow_Rural_Population(pop_array, rural_change_cell)
+                       # grow rural population
+                       popArray[RuralChangeCell] += 1.0
 
                if rural_change < 0:
                     counter = 0
                     while counter < abs(rural_change):
                         # print "Rural growth counter:", counter
-                        rural_change_cell = Select_Random_Rural_Cell(rur_cell)
+                        rural_change_cell = Select_Random_Cell(rur_cell)
                         if (pop_array[rural_change_cell] > 0):
-                            pop_array = Shrink_Rural_Population(pop_array, rural_change_cell)
+                            # shrink rural population
+                            popArray[rural_change_cell] -= 1.0
                             counter += 1
                         else:
                             continue

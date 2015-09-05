@@ -5,3 +5,11 @@ PYTHON/*.log
 *.log
 
 PYTHON/ScriptInProgress.pyc
+
+*.pyc
+
+*.pyc
+
+*.pyc
+
+PYTHON/done.sh
