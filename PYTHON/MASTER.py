@@ -6,7 +6,7 @@ import pandas as pd
 # Define population growth factors
 #=================================================================================================
 
-populationGrowAndShrinkFactor = 1.0 # not being used yet... TODO
+popGrowShrinkFactor = 50.0 # using a static value for now 
 
 
 #=================================================================================================
@@ -15,7 +15,7 @@ populationGrowAndShrinkFactor = 1.0 # not being used yet... TODO
 
 def Start_Urban_Choice(indexed_WUP, Urb2000, countryCode):
     x = int(countryCode)
-    UrbanChange =  (((indexed_WUP.loc[x, "2010"]*1000)) - Urb2000)
+    UrbanChange =  ((indexed_WUP.loc[x, "2010"]*1000) - Urb2000)
     return UrbanChange
 
 def Start_Rural_Choice(indexed_WUP, indexed_WTP, Rur2000, countryCode):
@@ -93,47 +93,54 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
         logging.info( str(start_urban_change) )
 
         if start_urban_change > 0:
-            for person in xrange(start_urban_change):
+            counter = 0
+            while counter < start_urban_change:
                 urban_change_cell = Select_Random_Cell(urb_cell)
                 # grow urban population
-                pop_array[urban_change_cell] += 1.0
+                pop_array[urban_change_cell] += popGrowShrinkFactor
+                counter += popGrowShrinkFactor
 
         if start_urban_change < 0:
-            logging.info( str(start_urban_change) )
+            # logging.info( str(start_urban_change) )
             counter = 0
             logging.info( "Shrinking urban population to reconcile discrepancy")
-            while counter < abs(start_urban_change):
+            while counter < start_urban_change:
                 urban_change_cell = Select_Random_Cell(urb_cell)
-                if pop_array[urban_change_cell] > 0:
+                # we are skipping over cells that don't have at least the number of our current factor in it
+                if pop_array[urban_change_cell] >= popGrowShrinkFactor:
                     # shrinking urban population
-                    pop_array[urban_change_cell] -= 1.0
-                    counter += 1
-                else:
-                    continue
-        if start_urban_change == 0:
-            pass
+                    pop_array[urban_change_cell] -= popGrowShrinkFactor
+                    # check if we have negative population now:
+                    counter += popGrowShrinkFactor
+        #        else:
+        #            continue
+        # if start_urban_change == 0:
+        #     pass
 
         start_rural_change = Start_Rural_Choice(indexed_WUP, indexed_WTP, rural_pop_00, countryCode)
         logging.info( str(start_rural_change) )
         if start_rural_change > 0:
+            counter = 0;
             logging.info( "Growing rural population to reconcile discrepancy" )
-            for person in xrange(start_rural_change):
+            while counter < start_rural_change:
                 rural_change_cell = Select_Random_Cell(rur_cell)
 
                 # grow rural population
-                pop_array[rural_change_cell] += 1.0
+                pop_array[rural_change_cell] += popGrowShrinkFactor
+                counter += popGrowShrinkFactor
 
         if start_rural_change < 0:
             logging.info( "Shrinking rural population to reconcile discrepancy" )
             counter = 0
-            while counter < abs(start_rural_change):
+            while counter < start_rural_change:
                 rural_change_cell = Select_Random_Cell(rur_cell)
-                if pop_array[rural_change_cell] > 0:
+                # we are skipping over cells that don't have at least the number of our current factor in it
+                if pop_array[rural_change_cell] >= popGrowShrinkFactor:
                     # shrink rural population
-                    pop_array[rural_change_cell] -= 1.0
-                    counter += 1
-                else:
-                    continue
+                    pop_array[rural_change_cell] -= popGrowShrinkFactor
+                    counter += popGrowShrinkFactor
+                # else:
+                #     continue
         if start_rural_change == 0:
             pass
         logging.info( "Done reconciling pop_array - UN_DESA discrepancy" )
@@ -142,60 +149,66 @@ def main(path, countryCode, urb_cell, rur_cell, pop_array, indexed_WUP, indexed_
         year = 2015
         logging.info( str(year) )
         while year <= 2050:
-           urban_change =  Urban_Change_Choice(indexed_WUP, countryCode, year)
-           logging.info( "For country code " + str(countryCode) + " in year " + str(year) + " the urban population change is " + str(urban_change) )
+            urban_change =  Urban_Change_Choice(indexed_WUP, countryCode, year)
+            logging.info( "For country code " + str(countryCode) + " in year " + str(year) + " the urban population change is " + str(urban_change) )
 
-           if urban_change > 0:
-                for person in xrange(urban_change):
+            if urban_change > 0:
+                counter = 0
+                while counter < urban_change:
                     urban_change_cell = Select_Random_Cell(urb_cell)
 
                     # grow urban population
-                    pop_array[urban_change_cell] += 1.0
+                    pop_array[urban_change_cell] += popGrowShrinkFactor
+                    counter += popGrowShrinkFactor
 
-           if urban_change < 0:
+            if urban_change < 0:
                 counter = 0
-                while counter < abs(urban_change):
+                while counter < urban_change:
                     urban_change_cell = Select_Random_Cell(urb_cell)
-                    if (pop_array[urban_change_cell] > 0):
+                    # we are skipping over cells that don't have at least the number of our current factor in it
+                    if (pop_array[urban_change_cell] >= popGrowShrinkFactor):
                         # shrinking urban population
-                        pop_array[urban_change_cell] -= 1.0
-                        counter += 1
-                    else:
-                        continue
+                        pop_array[urban_change_cell] -= popGrowShrinkFactor
+                        counter += popGrowShrinkFactor
+                    # else:
+                    #     continue
 
-           if urban_change == 0:
+            if urban_change == 0:
                 pass
 
 
-           rural_change = Rural_Change_Choice(indexed_WUP, indexed_WTP, countryCode, year)
-           logging.info( "For country code " + str(countryCode) + " in year " + str(year) + " the rural population change is " + str(rural_change) )
+            rural_change = Rural_Change_Choice(indexed_WUP, indexed_WTP, countryCode, year)
+            logging.info( "For country code " + str(countryCode) + " in year " + str(year) + " the rural population change is " + str(rural_change) )
 
-           if rural_change > 0:
-               for person in xrange(rural_change):
-                   rural_change_cell = Select_Random_Cell(rur_cell)
-
-                   # grow rural population
-                   pop_array[rural_change_cell] += 1.0
-
-           if rural_change < 0:
+            if rural_change > 0:
                 counter = 0
-                while counter < abs(rural_change):
+                while counter < rural_change:
+                    rural_change_cell = Select_Random_Cell(rur_cell)
+
+                    # grow rural population
+                    pop_array[rural_change_cell] += popGrowShrinkFactor
+                    counter += popGrowShrinkFactor
+
+            if rural_change < 0:
+                counter = 0
+                while counter < rural_change:
                     # logging.info( "Rural growth counter: " + str(counter))
                     rural_change_cell = Select_Random_Cell(rur_cell)
-                    if (pop_array[rural_change_cell] > 0):
+                    # we are skipping over cells that don't have at least the number of our current factor in it
+                    if (pop_array[rural_change_cell] >= popGrowShrinkFactor):
                         # shrink rural population
-                        pop_array[rural_change_cell] -= 1.0
-                        counter += 1
-                    else:
-                        continue
-           if rural_change == 0 :
-               pass
-           # save the output:
-           saveLoc = path+"/Output_"+countryCode
-           Export_Array_for_Year(pop_array, year, runCount, countryCode, saveLoc)
+                        pop_array[rural_change_cell] -= popGrowShrinkFactor
+                        counter += popGrowShrinkFactor
+                    # else:
+                    #     continue
+            if rural_change == 0 :
+                pass
+            # save the output:
+            saveLoc = path+"/Output_"+countryCode
+            Export_Array_for_Year(pop_array, year, runCount, countryCode, saveLoc)
            
-           logging.info( "Done with growth for year " + str(year) + ", run " + str(runCount) )
-           year += 5
+            logging.info( "Done with growth for year " + str(year) + ", run " + str(runCount) )
+            year += 5
 
     logging.info( "Done" )
 
