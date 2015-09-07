@@ -13,3 +13,5 @@ PYTHON/ScriptInProgress.pyc
 *.pyc
 
 PYTHON/done.sh
+
+PYTHON/execute.sh
