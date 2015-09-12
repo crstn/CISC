@@ -60,8 +60,8 @@ def main():
             glur_array = np.load(GLURPath+"/GLUR_"+i+".npy")
             pop_array = np.load(PopPath+"/Pop00_"+i+".npy")
 
-            print glur_array.size
-            print pop_array.size
+            if glur_array.size != pop_array.size:
+                print "Country", i, ": GLUR: ", glur_array.size, ", POP: ", pop_array.size
 
     #         urban_cell_list = []
     #         rural_cell_list = []
