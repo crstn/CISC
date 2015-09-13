@@ -54,14 +54,22 @@ def main():
 
     currentthread = 1
 
-    for i in countryList:
+    for country in countryList:
         if currentthread == thisthread:
 
-            glur_array = np.load(GLURPath+"/GLUR_"+i+".npy")
-            pop_array = np.load(PopPath+"/Pop00_"+i+".npy")
+            glur_array = np.load(GLURPath+"/GLUR_"+country+".npy")
+            pop_array = np.load(PopPath+"/Pop00_"+country+".npy")
 
-            if glur_array.size != pop_array.size:
-                print "Country", i, ": GLUR: ", glur_array.size, ", POP: ", pop_array.size
+            if glur_array.size == pop_array.size:
+                # figure out how many people we need add or remove from urban
+                # and rural regions in this countrY
+                urbanChange =  ((indexed_WUP.loc[int(country), "2010"]*1000) - Urb2000)
+
+                rural_pop_2010 = ((indexed_WTP.loc[int(countryCode), "2010"]) - (indexed_WUP.loc[int(countryCode), "2010"]))*1000
+                ruralChange = (rural_pop_2010 - Rur2000)
+
+
+                # in glur, 2 means urban, 1 means rural:
 
     #         urban_cell_list = []
     #         rural_cell_list = []
@@ -82,6 +90,8 @@ def main():
     # #        logging.info("There are " + str(len(rural_cell_list)) + "rural cells in the array."
     #
     #         m.main(path, i, urban_cell_list, rural_cell_list, pop_array, indexed_WUP, indexed_WTP, modelruns)
+            else: # skip over this country, print error:
+                logging.error("Non-matching sizes for GLUR and POP, Country " + str(i) + ": GLUR: " + str(glur_array.size) + ", POP: " + str(pop_array.size))
 
 
         currentthread = currentthread + 1
