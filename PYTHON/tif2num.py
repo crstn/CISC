@@ -3,7 +3,7 @@ import numpy as np
 
 @profile
 def read_tiff():
-    im = Image.open('/Users/carsten/Dropbox/Code/CISC/Data/glurpop2000/glup00ag.tif')
+    im = Image.open('/Users/carsten/Downloads/TIFFS/glurextents.tif')
     # im.show()
     imarray = np.array(im)
 
