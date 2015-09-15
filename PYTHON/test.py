@@ -1,21 +1,24 @@
 import numpy as np
+import os
+
+os.chdir('/Users/carsten/Dropbox/Code/CISC/Data/NumpyLayers')
 
 # just to make sure they actually all have the same size now:
 
-glurextents = np.load("/Users/carsten/Downloads/Numpy/glurextents-int.npy")
+urbanrural = np.load("UrbanRural.npy")
 
-print glurextents.shape
-print np.min(glurextents)
-print np.max(glurextents)
+print urbanrural.shape
+print np.min(urbanrural)
+print np.max(urbanrural)
 
-gluntlbnds = np.load("/Users/carsten/Downloads/Numpy/gluntlbnds-clipped-int.npy")
+nationoutlines = np.load("NationOutlines.npy")
 
-print gluntlbnds.shape
-print np.min(gluntlbnds)
-print np.max(gluntlbnds)
+print nationoutlines.shape
+print np.min(nationoutlines)
+print np.max(nationoutlines)
 
-glup00ag = np.load("/Users/carsten/Downloads/Numpy/glup00ag-clipped.npy")
+population = np.load("Population2000.npy")
 
-print glup00ag.shape
-print np.min(glup00ag)
-print np.max(glup00ag)
+print population.shape
+print np.min(population)
+print np.max(population)

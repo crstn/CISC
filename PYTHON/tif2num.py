@@ -1,20 +1,26 @@
 from PIL import Image
+from osgeo import gdal
 import numpy as np
 import os
 
-#@profile
-def read_tiff():
-    im = Image.open('/Users/carsten/Downloads/gl_grumpv1_pcount_00_ascii_30/glup00ag-clipped.tif')
-    # im.show()
-    imarray = np.array(im)
+os.chdir('/Users/carsten/Dropbox/Code/CISC/Data/NumpyLayers')
 
-    print imarray.shape
-    print im.size
-    print np.min(imarray)
-    print np.max(imarray)
+# urban/rural
+im = Image.open('UrbanRural.tif')
+imarray = np.array(im)
+# convert to 8-bit int, large enough for our data -> save space on disk
+np.save('UrbanRural', imarray.astype('int8'))
 
-    os.chdir('/Users/carsten/Downloads/Numpy')
-    np.save('glup00ag-clipped', imarray)
+# national boundaries
+# this one did not load using PIL (no idea why), so we're doing gdal here
+src = gdal.Open('/Users/carsten/Dropbox/Code/CISC/Data/NumpyLayers/NationOutlines.tif', gdal.GA_Update)
+band = src.GetRasterBand(1)
+imarray = np.array(band.ReadAsArray())
+# convert to 16-bit int, large enough for our data -> save space on disk
+np.save('NationOutlines', imarray.astype('int16'))
 
-if __name__ == '__main__':
-    read_tiff()
+# population numbers
+im = Image.open('Population2000.tif')
+imarray = np.array(im)
+# we'll change this from float to int, no point in keeping "half people"
+np.save('Population2000', imarray.astype('int'))
