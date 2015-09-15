@@ -1,9 +1,9 @@
 from PIL import Image
 import numpy as np
 
-@profile
+#@profile
 def read_tiff():
-    im = Image.open('/Users/carsten/Downloads/TIFFS/glurextents.tif')
+    im = Image.open('/Users/carsten/Downloads/gl_grumpv1_ntlbndid_ascii_30/gluntlbnds-clipped.tif')
     # im.show()
     imarray = np.array(im)
 
