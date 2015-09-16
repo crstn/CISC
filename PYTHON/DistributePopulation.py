@@ -32,7 +32,7 @@ def main():
     logging.info('Adding 500 k people to Germany')
 
     #idx = np.random.choice(np.where((urbanRural==2) & (countryBoundaries==356))[0], 500000000)
-    idx = np.random.choice(np.where(countryBoundaries==276)[0], 500000)
+    idx = np.random.choice(np.where([countryBoundaries==276,countryBoundaries==276])[0], 500000)
     np.add.at(pop2000, idx, 1)
 
     logging.info('Population array size: '+str(pop2000.shape))
