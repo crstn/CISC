@@ -3,6 +3,7 @@ import MASTER as m
 import numpy as np
 import pandas as pd
 import numpy2geotiff as npgt
+import random
 
 def main():
     logging.info('Starting...')
@@ -22,32 +23,36 @@ def main():
     logging.info('Reading Numpy arrays')
 
     urbanRural = np.load(os.path.join(dir, "Data/NumpyLayers/UrbanRural.npy"))
-    countryBoundaries = np.load(os.path.join(dir, "Data/NumpyLayers/NationOutlines.npy"))
-    pop2000 = np.load(os.path.join(dir, "Data/NumpyLayers/Population2000.npy"))
 
-    logging.info('Population array size: '+str(pop2000.shape))
-    # logging.info(str(pop2000[countryBoundaries==276]))
-    logging.info('Total German pop:      '+str(np.sum(pop2000[countryBoundaries==276])))
+    # save the shape of these arrays for later, so that we
+    # can properly reshape them after flattening:
+    matrix = urbanRural.shape
+
+    # we flatten all arrays to 1D, so we don't have to deal with 2D arrays:
+    urbanRural = urbanRural.ravel()
+    countryBoundaries = np.load(os.path.join(dir, "Data/NumpyLayers/NationOutlines.npy")).ravel()
+    pop2000 = np.load(os.path.join(dir, "Data/NumpyLayers/Population2000.npy")).ravel()
+
+    # logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
 
     logging.info('Adding 500 k people to Germany')
 
     #idx = np.random.choice(np.where((urbanRural==2) & (countryBoundaries==356))[0], 500000000)
-    idx = np.random.choice(np.where([countryBoundaries==276,countryBoundaries==276])[0], 500000)
+    idx = np.random.choice(np.where(pop2000[countryBoundaries==276])[0], 500000)
+    logging.info(str(idx))
     np.add.at(pop2000, idx, 1)
 
-    logging.info('Population array size: '+str(pop2000.shape))
-    logging.info('Total German pop:      '+str(np.sum(pop2000[countryBoundaries==276])))
+    logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
 
     #logging.info('Saving array.')
 
     #np.save(os.path.join(dir, "Data/NumpyLayers/germany500k", pop2000))
 
-    logging.info(str(pop2000.dtype))
     logging.info('Saving TIFF.')
-
-    npgt.array_to_raster(pop2000, os.path.join(dir, "Data/NumpyLayers/germany500k.tif"), os.path.join(dir, "Data/NumpyLayers/Population2000.tif"))
-    #output = Image.fromarray(pop2000)
-    #output.save(os.path.join(dir, "Data/NumpyLayers/germany500k.tif"))
+    # transform back to 2D array with the original dimensions:
+    npgt.array_to_raster(pop2000.reshape(matrix),
+                         os.path.join(dir, "Data/NumpyLayers/germany500k.tif"),
+                         os.path.join(dir, "Data/NumpyLayers/Population2000.tif"))
 
     logging.info('Done.')
 
