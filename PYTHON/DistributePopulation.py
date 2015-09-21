@@ -65,16 +65,16 @@ def main():
 
 
     # save the array, reshaped back its original 2D extents
-    logging.info('Saving array.')
-    os.chdir(os.path.join(dir, "Data/NumpyLayers"))
-    np.save("germany500k", population.reshape(matrix))
+    # logging.info('Saving array.')
+    # os.chdir(os.path.join(dir, "Data/NumpyLayers"))
+    # np.save("germany500k", population.reshape(matrix))
 
     # TODO: saving to TIFF does not work yet
-    # logging.info('Saving TIFF.')
+    logging.info('Saving TIFF.')
     # transform back to 2D array with the original dimensions:
-    # npgt.array_to_raster(population.reshape(matrix),
-    #                     os.path.join(dir, "Data/NumpyLayers/germany500k.tif"),
-    #                     os.path.join(dir, "Data/NumpyLayers/Population2000.tif"))
+    npgt.array_to_raster(population.reshape(matrix),
+                         os.path.join(dir, "Data/NumpyLayers/germany500k.tif"),
+                         os.path.join(dir, "Data/NumpyLayers/Population2000.tif"))
 
     logging.info('Done.')
 
