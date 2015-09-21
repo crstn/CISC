@@ -33,14 +33,17 @@ def main():
     countryBoundaries = np.load(os.path.join(dir, "Data/NumpyLayers/NationOutlines.npy")).ravel()
     pop2000 = np.load(os.path.join(dir, "Data/NumpyLayers/Population2000.npy")).ravel()
 
-    # logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
+    # and an array of all indexes; we'll use this later:
+    allIndexes = np.arange(countryBoundaries.size)
+
+    logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
 
     logging.info('Adding 500 k people to Germany')
 
-    #idx = np.random.choice(np.where((urbanRural==2) & (countryBoundaries==356))[0], 500000000)
-    idx = np.random.choice(np.where(pop2000[countryBoundaries==276])[0], 500000)
-    logging.info(str(idx))
-    np.add.at(pop2000, idx, 1)
+    randomIndexes = np.random.choice(allIndexes[countryBoundaries==276], 500000)
+
+
+    np.add.at(pop2000, randomIndexes, 1)
 
     logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
 
@@ -48,11 +51,12 @@ def main():
 
     #np.save(os.path.join(dir, "Data/NumpyLayers/germany500k", pop2000))
 
-    logging.info('Saving TIFF.')
+    # TODO: saving does not work yet
+    # logging.info('Saving TIFF.')
     # transform back to 2D array with the original dimensions:
-    npgt.array_to_raster(pop2000.reshape(matrix),
-                         os.path.join(dir, "Data/NumpyLayers/germany500k.tif"),
-                         os.path.join(dir, "Data/NumpyLayers/Population2000.tif"))
+    # npgt.array_to_raster(pop2000.reshape(matrix),
+    #                     os.path.join(dir, "Data/NumpyLayers/germany500k.tif"),
+    #                     os.path.join(dir, "Data/NumpyLayers/Population2000.tif"))
 
     logging.info('Done.')
 
