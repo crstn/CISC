@@ -31,46 +31,48 @@ def main():
     # we flatten all arrays to 1D, so we don't have to deal with 2D arrays:
     urbanRural = urbanRural.ravel()
     countryBoundaries = np.load(os.path.join(dir, "Data/NumpyLayers/NationOutlines.npy")).ravel()
-    pop2000 = np.load(os.path.join(dir, "Data/NumpyLayers/Population2000.npy")).ravel()
+    population = np.load(os.path.join(dir, "Data/NumpyLayers/Population2000.npy")).ravel()
 
     # and an array of all indexes; we'll use this later:
     allIndexes = np.arange(countryBoundaries.size)
 
-    logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
-    logging.info('Rural German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==1)])))
+    logging.info('Total German pop: '+str(np.sum(population[countryBoundaries==276])))
+    logging.info('Rural German pop: '+str(np.sum(population[np.logical_and(countryBoundaries==276, urbanRural==1)])))
 
     logging.info('Removing 500 k people from rural Germany')
 
     # selecting rural cells in Germany with people in them:
-    randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, np.logical_and(pop2000>0, urbanRural==1))], 20000000)
+    randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, np.logical_and(population>0, urbanRural==1))], 5000000)
 
-    np.subtract.at(pop2000, randomIndexes, 1)
+    np.subtract.at(population, randomIndexes, 1)
 
-    logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
-    logging.info('Rural German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==1)])))
+    logging.info('Total German pop: '+str(np.sum(population[countryBoundaries==276])))
+    logging.info('Rural German pop: '+str(np.sum(population[np.logical_and(countryBoundaries==276, urbanRural==1)])))
 
     # add a little loop to add people back to the cells that have dropped below 0,
     # the randomly remove them somewhere else:
-    while(pop2000[pop2000<0].size > 0):
-        logging.info('Cells below 0: ' +str(pop2000[pop2000<0].size))
-        logging.info('Number of people to add and remove somewhere else: ' + str(math.fabs(np.sum(pop2000[pop2000<0]))))
+    while(population[population<0].size > 0):
+        logging.info('Cells below 0: ' +str(population[population<0].size))
+        logging.info('Number of people to add and remove somewhere else: ' + str(math.fabs(np.sum(population[population<0]))))
         # select random cells again, based on the number of people we need to remove again:
-        randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, np.logical_and(pop2000>0, urbanRural==1))], math.fabs(np.sum(pop2000[pop2000<0])))
+        randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, np.logical_and(population>0, urbanRural==1))], math.fabs(np.sum(population[population<0])))
         # set cells < 0 to 0
-        pop2000[pop2000<0] = 0;
-        np.subtract.at(pop2000, randomIndexes, 1)
+        population[population<0] = 0;
+        np.subtract.at(population, randomIndexes, 1)
 
-    logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
-    logging.info('Rural German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==1)])))
+    logging.info('Total German pop: '+str(np.sum(population[countryBoundaries==276])))
+    logging.info('Rural German pop: '+str(np.sum(population[np.logical_and(countryBoundaries==276, urbanRural==1)])))
 
-    #logging.info('Saving array.')
 
-    #np.save(os.path.join(dir, "Data/NumpyLayers/germany500k", pop2000))
+    # save the array, reshaped back its original 2D extents
+    logging.info('Saving array.')
+    os.chdir(os.path.join(dir, "Data/NumpyLayers"))
+    np.save("germany500k", population.reshape(matrix))
 
-    # TODO: saving does not work yet
+    # TODO: saving to TIFF does not work yet
     # logging.info('Saving TIFF.')
     # transform back to 2D array with the original dimensions:
-    # npgt.array_to_raster(pop2000.reshape(matrix),
+    # npgt.array_to_raster(population.reshape(matrix),
     #                     os.path.join(dir, "Data/NumpyLayers/germany500k.tif"),
     #                     os.path.join(dir, "Data/NumpyLayers/Population2000.tif"))
 
