@@ -1,4 +1,4 @@
-import os, datetime, sys, operator, logging
+import os, datetime, sys, operator, logging, math
 import numpy as np
 import pandas as pd
 import numpy2geotiff as npgt
@@ -37,17 +37,31 @@ def main():
     allIndexes = np.arange(countryBoundaries.size)
 
     logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
-    logging.info('Urban German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==2)])))
+    logging.info('Rural German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==1)])))
 
-    logging.info('Adding 500 k people to urban Germany')
+    logging.info('Removing 500 k people from rural Germany')
 
-    randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, urbanRural==2)], 500000)
+    # selecting rural cells in Germany with people in them:
+    randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, np.logical_and(pop2000>0, urbanRural==1))], 20000000)
 
-
-    np.add.at(pop2000, randomIndexes, 1)
+    np.subtract.at(pop2000, randomIndexes, 1)
 
     logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
-    logging.info('Urban German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==2)])))
+    logging.info('Rural German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==1)])))
+
+    # add a little loop to add people back to the cells that have dropped below 0,
+    # the randomly remove them somewhere else:
+    while(pop2000[pop2000<0].size > 0):
+        logging.info('Cells below 0: ' +str(pop2000[pop2000<0].size))
+        logging.info('Number of people to add and remove somewhere else: ' + str(math.fabs(np.sum(pop2000[pop2000<0]))))
+        # select random cells again, based on the number of people we need to remove again:
+        randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, np.logical_and(pop2000>0, urbanRural==1))], math.fabs(np.sum(pop2000[pop2000<0])))
+        # set cells < 0 to 0
+        pop2000[pop2000<0] = 0;
+        np.subtract.at(pop2000, randomIndexes, 1)
+
+    logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
+    logging.info('Rural German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==1)])))
 
     #logging.info('Saving array.')
 
