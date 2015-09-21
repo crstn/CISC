@@ -1,5 +1,4 @@
 import os, datetime, sys, operator, logging
-import MASTER as m
 import numpy as np
 import pandas as pd
 import numpy2geotiff as npgt
@@ -14,6 +13,7 @@ def main():
 
     logging.info('Reading CSVs')
 
+    # in this dataset: 1=rural, 2=urban
     WUP = pd.read_csv(os.path.join(dir, "Data/DESA/WUP2014Urban.csv"))
     indexed_WUP = WUP.set_index("Country Code")
 
@@ -37,15 +37,17 @@ def main():
     allIndexes = np.arange(countryBoundaries.size)
 
     logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
+    logging.info('Urban German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==2)])))
 
-    logging.info('Adding 500 k people to Germany')
+    logging.info('Adding 500 k people to urban Germany')
 
-    randomIndexes = np.random.choice(allIndexes[countryBoundaries==276], 500000)
+    randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, urbanRural==2)], 500000)
 
 
     np.add.at(pop2000, randomIndexes, 1)
 
     logging.info('Total German pop: '+str(np.sum(pop2000[countryBoundaries==276])))
+    logging.info('Urban German pop: '+str(np.sum(pop2000[np.logical_and(countryBoundaries==276, urbanRural==2)])))
 
     #logging.info('Saving array.')
 
