@@ -13,7 +13,7 @@ countryBoundaries = []
 urbanRural = []
 
 def main():
-    global population, allIndexes, countryBoundaries, urbanRural
+    global population, allIndexes, countryBoundaries, urbanRural, referencetiff
 
     logging.info('Starting...')
 
@@ -23,7 +23,7 @@ def main():
 
     logging.info("Reading reference GeoTIFF")
     # this is a GeoTIFF that we'll use as a reference for our output - same bbox, resolution, CRS, etc.
-    referencetiff = os.path.join(dir, "Data/NumpyLayers/Population2000.tif")
+    referencetiff = os.path.join(dir, "Data/NumpyLayers/Population2010_clipped.tif")
 
     logging.info('Reading CSVs')
 
@@ -48,6 +48,13 @@ def main():
     urbanRural = urbanRural.ravel()
     countryBoundaries = np.load(os.path.join(dir, "Data/NumpyLayers/NationOutlines.npy")).ravel()
     population = np.load(os.path.join(dir, "Data/NumpyLayers/Population2000.npy")).ravel()
+
+    # replace no data values with 0:
+    population[population == -9223372036854775808] = 0
+
+    logging.info(urbanRural.shape)
+    logging.info(countryBoundaries.shape)
+    logging.info(population.shape)
 
     # and an array of all indexes; we'll use this later:
     allIndexes = np.arange(countryBoundaries.size)
@@ -98,7 +105,7 @@ def main():
 
         logging.info('Saving GeoTIFF.')
         # transform back to 2D array with the original dimensions:
-        array_to_raster(population.reshape(matrix), s.path.join(dir, "Data/NumpyLayers/Population-"+str(run)+"-2010.tif"))
+        array_to_raster(population.reshape(matrix), os.path.join(dir, "Data/NumpyLayers/Population-"+str(run)+"-2010.tif"))
 
 
     #
@@ -148,24 +155,32 @@ def changePopulation(country, pop, cellType):
     global population, allIndexes, countryBoundaries, urbanRural
     if pop >= 0:
         # selecting cells of correct type in country with people in them:
-        randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==country, urbanRural==cellType)], pop)
-        np.add.at(population, randomIndexes, 1)
+        try:
+            randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==country, urbanRural==cellType)], pop)
+            np.add.at(population, randomIndexes, 1)
+        except Exception, e:
+            logging.exception("Error processing country " + str(country))
+            logging.exception(e)
     else:  # remove people, make sure we do not go below 0 in each cell!
-        randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==country, np.logical_and(population>0, urbanRural==cellType))], math.fabs(pop))
+        try:
+            randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==country, np.logical_and(population>0, urbanRural==cellType))], math.fabs(pop))
 
-        np.subtract.at(population, randomIndexes, 1)
-
-        # add a little loop to add people back to the cells that have dropped below 0,
-        # then randomly remove them somewhere else:
-        while(population[population<0].size > 0):
-            logging.info('Cells below 0: ' +str(population[population<0].size))
-            logging.info('Number of people to add and remove somewhere else: ' + str(math.fabs(np.sum(population[population<0]))))
-            # select random cells again, based on the number of people we need to remove again:
-            randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, np.logical_and(population>0, urbanRural==cellType))], math.fabs(np.sum(population[population<0])))
-            # set cells < 0 to 0
-            population[population<0] = 0;
-            # and then remove the people we have just added back somewhere else:
             np.subtract.at(population, randomIndexes, 1)
+
+            # add a little loop to add people back to the cells that have dropped below 0,
+            # then randomly remove them somewhere else:
+            while(population[population<0].size > 0):
+                # logging.info('Cells below 0: ' +str(population[population<0].size))
+                # logging.info('Number of people to add and remove somewhere else: ' + str(math.fabs(np.sum(population[population<0]))))
+                # select random cells again, based on the number of people we need to remove again:
+                randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==276, np.logical_and(population>0, urbanRural==cellType))], math.fabs(np.sum(population[population<0])))
+                # set cells < 0 to 0
+                population[population<0] = 0;
+                # and then remove the people we have just added back somewhere else:
+                np.subtract.at(population, randomIndexes, 1)
+        except Exception, e:
+            logging.exception("Error processing country " + str(country))
+            logging.exception(e)
 
 
 

@@ -24,3 +24,8 @@ im = Image.open('Population2000.tif')
 imarray = np.array(im)
 # we'll change this from float to int, no point in keeping "half people"
 np.save('Population2000', imarray.astype('int'))
+
+im = Image.open('Population2010_clipped.tif')
+imarray = np.array(im)
+# we'll change this from float to int, no point in keeping "half people"
+np.save('Population2010', imarray.astype('int'))
