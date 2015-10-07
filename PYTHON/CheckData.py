@@ -17,25 +17,25 @@ urbanRural = []
 def main():
     global population, allIndexes, countryBoundaries, urbanRural, referencetiff
 
-    logging.info('Starting...')
+    logging.info('; CountryCode; Country; Raster total; CSV total; Raster urban; CSV urban; Raster rural; CSV rural; Error')
 
     filedir = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
     # this is the root folder of this project:
     dir = os.path.abspath(os.path.join(filedir, os.pardir))
 
-    logging.info("Reading reference GeoTIFF")
+    # logging.info("Reading reference GeoTIFF")
     # this is a GeoTIFF that we'll use as a reference for our output - same bbox, resolution, CRS, etc.
     referencetiff = os.path.join(dir, "Data/NumpyLayers/Population2010_clipped.tif")
 
-    logging.info('Reading CSVs')
+    # logging.info('Reading CSVs')
 
     # world URBAN population
     WUP = transposeDict(csv.DictReader(open(os.path.join(dir, "Data/DESA/WUP2014Urban.csv"))), "Country Code")
     # world TOTAL population
     WTP = transposeDict(csv.DictReader(open(os.path.join(dir, "Data/DESA/WTP2014.csv"))), "Country Code")
 
-    logging.info(WUP)
-    logging.info(WTP)
+    # logging.info(WUP)
+    # logging.info(WTP)
 
     logging.info('Reading Numpy arrays')
 
@@ -62,11 +62,11 @@ def main():
     allIndexes = np.arange(countryBoundaries.size)
 
 
-    logging.info("Growing population...")
+    # logging.info("Growing population...")
 
     for run in range(RUNS):
 
-        logging.info( "Run no. " + str(run))
+        #logging.info( "Run no. " + str(run))
 
         # First eliminate discrepancy between the numbers for 2000
         # in our raster and what we have in the WUP/WTP spreadsheets for 2010
@@ -76,7 +76,7 @@ def main():
                 country = WTP[countryCode]
                 wupcountry = WUP[countryCode]
 
-                logging.info(countryCode + ": "+country["Major area, region, country or area"])
+                # logging.info(countryCode + ": "+country["Major area, region, country or area"])
 
                 pop2000raster = np.sum(population[countryBoundaries==int(countryCode)])
 
@@ -93,28 +93,30 @@ def main():
                     urbDiff = urb2010csv - urb2000raster
                     rurDiff = rur2010csv - rur2000raster
 
-                    logging.info("Total Pop 2000 raster: " + str(pop2000raster))
-                    logging.info("Urban Pop 2000 raster: " + str(urb2000raster))
-                    logging.info("Rural Pop 2000 raster: " + str(rur2000raster))
-                    logging.info("Total Pop 2010 WTP: " + str(pop2010csv))
-                    logging.info("Urban Pop 2010 WUP: " + str(urb2010csv))
-                    logging.info("Rural Pop 2010 WTP-WUP: " + str(rur2010csv))
-                    logging.info("Urban Difference: " + str(urbDiff))
-                    logging.info("Rural Difference: " + str(rurDiff))
+                    logging.info("; " + countryCode + "; "+country["Major area, region, country or area"]+"; "+str(pop2000raster)+"; "+str(pop2010csv)+"; "+str(urb2000raster)+"; "+str(urb2010csv)+"; "+str(rur2000raster)+"; "+str(rur2010csv)+"; no")
+
+                    # logging.info("Total Pop 2000 raster: " + str(pop2000raster))
+                    # logging.info("Urban Pop 2000 raster: " + str(urb2000raster))
+                    # logging.info("Rural Pop 2000 raster: " + str(rur2000raster))
+                    # logging.info("Total Pop 2010 WTP: " + str(pop2010csv))
+                    # logging.info("Urban Pop 2010 WUP: " + str(urb2010csv))
+                    # logging.info("Rural Pop 2010 WTP-WUP: " + str(rur2010csv))
+                    # logging.info("Urban Difference: " + str(urbDiff))
+                    # logging.info("Rural Difference: " + str(rurDiff))
 
                     # make sure none of these values try to go below 0:
                     if (urb2000raster + urbDiff) < 0:
-                        "Resetting urban difference to avoid going below 0."
+                        # logging.info("Resetting urban difference to avoid going below 0.")
                         urbDiff = -1 * urb2000raster
 
                     if (rur2000raster + rurDiff) < 0:
-                        "Resetting rural difference to avoid going below 0."
+                        # logging.info("Resetting rural difference to avoid going below 0.")
                         rurDiff = -1 * rur2000raster
 
                     changePopulation(int(countryCode), rurDiff, 1)
                     changePopulation(int(countryCode), urbDiff, 2)
 
-        logging.info('Saving GeoTIFF.')
+        # logging.info('Saving GeoTIFF.')
         # transform back to 2D array with the original dimensions:
         array_to_raster(population.reshape(matrix), os.path.join(dir, "Data/NumpyLayers/Population-"+str(run)+"-2010.tif"))
 
@@ -141,7 +143,7 @@ def main():
     #         array_to_raster(population.reshape(matrix),
     #                              os.path.join(dir, "Data/NumpyLayers/Population-"+str(run)+"-"+str(year)+".tif"))
     #
-    logging.info('Done.')
+    # logging.info('Done.')
 
 
 
