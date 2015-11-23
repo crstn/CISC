@@ -59,9 +59,9 @@ def main():
 
     # let's save the 2000 and 2010 tiffs:
     array_to_raster(populationOld.reshape(matrix),
-                             os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2000.tif")
+                             os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2000_test.tif")
     array_to_raster(populationNew.reshape(matrix),
-                             os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2010.tif")
+                             os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2010_test.tif")
 
     # compare numbers between TIFFS and CSVs:
 
@@ -140,7 +140,7 @@ def main():
 
             # save tiff
             array_to_raster(populationNew.reshape(matrix),
-                                     os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-"+str(run)+"-"+str(year)+".tif")
+                                     os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-"+str(run)+"-"+str(year)+"_test.tif")
             year = year + step
 
     logging.info('Done.')
