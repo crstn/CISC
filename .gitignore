@@ -6,6 +6,8 @@ PYTHON/*.log
 
 PYTHON/ScriptInProgress.pyc
 
+*.DS_Store
+
 *.pyc
 
 *.pyc
