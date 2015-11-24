@@ -4,24 +4,33 @@ import numpy as np
 import numpy2geotiff as npgt
 from datetime import datetime
 
+# perform a linear projection first, then adjust randomly?
+projectLinear = False
 
 # how many times do we want to simulate?
 RUNS = 1
 # this is a GeoTIFF that we'll use as a reference for our output - same bbox, resolution, CRS, etc.
 referencetiff = ""
+
+# some constants:
+ruralCell = 1
+urbanCell = 2
+
+# some global variables that most functions need access to:
 populationOld = []
 populationNew = []
 allIndexes = []
 countryBoundaries = []
 urbanRural = []
+WTP = 0
+WUP = 0
 
 def main():
-    global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff
+    global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP
 
     logging.info('Starting...')
 
     logging.info("Reading reference GeoTIFF")
-    # this is a GeoTIFF that we'll use as a reference for our output - same bbox, resolution, CRS, etc.
     referencetiff = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Asia/GLUR/GLUR_Asia.tif'
 
     logging.info('Reading CSVs')
@@ -52,33 +61,12 @@ def main():
     # let's convert these to NAN
     populationOld[populationOld==np.nanmin(populationOld)] = np.nan
     populationNew[populationNew==np.nanmin(populationNew)] = np.nan
-    # logging.info(np.nanmin(populationOld))
-    # logging.info(np.nanmax(populationOld))
-    # logging.info(np.nanmin(populationNew))
-    # logging.info(np.nanmax(populationNew))
 
-    # let's save the 2000 and 2010 tiffs:
+    # let's save the 2000 and 2010 tiffs, just to have all the output in one folder:
     array_to_raster(populationOld.reshape(matrix),
                              os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2000_test.tif")
     array_to_raster(populationNew.reshape(matrix),
                              os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2010_test.tif")
-
-    # compare numbers between TIFFS and CSVs:
-
-    # logging.info("CountryCode, CountryName, DESA2000, TIFF2000, DESA2010, TIFF2010, DESA2020, TIFF2020, DESA2030, TIFF2030, DESA2040, TIFF2040, DESA2050, TIFF2050")
-    #
-    # for country in WTP:
-    #     tiff2k   = np.sum(populationOld[countryBoundaries==int(country)])
-    #     tiff2k10 = np.sum(populationNew[countryBoundaries==int(country)])
-    #     logging.info(str(country) + ", " + WTP[str(country)]['Major area, region, country or area'] + ", " + str(int(WTP[str(country)]['2000'])*1000) + ", " + str(int(tiff2k)) + ", " + str(int(WTP[str(country)]['2010'])*1000) + ", " + str(int(tiff2k10)) )
-
-    # check which countries we have:
-    # AsianCountries = np.unique(countryBoundaries)
-    # for c in AsianCountries:
-    #     try:
-    #         logging.info(WTP[str(c)]['Major area, region, country or area'])
-    #     except Exception:
-    #         logging.info("Country for ID "+str(c)+ " not found.")
 
     # make an array of all indexes; we'll use this later:
     allIndexes = np.arange(countryBoundaries.size)
@@ -93,54 +81,33 @@ def main():
         step = 10
         while year <= 2050:
 
-            populationProjected = projectLinear(populationOld, populationNew)
+            # start by applying a linear projection to the WHOLE raster?
+            if(projectLinear):
+                populationProjected = projectLinear(populationOld, populationNew)
+            else:
+                # if not, we'll just start from the last raster:
+                populationProjected = populationNew
 
             # loop through countries:
-            # for country in WTP:
-            #
-            #     wtpcountry = WTP[country]
-            #     wupcountry = WUP[country]
-            #     # figure out the difference between our linear projection and what's in the table:
-            #
-            #     popraster = np.sum(populationProjected[countryBoundaries==int(country)])
-            #     urbraster = np.sum(populationProjected[np.logical_and(countryBoundaries==int(country), urbanRural==2)])
-            #     rurraster = popraster-urbraster
-            #
-            #     popcsv = int(wtpcountry[str(year)])*1000
-            #     urbcsv = int(wupcountry[str(year)])*1000
-            #     rurcsv = popcsv-urbcsv
-            #
-            #     urbDiff = urbcsv - urbraster
-            #     rurDiff = rurcsv - rurraster
-            #
-            #     populationOld       = populationNew
-            #     populationProjected = changePopulation(populationProjected, country, urbDiff, 2)
-            #     populationNew       = changePopulation(populationProjected, country, rurDiff, 1)
-            #
-            #     # Save to GeoTIFF
-            #     logging.info('Saving GeoTIFF.')
-            #     # transform back to 2D array with the original dimensions:
+            for country in WTP:
+
+                # adjust for the difference between raster and csv projection data:
+                adjustPopulation(populationProjected, year, country)
+
+                logging.info(" ----------------- ")
+
+
+            # Save to GeoTIFF
+            logging.info('Saving GeoTIFF.')
+            # transform back to 2D array with the original dimensions:
+
+            array_to_raster(populationNew.reshape(matrix),
+                                     os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-"+str(run)+"-"+str(year)+"_test.tif")
 
             # prepare everything for the next iteration
 
             populationOld = populationNew
             populationNew = populationProjected
-
-            # logging.info(year)
-            # logging.info(np.nanmin(populationNew))
-            # logging.info(np.nanmax(populationNew))
-
-
-            # compare numbers in raster to DESA projections:
-            # for country in WTP:
-            #     tiffval   = np.sum(populationNew[countryBoundaries==int(country)])
-            #     logging.info(str(int(WTP[str(country)][str(year)])*1000) + ", " + str(int(tiffval)))
-            #
-
-
-            # save tiff
-            array_to_raster(populationNew.reshape(matrix),
-                                     os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-"+str(run)+"-"+str(year)+"_test.tif")
             year = year + step
 
     logging.info('Done.')
@@ -151,6 +118,109 @@ def main():
 ########################################################
 # Some convenience functions
 ########################################################
+
+# logs the difference for urban and rural population
+# between whats in the populationProjected and the
+# DESA population projection CSV
+def logDifference(populationProjected, year, country):
+    urbraster = np.sum(populationProjected[np.logical_and(countryBoundaries==int(country), urbanRural==urbanCell)])
+    rurraster = np.sum(populationProjected[np.logical_and(countryBoundaries==int(country), urbanRural==ruralCell)])
+
+    popcsv = int(WTP[country][str(year)]) * 1000
+    urbcsv = int(WUP[country][str(year)]) * 1000
+    rurcsv = (popcsv-urbcsv)
+
+    urbDiff = urbcsv - urbraster
+    rurDiff = rurcsv - rurraster
+
+    c = WTP[str(country)]['Major area, region, country or area']
+    logging.info("Urban difference for " + c + ": " + str(urbDiff))
+    logging.info("Rural difference for " + c + ": " + str(rurDiff))
+
+
+
+
+# this one just compares the numbers from the raster to the CSV
+# and then calls the corresponding functions to add or remove people.
+def adjustPopulation(populationProjected, year, country):
+
+    # figure out the difference between our linear projection and what's in the table:
+
+    urbraster = np.sum(populationProjected[np.logical_and(countryBoundaries==int(country), urbanRural==urbanCell)])
+    rurraster = np.sum(populationProjected[np.logical_and(countryBoundaries==int(country), urbanRural==ruralCell)])
+
+    popcsv = int(WTP[country][str(year)]) * 1000
+    urbcsv = int(WUP[country][str(year)]) * 1000
+    rurcsv = (popcsv - urbcsv)
+
+    urbDiff = urbcsv - urbraster
+    rurDiff = rurcsv - rurraster
+
+    logDifference(populationProjected, year, country)
+
+    logging.info("Adjusting")
+
+    # urban:
+    if (urbDiff > 0): # add people
+        logging.info("adding urban population")
+        populationProjected = addPopulation(populationProjected, urbDiff, country, urbanCell)
+    else:   # remove people
+        logging.info("removing urban population")
+        populationProjected = removePopulation(populationProjected, math.fabs(urbDiff), country, urbanCell)
+
+    # and rural:
+    if (rurDiff > 0): # add people
+        logging.info("adding rural population")
+        populationProjected = addPopulation(populationProjected, rurDiff, country, ruralCell)
+    else:   # remove people
+        logging.info("removing rural population")
+        populationProjected = removePopulation(populationProjected, math.fabs(rurDiff), country, ruralCell)
+
+    logDifference(populationProjected, year, country)
+
+    return populationProjected
+
+
+
+
+def addPopulation(populationProjected, pop, country, cellType):
+
+    try:
+        randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==int(country), urbanRural==cellType)], pop)
+        np.add.at(populationProjected, randomIndexes, 1)
+    except Exception, e:
+         logging.error("Could not add population to cells of type " + str(cellType) + " in " + WTP[str(country)]['Major area, region, country or area'])
+         logging.error(e)
+
+    return populationProjected
+
+
+
+def removePopulation(populationProjected, pop, country, cellType):
+
+    try:
+        randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==int(country), urbanRural==cellType)], pop)
+        np.subtract.at(populationProjected, randomIndexes, 1)
+
+        while(populationProjected[populationProjected<0].size > 0):
+            # select random cells again, based on the number of people we need to remove again:
+            randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==country, np.logical_and(populationProjected>0, urbanRural==cellType))], math.fabs(np.sum(populationProjected[populationProjected<0])))
+
+            # set cells < 0 to 0
+            populationProjected[populationProjected<0] = 0;
+            # and then remove the people we have just added somewhere else:
+            if randomIndexes.size > 0:
+                np.subtract.at(populationProjected, randomIndexes, 1)
+            else:
+                logging.info("Tried to remove more people than possible; all cells of type "+cellType+" have already been set to 0.")
+
+    except Exception, e:
+         logging.error("Could not remove population from cells of type " + str(cellType) + " in " + WTP[str(country)]['Major area, region, country or area'])
+         logging.error(e)
+
+    return populationProjected
+
+
 
 # Turns a list of dictionaries into a single one:
 def transposeDict(listOfDicts, pk):
@@ -169,45 +239,6 @@ def projectLinear(first, second):
     out[out<0] = 0
     return out
 
-
-# country: int countryCode
-# addPop: number of people to remove or add
-# cellType: 1 for rural, 2 for urban
-def changePopulation(populationProjected, country, pop, cellType):
-    global allIndexes, countryBoundaries, urbanRural
-    if pop >= 0:
-        # selecting cells of correct type in country with people in them:
-        try:
-            randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==country, urbanRural==cellType)], pop)
-            np.add.at(populationProjected, randomIndexes, 1)
-        except Exception, e:
-            logging.exception("Error processing country " + str(country))
-            logging.exception(e)
-    else:  # remove people, make sure we do not go below 0 in each cell!
-        try:
-            randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==country, np.logical_and(populationProjected>0, urbanRural==cellType))], math.fabs(pop))
-
-            np.subtract.at(populationProjected, randomIndexes, 1)
-
-            # add a little loop to add people back to the cells that have dropped below 0,
-            # then randomly remove them somewhere else:
-            while(populationProjected[populationProjected<0].size > 0):
-                # logging.info('Cells below 0: ' +str(population[population<0].size))
-                # logging.info('Number of people to add and remove somewhere else: ' + str(math.fabs(np.sum(population[population<0]))))
-                # select random cells again, based on the number of people we need to remove again:
-                randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==country, np.logical_and(populationProjected>0, urbanRural==cellType))], math.fabs(np.sum(populationProjected[populationProjected<0])))
-                # set cells < 0 to 0
-                populationProjected[populationProjected<0] = 0;
-                # and then remove the people we have just added somewhere else:
-                if randomIndexes.size > 0:
-                    np.subtract.at(populationProjected, randomIndexes, 1)
-                else:
-                    logging.info("Tried to remove more people than possible; all cells of type "+cellType+" have already been set to 0.")
-        except Exception, e:
-            logging.exception("Error processing country " + str(country))
-            logging.exception(e)
-
-    return populationProjected
 
 
 # saves a raster as a geotiff to dst_filename
@@ -240,7 +271,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO,
                         filename='output-'+datetime.utcnow().strftime("%Y%m%d")+'.log',
                         filemode='w',
-                        format='%(asctime)s %(levelname)-8s %(message)s')
+                        format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
     try:
         main()
     except Exception, e:
