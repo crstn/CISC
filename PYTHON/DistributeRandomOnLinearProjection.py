@@ -4,8 +4,11 @@ import numpy as np
 import numpy2geotiff as npgt
 from datetime import datetime
 
+# This will get rid of some floating point issues (well, reporting of them!)
+old_settings = np.seterr(invalid="ignore")
+
 # perform a linear projection first, then adjust randomly?
-projectLinear = False
+projectingLinear = False
 
 # how many times do we want to simulate?
 RUNS = 1
@@ -24,6 +27,8 @@ countryBoundaries = []
 urbanRural = []
 WTP = 0
 WUP = 0
+
+MAJ = 'Major area, region, country or area'
 
 def main():
     global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP
@@ -82,7 +87,7 @@ def main():
         while year <= 2050:
 
             # start by applying a linear projection to the WHOLE raster?
-            if(projectLinear):
+            if(projectingLinear):
                 populationProjected = projectLinear(populationOld, populationNew)
             else:
                 # if not, we'll just start from the last raster:
@@ -113,8 +118,6 @@ def main():
     logging.info('Done.')
 
 
-
-
 ########################################################
 # Some convenience functions
 ########################################################
@@ -123,8 +126,12 @@ def main():
 # between whats in the populationProjected and the
 # DESA population projection CSV
 def logDifference(populationProjected, year, country):
-    urbraster = np.sum(populationProjected[np.logical_and(countryBoundaries==int(country), urbanRural==urbanCell)])
-    rurraster = np.sum(populationProjected[np.logical_and(countryBoundaries==int(country), urbanRural==ruralCell)])
+    urbraster = np.sum(populationProjected[
+        np.logical_and(countryBoundaries == int(country),
+                       urbanRural == urbanCell)])
+    rurraster = np.sum(populationProjected[
+        np.logical_and(countryBoundaries == int(country),
+                       urbanRural == ruralCell)])
 
     popcsv = int(WTP[country][str(year)]) * 1000
     urbcsv = int(WUP[country][str(year)]) * 1000
@@ -133,21 +140,24 @@ def logDifference(populationProjected, year, country):
     urbDiff = urbcsv - urbraster
     rurDiff = rurcsv - rurraster
 
-    c = WTP[str(country)]['Major area, region, country or area']
+    c = WTP[str(country)][MAJ]
     logging.info("Urban difference for " + c + ": " + str(urbDiff))
     logging.info("Rural difference for " + c + ": " + str(rurDiff))
-
-
 
 
 # this one just compares the numbers from the raster to the CSV
 # and then calls the corresponding functions to add or remove people.
 def adjustPopulation(populationProjected, year, country):
 
-    # figure out the difference between our linear projection and what's in the table:
+    # figure out the difference between our linear projection
+    # and what's in the table:
 
-    urbraster = np.sum(populationProjected[np.logical_and(countryBoundaries==int(country), urbanRural==urbanCell)])
-    rurraster = np.sum(populationProjected[np.logical_and(countryBoundaries==int(country), urbanRural==ruralCell)])
+    urbraster = np.sum(populationProjected[
+        np.logical_and(countryBoundaries == int(country),
+                       urbanRural == urbanCell)])
+    rurraster = np.sum(populationProjected[
+        np.logical_and(countryBoundaries == int(country),
+                       urbanRural == ruralCell)])
 
     popcsv = int(WTP[country][str(year)]) * 1000
     urbcsv = int(WUP[country][str(year)]) * 1000
@@ -156,41 +166,58 @@ def adjustPopulation(populationProjected, year, country):
     urbDiff = urbcsv - urbraster
     rurDiff = rurcsv - rurraster
 
+    # This probably slows things down a bit... we've already computed the
+    # required values, let's just use these...
     logDifference(populationProjected, year, country)
 
     logging.info("Adjusting")
 
     # urban:
-    if (urbDiff > 0): # add people
+    if (urbDiff > 0):  # add people
         logging.info("adding urban population")
-        populationProjected = addPopulation(populationProjected, urbDiff, country, urbanCell)
+        populationProjected = addPopulation(populationProjected, urbDiff,
+                                            country, urbanCell)
     else:   # remove people
         logging.info("removing urban population")
-        populationProjected = removePopulation(populationProjected, math.fabs(urbDiff), country, urbanCell)
+        populationProjected = removePopulation(populationProjected,
+                                               np.abs(urbDiff), country,
+                                               urbanCell)
 
     # and rural:
-    if (rurDiff > 0): # add people
+    if (rurDiff > 0):  # add people
         logging.info("adding rural population")
-        populationProjected = addPopulation(populationProjected, rurDiff, country, ruralCell)
+        populationProjected = addPopulation(populationProjected, rurDiff,
+                                            country, ruralCell)
     else:   # remove people
         logging.info("removing rural population")
-        populationProjected = removePopulation(populationProjected, math.fabs(rurDiff), country, ruralCell)
+        populationProjected = removePopulation(populationProjected,
+                                               np.abs(rurDiff), country,
+                                               ruralCell)
 
     logDifference(populationProjected, year, country)
 
     return populationProjected
 
 
-
-
 def addPopulation(populationProjected, pop, country, cellType):
 
     try:
-        randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==int(country), urbanRural==cellType)], pop)
+        randoms = np.all((countryBoundaries == int(country),
+                          urbanRural == cellType), axis=0)
+        if np.sum(randoms) < 0:
+            logging.error("Can't add population to "
+                          + WTP[str(country)][MAJ]
+                          + ", country and " + str(cellType) + "conditions not"
+                          + "satisfied?")
+            return populationProjected
+
+        randomIndexes = np.random.choice(allIndexes[randoms], pop)
         np.add.at(populationProjected, randomIndexes, 1)
     except Exception, e:
-         logging.error("Could not add population to cells of type " + str(cellType) + " in " + WTP[str(country)]['Major area, region, country or area'])
-         logging.error(e)
+        logging.error("Could not add population to cells of type "
+                      + str(cellType) + " in "
+                      + WTP[str(country)][MAJ])
+        logging.error(e)
 
     return populationProjected
 
@@ -199,24 +226,50 @@ def addPopulation(populationProjected, pop, country, cellType):
 def removePopulation(populationProjected, pop, country, cellType):
 
     try:
-        randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==int(country), urbanRural==cellType)], pop)
+        # Added the condition that the cell has to have more than 0 population
+        # Since we're doing subtract at with 1, this means we should create
+        # fewer 'negative' cells...
+        randoms = np.all((countryBoundaries == int(country),
+                          urbanRural == cellType,
+                          populationProjected > 0.0), axis=0)
+        randomIndexes = np.random.choice(allIndexes[randoms], pop)
         np.subtract.at(populationProjected, randomIndexes, 1)
 
-        while(populationProjected[populationProjected<0].size > 0):
+        while(populationProjected[populationProjected < 0.0].size > 0):
             # select random cells again, based on the number of people we need to remove again:
-            randomIndexes = np.random.choice(allIndexes[np.logical_and(countryBoundaries==country, np.logical_and(populationProjected>0, urbanRural==cellType))], math.fabs(np.sum(populationProjected[populationProjected<0])))
 
+            # randoms = np.logical_and(countryBoundaries == country,
+            #                          np.logical_and(populationProjected > 0.0,
+            #                                         urbanRural == cellType))
+            # This looks a more 'clean' way to implement the above:
+            # http://stackoverflow.com/a/20528566/1256988
+            a = countryBoundaries == int(country)
+            b = populationProjected > 0.0
+            c = urbanRural == cellType
+            randoms = np.all((a, b, c), axis=0)
+            # # Could also do:
+            # abc = np.array((a, b, c))
+            # randoms = np.logical_and.reduce(abc)
+
+            less = populationProjected < 0.0
+            count = np.abs(np.sum(populationProjected[less]))
+
+            randomIndexes = np.random.choice(allIndexes[randoms], count)
             # set cells < 0 to 0
-            populationProjected[populationProjected<0] = 0;
+            populationProjected[less] = 0.0
             # and then remove the people we have just added somewhere else:
-            if randomIndexes.size > 0:
+            if randomIndexes.size > 0.0:
                 np.subtract.at(populationProjected, randomIndexes, 1)
             else:
-                logging.info("Tried to remove more people than possible; all cells of type "+cellType+" have already been set to 0.")
+                logging.info("Tried to remove more people than possible;\n"
+                             "all cells of type " + str(cellType) + " have "
+                             "already been set to 0.")
 
     except Exception, e:
-         logging.error("Could not remove population from cells of type " + str(cellType) + " in " + WTP[str(country)]['Major area, region, country or area'])
-         logging.error(e)
+        logging.error("Could not remove population from cells of type "
+                      + str(cellType) + " in "
+                      + WTP[str(country)][MAJ])
+        logging.error(e)
 
     return populationProjected
 
