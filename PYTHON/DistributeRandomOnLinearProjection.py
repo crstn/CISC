@@ -168,7 +168,7 @@ def adjustPopulation(populationProjected, year, country):
 
     # This probably slows things down a bit... we've already computed the
     # required values, let's just use these...
-    logDifference(populationProjected, year, country)
+    # logDifference(populationProjected, year, country)
 
     logging.info("Adjusting")
 
@@ -194,7 +194,7 @@ def adjustPopulation(populationProjected, year, country):
                                                np.abs(rurDiff), country,
                                                ruralCell)
 
-    logDifference(populationProjected, year, country)
+    #logDifference(populationProjected, year, country)
 
     return populationProjected
 
@@ -321,7 +321,7 @@ def array_to_raster(array, dst_filename):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.ERROR,
                         filename='output-'+datetime.utcnow().strftime("%Y%m%d")+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
