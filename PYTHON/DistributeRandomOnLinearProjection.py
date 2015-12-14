@@ -1,7 +1,6 @@
 from osgeo import gdal, osr
 import os, datetime, sys, operator, logging, math, csv
 import numpy as np
-import numpy2geotiff as npgt
 from datetime import datetime
 
 # This will get rid of some floating point issues (well, reporting of them!)
@@ -18,6 +17,7 @@ referencetiff = ""
 # some constants:
 ruralCell = 1
 urbanCell = 2
+MAJ = 'Major area, region, country or area'
 
 # some global variables that most functions need access to:
 populationOld = []
@@ -27,8 +27,6 @@ countryBoundaries = []
 urbanRural = []
 WTP = 0
 WUP = 0
-
-MAJ = 'Major area, region, country or area'
 
 def main():
     global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP
@@ -69,9 +67,9 @@ def main():
 
     # let's save the 2000 and 2010 tiffs, just to have all the output in one folder:
     array_to_raster(populationOld.reshape(matrix),
-                             os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2000_test.tif")
+                             os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2000_fixed.tif")
     array_to_raster(populationNew.reshape(matrix),
-                             os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2010_test.tif")
+                             os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-0-2010_fixed.tif")
 
     # make an array of all indexes; we'll use this later:
     allIndexes = np.arange(countryBoundaries.size)
@@ -107,7 +105,7 @@ def main():
             # transform back to 2D array with the original dimensions:
 
             array_to_raster(populationNew.reshape(matrix),
-                                     os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-"+str(run)+"-"+str(year)+"_test.tif")
+                                     os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-"+str(run)+"-"+str(year)+"_fixed.tif")
 
             # prepare everything for the next iteration
 
@@ -168,7 +166,7 @@ def adjustPopulation(populationProjected, year, country):
 
     # This probably slows things down a bit... we've already computed the
     # required values, let's just use these...
-    # logDifference(populationProjected, year, country)
+    logDifference(populationProjected, year, country)
 
     logging.info("Adjusting")
 
@@ -194,7 +192,7 @@ def adjustPopulation(populationProjected, year, country):
                                                np.abs(rurDiff), country,
                                                ruralCell)
 
-    #logDifference(populationProjected, year, country)
+    logDifference(populationProjected, year, country)
 
     return populationProjected
 
@@ -229,27 +227,22 @@ def removePopulation(populationProjected, pop, country, cellType):
         # Added the condition that the cell has to have more than 0 population
         # Since we're doing subtract at with 1, this means we should create
         # fewer 'negative' cells...
-        randoms = np.all((countryBoundaries == int(country),
-                          urbanRural == cellType,
-                          populationProjected > 0.0), axis=0)
+
+        a = countryBoundaries == int(country)
+        b = populationProjected >= 1.0
+        c = urbanRural == cellType
+        randoms = np.all((a, b, c), axis=0)
+
         randomIndexes = np.random.choice(allIndexes[randoms], pop)
         np.subtract.at(populationProjected, randomIndexes, 1)
 
         while(populationProjected[populationProjected < 0.0].size > 0):
             # select random cells again, based on the number of people we need to remove again:
 
-            # randoms = np.logical_and(countryBoundaries == country,
-            #                          np.logical_and(populationProjected > 0.0,
-            #                                         urbanRural == cellType))
-            # This looks a more 'clean' way to implement the above:
-            # http://stackoverflow.com/a/20528566/1256988
-            a = countryBoundaries == int(country)
-            b = populationProjected > 0.0
-            c = urbanRural == cellType
+            # a and c don't change (see above), but b does. Not sure whether we really need to do this,
+            # but just to be safe:
+            b = populationProjected >= 1.0
             randoms = np.all((a, b, c), axis=0)
-            # # Could also do:
-            # abc = np.array((a, b, c))
-            # randoms = np.logical_and.reduce(abc)
 
             less = populationProjected < 0.0
             count = np.abs(np.sum(populationProjected[less]))
