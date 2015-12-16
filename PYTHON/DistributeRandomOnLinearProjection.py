@@ -94,6 +94,8 @@ def main():
             # loop through countries:
             for country in WTP:
 
+                logSubArraySizes(populationProjected, year, country)
+
                 # adjust for the difference between raster and csv projection data:
                 adjustPopulation(populationProjected, year, country)
 
@@ -119,6 +121,18 @@ def main():
 ########################################################
 # Some convenience functions
 ########################################################
+
+def logSubArraySizes(populationProjected, year, country):
+
+    logging.info("  ----   ")
+    logging.info("Array sizes for " + WTP[str(country)][MAJ])
+
+    logging.info("Population: " + str(populationProjected[countryBoundaries == int(country)].size))
+    logging.info("Nations: " + str(countryBoundaries[countryBoundaries == int(country)].size))
+    logging.info("Urban: " + str(urbanRural[np.logical_and(countryBoundaries == int(country), urbanRural == urbanCell)].size))
+    logging.info("Rural: " + str(urbanRural[np.logical_and(countryBoundaries == int(country), urbanRural == ruralCell)].size))
+    logging.info("  ----   ")
+
 
 # logs the difference for urban and rural population
 # between whats in the populationProjected and the
@@ -314,7 +328,7 @@ def array_to_raster(array, dst_filename):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.ERROR,
+    logging.basicConfig(level=logging.INFO,  # toggle this between INFO for debugging and ERROR for "production"
                         filename='output-'+datetime.utcnow().strftime("%Y%m%d")+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
