@@ -1,6 +1,7 @@
-from osgeo import gdal, osr
 import os, datetime, sys, operator, logging, math, csv
 import numpy as np
+import multiprocessing as mp
+from osgeo import gdal, osr
 from datetime import datetime
 
 # This will get rid of some floating point issues (well, reporting of them!)
@@ -109,13 +110,17 @@ def main():
                 # if not, we'll just start from the last raster:
                 populationProjected = populationNew
 
+            # Set up a bunch of worker processes based on number of CPUs:
+            pool = mp.Pool(processes=mp.cpu_count())
+
             # loop through countries:
             for country in runCountries:
 
                 logSubArraySizes(populationProjected, year, country)
 
                 # adjust for the difference between raster and csv projection data:
-                adjustPopulation(populationProjected, year, country)
+                pool.apply_async(adjustPopulation, (populationProjected, year, country,))
+                # adjustPopulation(populationProjected, year, country)
 
                 logging.info(" ----------------- ")
 
