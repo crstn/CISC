@@ -40,6 +40,7 @@ def main():
     global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, postfix
 
     logging.info('Starting...')
+    logging.info('The simulation will be running on '+str(mp.cpu_count())+ " processor cores.")
 
     logging.info("Reading reference GeoTIFF")
     referencetiff = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Asia/GLUR/GLUR_Asia.tif'
