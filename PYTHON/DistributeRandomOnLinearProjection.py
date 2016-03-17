@@ -300,6 +300,41 @@ def removePopulation(populationProjected, pop, country, cellType):
 
 
 
+# Returns an array of indexes that correspond to the 3x3 neighborhood of the index cell
+# in a raveled (1D) matrix based on the # shape of the original (2D) matrix.
+# Returns only neighbors within shape, exlcuding the input cell
+def getNeighbours(index, shape):
+    twoDIndex = oneDtoTwoD(index, shape)
+    row = twoDIndex[0]
+    col = twoDIndex[1]
+
+    neighbors = []
+
+    for r in range(-1, 2):
+        for c in range(-1, 2):
+            rn = row + r
+            cn = col + c
+            if r != 0 or c !=0: # don't add the original cell
+                if 0 <= rn < shape[0] and 0 <= cn < shape[1]: # don't add neighbors that are outside of the shape!
+                    neighbors.append(twoDtoOneD(rn, cn, shape))
+
+    return neighbors
+
+
+# Computes the "raveled" index from a 2D index. Shape is a tuple (rows, columns).
+# WARNING: does NOT check whether row and col are outside of shape!
+def twoDtoOneD(row, col, shape):
+    return (row * shape[1]) + col
+
+
+
+# Computes the 2D index as a tuple (row, column) from its "raveled" index.
+# Shape is a tuple (rows, columns).
+def oneDtoTwoD(index, shape):
+    return int(index/shape[1]), int(index%shape[1])
+
+
+
 # Turns a list of dictionaries into a single one:
 def transposeDict(listOfDicts, pk):
     output = {}
