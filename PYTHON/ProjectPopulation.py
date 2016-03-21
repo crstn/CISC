@@ -13,7 +13,7 @@ old_settings = np.seterr(invalid="ignore")
 runCountries = ["392", "764"] # look up the country codes in the WUP or WTP csv files; make sure to put in quotes!
 
 # this will be added to the output file names, useful for testing.
-postfix = "quicktest"
+postfix = "spilltest"
 
 # perform a linear projection first, then adjust randomly?
 projectingLinear = False
@@ -112,7 +112,7 @@ def main():
                 pop.logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural)
 
                 # adjust for the difference between raster and csv projection data:
-                pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
+                pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
 
                 logging.info(" ----------------- ")
 

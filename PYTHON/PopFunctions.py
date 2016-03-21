@@ -8,25 +8,10 @@ ruralCell = 1
 urbanCell = 2
 MAJ = 'Major area, region, country or area'
 
-# Spillover: go into a loop where we remove population above limit and "push" them to the neighboring cells
-# (I was thinking about calling this function "gentrify"...)
-# IMPORTANT: we only select by country and whether the cell is overcrowded,
-# so that we can spill over into other cell types, i.e. from urban to rural
-def spillover(populationProjected, country, limit):
-
-    overcrowded = np.all((countryBoundaries == country, populationProjected > limit), axis = 0)
-    # for every overcrowded cell, distribute the surplus population randomly among its neighbors
-    for fullCell in allIndexes[overcrowded]:
-        surplus = populationProjected[fullCell] - limit # by how much are we over the limit?
-        # reset those cells to the limit value:
-        populationProjected[fullCell] = limit
-        # and move the extra people to the neighbors:
-        wilsons = getNeighbours(fullCell, shape)
-        rI = np.random.choice(wilsons, surplus)
-        np.add.at(populationProjected, rI, 1)
-
-    print populationProjected.reshape(shape)
-    return populationProjected
+# Factor to simulate densities in the highest density areas going down.
+# TODO: talk to Peter to see whether this is a good idea, and what a good number might be.
+# For now, we keep this at 1.0, ie. no thinning
+thinning = 0.8
 
 
 def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural):
@@ -66,7 +51,7 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
 
 # this one just compares the numbers from the raster to the CSV
 # and then calls the corresponding functions to add or remove people.
-def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes):
+def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
 
     # figure out the difference between our linear projection
     # and what's in the table:
@@ -95,7 +80,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
     if (urbDiff > 0):  # add people
         logging.info("adding urban population")
         populationProjected = addPopulation(populationProjected, urbDiff,
-                                            country, urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
+                                            country, urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
     else:   # remove people
         logging.info("removing urban population")
         populationProjected = removePopulation(populationProjected,
@@ -118,9 +103,17 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
     return populationProjected
 
 
-def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, countryBoundaries, urbanRural, allIndexes):
+def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
 
     try:
+
+        # before we start, we'll assume that the current max is the
+        # limit after which we spill over into neighboring cells:
+        # TODO: take thinning into account here?
+        limit = np.nanmax(populationProjected)
+
+        logging.info("Limit: "+str(limit))
+
         randoms = np.all((countryBoundaries == int(country),
                           urbanRural == cellType), axis=0)
         if np.sum(randoms) < 0:
@@ -132,6 +125,15 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
 
         randomIndexes = np.random.choice(allIndexes[randoms], pop)
         np.add.at(populationProjected, randomIndexes, 1)
+
+        # repeat the spillover function as long as there are cells above the limit
+        # TODO: this may run into an infinite loop!
+        counter = 0
+        while np.nanmax(populationProjected) > limit:
+            # print np.nanmax(populationProjected)
+            populationProjected = spillover(populationProjected, country, limit, shape)
+
+
     except Exception, e:
         logging.error("Could not add population to cells of type "
                       + str(cellType) + " in "
@@ -184,6 +186,29 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
                       + str(cellType) + " in "
                       + WTP[str(country)][MAJ])
         logging.error(e)
+
+    return populationProjected
+
+
+# Spillover: go into a loop where we remove population above limit and "push" them to the neighboring cells
+# (I was thinking about calling this function "gentrify"...)
+# IMPORTANT: we only select by country and whether the cell is overcrowded,
+# so that we can spill over into other cell types, i.e. from urban to rural
+def spillover(populationProjected, country, limit, countryBoundaries, allIndexes, shape):
+
+    overcrowded = np.all((countryBoundaries == country, populationProjected > limit), axis = 0)
+    # for every overcrowded cell, distribute the surplus population randomly among its neighbors
+    for fullCell in allIndexes[overcrowded]:
+
+        logging.info("Spilling over "+str(fullCell))
+
+        surplus = populationProjected[fullCell] - limit # by how much are we over the limit?
+        # reset those cells to the limit value:
+        populationProjected[fullCell] = limit
+        # and move the extra people to the neighbors:
+        wilsons = getNeighbours(fullCell, shape)
+        rI = np.random.choice(wilsons, surplus)
+        np.add.at(populationProjected, rI, 1)
 
     return populationProjected
 
