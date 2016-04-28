@@ -9,8 +9,8 @@ import PopFunctions as pop
 old_settings = np.seterr(invalid="ignore")
 
 # run the simulation only on specific countries, or on all countries found in the input files?
-# runCountries = "all"
-runCountries = ["392", "764"] # look up the country codes in the WUP or WTP csv files; make sure to put in quotes!
+runCountries = "all"
+# runCountries = ["392", "764"] # look up the country codes in the WUP or WTP csv files; make sure to put in quotes!
 
 # this will be added to the output file names, useful for testing.
 postfix = "spilltest"
