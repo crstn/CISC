@@ -52,6 +52,33 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     logging.info("Rural difference for " + c + ": " + str(rurDiff))
 
 
+# turns rural into urban cells based on two criteria:
+# 1. population is at least $thinningFactor of the mean of the $topNcells
+# 2. At least three of the neighboring cells are already urban
+def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
+    print "urbanization started..."
+
+    # we'll use the mean of the top n cells of each country as the maximum
+    mx = np.sum(topN) / topNcells
+    # ... considering the thinning factor
+    limit = mx * thinningFactor
+
+    # check rural cells in this country for population threshold:
+    a = countryBoundaries == int(country)
+    b = urbanRural == ruralCell
+    c = populationProjected > limit
+
+    # for every matching cell, check whether at least 3 neighbors are already urban:
+    for cell in allIndexes[np.all((a, b, c), axis=0)]:
+
+        wilsons = getNeighbours(cell, shape)
+        # if so, turn urban
+        if(len(wilsons[b]) >= 3):
+            urbanRural[cell] = urbanCell
+
+    return urbanRural
+
+
 
 # this one just compares the numbers from the raster to the CSV
 # and then calls the corresponding functions to add or remove people.

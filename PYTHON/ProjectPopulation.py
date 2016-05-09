@@ -117,6 +117,9 @@ def main():
                 # adjust for the difference between raster and csv projection data:
                 pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
 
+                # run the urbanization
+                urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
+
                 logging.info(" ----------------- ")
 
 
@@ -126,6 +129,9 @@ def main():
 
             pop.array_to_raster(populationNew.reshape(matrix),
                                      os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/Population-"+str(run)+"-"+str(year)+"_"+postfix+".tif", referencetiff)
+
+            pop.array_to_raster(urbanRural.reshape(matrix),
+                                     os.path.expanduser('~') + "/Dropbox/CISC - Global Population/Asia/Projections/UrbanRural-"+str(run)+"-"+str(year)+"_"+postfix+".tif", referencetiff)
 
             # prepare everything for the next iteration
 
