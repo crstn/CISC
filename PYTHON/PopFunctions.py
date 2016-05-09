@@ -52,6 +52,7 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     logging.info("Rural difference for " + c + ": " + str(rurDiff))
 
 
+
 # this one just compares the numbers from the raster to the CSV
 # and then calls the corresponding functions to add or remove people.
 def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
