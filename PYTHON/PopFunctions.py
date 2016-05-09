@@ -58,13 +58,16 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
 def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
     print "urbanization started..."
 
-    # we'll use the mean of the top n cells of each country as the maximum
+    a = countryBoundaries == int(country)
+    b = urbanRural == urbanCell
+
+    topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
+    # we'll use the mean of the top n URBAN cells of each country as the threshold
     mx = np.sum(topN) / topNcells
     # ... considering the thinning factor
     limit = mx * thinningFactor
 
     # check rural cells in this country for population threshold:
-    a = countryBoundaries == int(country)
     b = urbanRural == ruralCell
     c = populationProjected > limit
 
