@@ -6,7 +6,10 @@ from datetime import datetime
 import PopFunctions as pop
 
 # This will get rid of some floating point issues (well, reporting of them!)
+
 old_settings = np.seterr(invalid="ignore")
+
+
 
 # run the simulation only on specific countries, or on all countries found in the input files?
 runCountries = "all"
@@ -136,11 +139,8 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO,  # toggle this between INFO for debugging and ERROR for "production"
+    logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
                         filename='output-'+datetime.utcnow().strftime("%Y%m%d")+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
-    try:
-        main()
-    except Exception, e:
-        logging.exception(e)
+    main()

@@ -197,46 +197,46 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
 
 def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, countryBoundaries, urbanRural, allIndexes):
 
-    try:
-        # Added the condition that the cell has to have more than 0 population
-        # Since we're doing subtract at with 1, this means we should create
-        # fewer 'negative' cells...
+    # try:
+    # Added the condition that the cell has to have more than 0 population
+    # Since we're doing subtract at with 1, this means we should create
+    # fewer 'negative' cells...
 
-        a = countryBoundaries == int(country)
+    a = countryBoundaries == int(country)
+    b = populationProjected >= 1.0
+    c = urbanRural == cellType
+    randoms = np.all((a, b, c), axis=0)
+
+    randomIndexes = np.random.choice(allIndexes[randoms], pop)
+    np.subtract.at(populationProjected, randomIndexes, 1)
+
+    while(populationProjected[populationProjected < 0.0].size > 0):
+        # select random cells again, based on the number of people we need to remove again:
+
+        # a and c don't change (see above), but b does. Not sure whether we really need to do this,
+        # but just to be safe:
         b = populationProjected >= 1.0
-        c = urbanRural == cellType
         randoms = np.all((a, b, c), axis=0)
 
-        randomIndexes = np.random.choice(allIndexes[randoms], pop)
-        np.subtract.at(populationProjected, randomIndexes, 1)
+        less = populationProjected < 0.0
+        count = np.abs(np.sum(populationProjected[less]))
 
-        while(populationProjected[populationProjected < 0.0].size > 0):
-            # select random cells again, based on the number of people we need to remove again:
+        randomIndexes = np.random.choice(allIndexes[randoms], count)
+        # set cells < 0 to 0
+        populationProjected[less] = 0.0
+        # and then remove the people we have just added somewhere else:
+        if randomIndexes.size > 0.0:
+            np.subtract.at(populationProjected, randomIndexes, 1)
+        else:
+            logging.info("Tried to remove more people than possible;\n"
+                         "all cells of type " + str(cellType) + " have "
+                         "already been set to 0.")
 
-            # a and c don't change (see above), but b does. Not sure whether we really need to do this,
-            # but just to be safe:
-            b = populationProjected >= 1.0
-            randoms = np.all((a, b, c), axis=0)
-
-            less = populationProjected < 0.0
-            count = np.abs(np.sum(populationProjected[less]))
-
-            randomIndexes = np.random.choice(allIndexes[randoms], count)
-            # set cells < 0 to 0
-            populationProjected[less] = 0.0
-            # and then remove the people we have just added somewhere else:
-            if randomIndexes.size > 0.0:
-                np.subtract.at(populationProjected, randomIndexes, 1)
-            else:
-                logging.info("Tried to remove more people than possible;\n"
-                             "all cells of type " + str(cellType) + " have "
-                             "already been set to 0.")
-
-    except Exception, e:
-        logging.error("Could not remove population from cells of type "
-                      + str(cellType) + " in "
-                      + WTP[str(country)][MAJ])
-        logging.error(e)
+    # except Exception, e:
+    #     logging.error("Could not remove population from cells of type "
+    #                   + str(cellType) + " in "
+    #                   + WTP[str(country)][MAJ])
+    #     logging.error(e)
 
     return populationProjected
 
