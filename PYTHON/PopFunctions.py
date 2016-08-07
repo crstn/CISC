@@ -94,7 +94,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
     if (rurDiff > 0):  # add people
         logging.info("adding rural population")
         populationProjected = addPopulation(populationProjected, rurDiff,
-                                            country, ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
+                                            country, ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
     else:   # remove people
         logging.info("removing rural population")
         populationProjected = removePopulation(populationProjected,
