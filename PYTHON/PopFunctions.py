@@ -56,7 +56,7 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
 # 1. population is at least $thinningFactor of the mean of the $topNcells
 # 2. At least three of the neighboring cells are already urban
 def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
-    print "urbanization started..."
+    # print "urbanization started..."
 
     a = countryBoundaries == int(country)
     b = urbanRural == urbanCell
@@ -75,8 +75,17 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
     for cell in allIndexes[np.all((a, b, c), axis=0)]:
 
         wilsons = getNeighbours(cell, shape)
+
+        # print wilsons
+
         # if so, turn urban
-        if(len(wilsons[b]) >= 3):
+        # TODO this is pretty inefficient
+        urbanNeighbors = 0
+        for w in wilsons:
+            if urbanRural[w] == urbanCell:
+                urbanNeighbors = urbanNeighbors + 1
+
+        if(urbanNeighbors >= 3):
             urbanRural[cell] = urbanCell
 
     return urbanRural
@@ -147,9 +156,10 @@ def getTopNCells(N, populationProjected):
 def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
 
     # try:
+    a = countryBoundaries == int(country)
+    b = urbanRural == cellType
 
-    randoms = np.all((countryBoundaries == int(country),
-                      urbanRural == cellType), axis=0)
+    randoms = np.all((a, b), axis=0)
     if np.sum(randoms) < 0:
         logging.error("Can't add population to "
                       + WTP[str(country)][MAJ]
@@ -157,70 +167,87 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
                       + "satisfied?")
         return populationProjected
 
-    randomIndexes = np.random.choice(allIndexes[randoms], pop)
-    np.add.at(populationProjected, randomIndexes, 1)
+    # This just makes sure we actually have cells for the current country.
+    # There are some regions in the dataset (e.g. South Asia) that don't
+    # have corresponding cells in the raster dataset.
+    if True in randoms:
+        # randomIndexes = np.random.choice(allIndexes[a], pop)
+        randomIndexes = np.random.choice(allIndexes[randoms], pop)
+
+        np.add.at(populationProjected, randomIndexes, 1)
 
 
-    if(cellType == urbanCell):
+        if(cellType == urbanCell):
 
-        logging.info("Checking if we need to spill over...")
+            logging.info("Checking if we need to spill over...")
 
-        # before we start, we'll assume that a certain share of the current max is the
-        # limit after which we spill over into neighboring cells:
+            # before we start, we'll assume that a certain share of the current max is the
+            # limit after which we spill over into neighboring cells:
 
-        a = countryBoundaries == int(country)
-        b = urbanRural == urbanCell
+            a = countryBoundaries == int(country)
+            b = urbanRural == urbanCell
 
-        topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
-
-        # we'll use the mean of the top n cells of each country as the maximum
-        mx = np.sum(topN) / topNcells
-        # ... considering the thinning factor
-        limit = mx * thinningFactor
-
-        logging.info(limit)
-
-        # Print some stats after the spillover:
-
-        urb = urbanRural == urbanCell
-        rur = urbanRural == ruralCell
-
-        logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
-        logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
-        logging.info("Urban max:"  + str(np.nanmax(populationProjected[np.all((a, urb), axis=0)])))
+            urbCountry = populationProjected[np.all((a, b), axis=0)]
 
 
-        # Repeat the spillover function as long as there are cells above the limit
-        # TODO: this may run into an infinite loop!
-        while (int(np.nanmax(populationProjected[np.all((a, b), axis=0)])) > int(limit)):
-
-            currentMax = np.nanmax(populationProjected[np.all((a, b), axis=0)])
-
-            logging.info("Limit: " + str(limit))
-
-            logging.info("Current max:" + str(currentMax))
-
-            # logging.info("Are we over the limit? " + str(int(currentMax) > int(limit)))
-
-            c = populationProjected > limit
-
-            logging.info("Cells over limit: " + str(populationProjected[np.all((a, b, c), axis=0)]))
-            logging.info("Indexes: " + str(allIndexes[np.all((a, b, c), axis=0)]))
-
-            populationProjected = spillover(populationProjected, country, limit, countryBoundaries, urbanRural, allIndexes, shape)
-
-        # Print some stats after the spillover:
-
-        logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
-        logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
-        logging.info("Urban max:"  + str(np.nanmax(populationProjected[np.all((a, urb), axis=0)])))
+            if urbCountry.size > 0:
+                if urbCountry.size >= topNcells: # this is the common case
+                    topN = getTopNCells(topNcells, urbCountry)
+                else: # this catches countries which have urban cells, b ut very few (not sure this is actually an issue, just in case)
+                    topN = urbCountry
+            else: # if there are no urban cells, take any cells in country:
+                urbCountry = populationProjected[a]
 
 
-    # except Exception, e:
-    #     logging.error("Could not add population to cells of type "
-    #                   + str(cellType) + " in "
-    #                   + WTP[str(country)][MAJ])
-    #     logging.error(e)
+
+            # we'll use the mean of the top n cells of each country as the maximum
+            mx = np.sum(topN) / topN.size
+            # ... considering the thinning factor
+            limit = mx * thinningFactor
+
+            logging.info(limit)
+
+            # Print some stats after the spillover:
+
+            urb = urbanRural == urbanCell
+            rur = urbanRural == ruralCell
+
+            # logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
+            # logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
+            # logging.info("Urban max:"  + str(np.nanmax(populationProjected[np.all((a, urb), axis=0)])))
+
+
+            # Repeat the spillover function as long as there are cells above the limit
+            # TODO: this may run into an infinite loop!
+            while (int(np.nanmax(populationProjected[np.all((a, b), axis=0)])) > int(limit)):
+
+                currentMax = np.nanmax(populationProjected[np.all((a, b), axis=0)])
+
+                logging.info("Limit: " + str(limit))
+
+                logging.info("Current max:" + str(currentMax))
+
+                # logging.info("Are we over the limit? " + str(int(currentMax) > int(limit)))
+
+                c = populationProjected > limit
+
+                logging.info("Cells over limit: " + str(populationProjected[np.all((a, b, c), axis=0)]))
+                logging.info("Indexes: " + str(allIndexes[np.all((a, b, c), axis=0)]))
+
+                populationProjected = spillover(populationProjected, country, limit, countryBoundaries, urbanRural, allIndexes, shape)
+
+            # Print some stats after the spillover:
+
+            logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
+            logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
+            logging.info("Urban max:"  + str(np.nanmax(populationProjected[np.all((a, urb), axis=0)])))
+
+
+        # except Exception, e:
+        #     logging.error("Could not add population to cells of type "
+        #                   + str(cellType) + " in "
+        #                   + WTP[str(country)][MAJ])
+        #     logging.error(e)
 
     return populationProjected
 

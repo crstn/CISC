@@ -78,9 +78,7 @@ j = 0
 
 for country in runCountries:
 
-    c = WTP[str(country)][MAJ]
-    print 'Processing '+c
-
+    c = WTP[str(country)][MAJ]    
 
     # fetch the urban and rural cells for the current country:
     u = pop2010[
@@ -91,6 +89,11 @@ for country in runCountries:
     r = pop2010[
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == ruralCell)]
+
+    print c
+    print "Urban: " + str(u.size)
+    print "Rural: " + str(r.size)
+    print " "
 
     # then chuck the histograms into the next subplot:
     subplots[i][j].hist(np.log(r+1), normed=True, bins=100, alpha=0.5, label='Rural')

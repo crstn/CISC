@@ -28,6 +28,7 @@ for f in files:
     imarray = np.array(band.ReadAsArray())
 
     # replace values in Nations raster (feature IDs) with country codes:
+    # !!! THIS WILL NOT BE NECESSARY WITH THE DATA CREATED BY MAX – AlREADY CONTAINS UN COUNDTRY CODES !!!
     if f == "Nations/Nations_Asia.tif":
         print "Replacing feature IDs with country codes"
         attTable = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Asia/CountriesAttributes.xml'
