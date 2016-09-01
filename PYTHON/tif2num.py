@@ -4,10 +4,6 @@ import numpy as np
 import os
 import xml.etree.ElementTree as ET
 
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Asia')
-
-files = ["GLUR/GLUR_Asia.tif", "Nations/Nations_Asia.tif", "Population 2000/Population_2000_Asia.tif", "Population 2010/Population_2010_Asia.tif"]
-
 # replaces feature IDs with UN country codes from XML attribute table
 def replaceCountryCodes(countries, xmlfile):
 
@@ -22,19 +18,25 @@ def replaceCountryCodes(countries, xmlfile):
 
     return countriesReplaced
 
-for f in files:
-    src = gdal.Open(f, gdal.GA_Update)
-    band = src.GetRasterBand(1)
-    imarray = np.array(band.ReadAsArray())
+if __name__ == "__main__":
 
-    # replace values in Nations raster (feature IDs) with country codes:
-    # !!! THIS WILL NOT BE NECESSARY WITH THE DATA CREATED BY MAX – AlREADY CONTAINS UN COUNDTRY CODES !!!
-    if f == "Nations/Nations_Asia.tif":
-        print "Replacing feature IDs with country codes"
-        attTable = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Asia/CountriesAttributes.xml'
-        imarray = replaceCountryCodes(imarray, attTable)
-    # Make sure the numpy array all have the same dimensions:
-    print f
-    print imarray.shape
+    os.chdir(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Asia')
 
-    np.save(f, imarray)
+    files = ["GLUR/GLUR_Asia.tif", "Nations/Nations_Asia.tif", "Population 2000/Population_2000_Asia.tif", "Population 2010/Population_2010_Asia.tif"]
+
+    for f in files:
+        src = gdal.Open(f, gdal.GA_Update)
+        band = src.GetRasterBand(1)
+        imarray = np.array(band.ReadAsArray())
+
+        # replace values in Nations raster (feature IDs) with country codes:
+        # !!! THIS WILL NOT BE NECESSARY WITH THE DATA CREATED BY MAX - AlREADY CONTAINS UN COUNTRY CODES !!!
+        if f == "Nations/Nations_Asia.tif":
+            print "Replacing feature IDs with country codes"
+            attTable = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Asia/CountriesAttributes.xml'
+            imarray = replaceCountryCodes(imarray, attTable)
+        # Make sure the numpy array all have the same dimensions:
+        print f
+        print imarray.shape
+
+        np.save(f, imarray)
