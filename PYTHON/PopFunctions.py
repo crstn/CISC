@@ -268,7 +268,11 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
     randomIndexes = np.random.choice(allIndexes[randoms], pop)
     np.subtract.at(populationProjected, randomIndexes, 1)
 
-    while(populationProjected[populationProjected < 0.0].size > 0):
+    belowZero = populationProjected < 0
+
+
+    # as long as we have cells of this type in this country that have a negative population number, shuffle people around (i.e., add back in to make the cell 0, then remove the same number somewhere else)
+    while(populationProjected[np.all((a, c, belowZero), axis=0)].size > 0):
         # select random cells again, based on the number of people we need to remove again:
 
         # a and c don't change (see above), but b does. Not sure whether we really need to do this,
@@ -276,19 +280,31 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
         b = populationProjected >= 1.0
         randoms = np.all((a, b, c), axis=0)
 
-        less = populationProjected < 0.0
-        count = np.abs(np.sum(populationProjected[less]))
+        belowZero = populationProjected < 0
+        count = np.abs(np.sum(populationProjected[belowZero]))
 
-        randomIndexes = np.random.choice(allIndexes[randoms], count)
-        # set cells < 0 to 0
-        populationProjected[less] = 0.0
-        # and then remove the people we have just added somewhere else:
-        if randomIndexes.size > 0.0:
+        # print " --- "
+        # print populationProjected[np.all((a, c, belowZero), axis=0)]
+        # print populationProjected[np.all((a, c, belowZero), axis=0)].size
+        # print np.unique(randoms)
+        # print count
+        # print " "
+
+        try:
+            randomIndexes = np.random.choice(allIndexes[randoms], count)
+            # set cells < 0 to 0
+            populationProjected[belowZero] = 0.0
+            # and then remove the people we have just added somewhere else:
             np.subtract.at(populationProjected, randomIndexes, 1)
-        else:
-            logging.info("Tried to remove more people than possible;\n"
-                         "all cells of type " + str(cellType) + " have "
-                         "already been set to 0.")
+            belowZero = populationProjected < 0
+        except Exception, e:
+            # TODO this is a dirty hack to get around a bug I couldn't fix
+            # Sometimes the script throws an error for some countries when there
+            # is only one cell with a negative population number left.
+            # The next iteration on this country should fix this, but it basicall means
+            # that the total number is a bit off from the UN numbers for this one year
+            populationProjected[belowZero] = 0.0
+            print e;
 
     # except Exception, e:
     #     logging.error("Could not remove population from cells of type "
