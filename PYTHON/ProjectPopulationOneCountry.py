@@ -27,7 +27,7 @@ WUP = 0
 def main():
     global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, postfix
 
-    # we'll read in the firt command line arugument as the country ID we'll work on
+    # we'll read in the first command line arugument as the country ID we'll work on
     country = sys.argv[1]
 
     logging.info('Starting...')
