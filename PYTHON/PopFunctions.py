@@ -23,7 +23,6 @@ def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries,
     logging.info("Array sizes for " + WTP[str(country)][MAJ])
 
     logging.info("Population: " + str(populationProjected[countryBoundaries == int(country)].size))
-    logging.info("Nations: " + str(countryBoundaries[countryBoundaries == int(country)].size))
     logging.info("Urban: " + str(urbanRural[np.logical_and(countryBoundaries == int(country), urbanRural == urbanCell)].size))
     logging.info("Rural: " + str(urbanRural[np.logical_and(countryBoundaries == int(country), urbanRural == ruralCell)].size))
     logging.info("  ----   ")
@@ -96,8 +95,8 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
 # and then calls the corresponding functions to add or remove people.
 def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
 
-    # figure out the difference between our linear projection
-    # and what's in the table:
+    # figure out the difference between the populationProjected
+    # input raster and what's in the table:
 
     urbraster = np.sum(populationProjected[
         np.logical_and(countryBoundaries == int(country),
@@ -172,7 +171,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
     # have corresponding cells in the raster dataset.
     if True in randoms:
         # randomIndexes = np.random.choice(allIndexes[a], pop)
-        randomIndexes = np.random.choice(allIndexes[randoms], pop)
+        randomIndexes = np.random.choice(allIndexes[randoms], int(pop))
 
         np.add.at(populationProjected, randomIndexes, 1)
 
@@ -265,7 +264,7 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
     c = urbanRural == cellType
     randoms = np.all((a, b, c), axis=0)
 
-    randomIndexes = np.random.choice(allIndexes[randoms], pop)
+    randomIndexes = np.random.choice(allIndexes[randoms], int(pop))
     np.subtract.at(populationProjected, randomIndexes, 1)
 
     belowZero = populationProjected < 0
@@ -275,8 +274,7 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
     while(populationProjected[np.all((a, c, belowZero), axis=0)].size > 0):
         # select random cells again, based on the number of people we need to remove again:
 
-        # a and c don't change (see above), but b does. Not sure whether we really need to do this,
-        # but just to be safe:
+        # a and c don't change (see above), but b does:
         b = populationProjected >= 1.0
         randoms = np.all((a, b, c), axis=0)
 
@@ -291,7 +289,7 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
         # print " "
 
         try:
-            randomIndexes = np.random.choice(allIndexes[randoms], count)
+            randomIndexes = np.random.choice(allIndexes[randoms], int(count))
             # set cells < 0 to 0
             populationProjected[belowZero] = 0.0
             # and then remove the people we have just added somewhere else:
@@ -304,7 +302,8 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
             # The next iteration on this country should fix this, but it basicall means
             # that the total number is a bit off from the UN numbers for this one year
             populationProjected[belowZero] = 0.0
-            print e;
+            print "Error skipped: "
+            print e
 
     # except Exception, e:
     #     logging.error("Could not remove population from cells of type "
@@ -336,7 +335,7 @@ def spillover(populationProjected, country, limit, countryBoundaries, urbanRural
         populationProjected[fullCell] = limit
         # and move the extra people to the neighbors:
         wilsons = getNeighbours(fullCell, shape)
-        rI = np.random.choice(wilsons, surplus)
+        rI = np.random.choice(wilsons, int(surplus))
         np.add.at(populationProjected, rI, 1)
 
     return populationProjected
