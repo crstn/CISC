@@ -41,7 +41,7 @@ def main():
     logging.info('Reading Numpy arrays')
 
     # in this dataset: 1=rural, 2=urban
-    urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/IndividualCountries/'+country+'-urbanRural.npy')
+    urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'-urbanRural.npy')
 
     # save the shape of these arrays for later, so that we
     # can properly reshape them after flattening:
@@ -49,11 +49,11 @@ def main():
 
     # we flatten all arrays to 1D, so we don't have to deal with 2D arrays:
     urbanRural = urbanRural.ravel()
-    countryBoundaries = np.load(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/IndividualCountries/'+country+'-boundary.npy').ravel()
+    countryBoundaries = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'-boundary.npy').ravel()
 
     # load population raster datasets for 2000 and 2010
-    populationOld = np.load(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/IndividualCountries/'+country+'-pop2000.npy').ravel()
-    populationNew = np.load(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/IndividualCountries/'+country+'-pop2010.npy').ravel()
+    populationOld = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'-pop2000.npy').ravel()
+    populationNew = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'-pop2010.npy').ravel()
 
     # these arrays use very small negative numbers as NULL,
     # let's convert these to NAN
@@ -85,17 +85,17 @@ def main():
 
 
         # save the numpy arrays
-        np.save(os.path.expanduser('~') + "/Dropbox/CISC - Global Population/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.npy", urbanRural.reshape(matrix))
-        np.save(os.path.expanduser('~') + "/Dropbox/CISC - Global Population/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.npy", populationNew.reshape(matrix))
+        np.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.npy", urbanRural.reshape(matrix))
+        np.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.npy", populationNew.reshape(matrix))
 
 
         # also save as a tiff (not georeferenced, just to look at the data in QGIS)
         # TODO: turn this off when in production!
         img = Image.fromarray(urbanRural.reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Dropbox/CISC - Global Population/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
+        img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
 
         img = Image.fromarray(populationNew.astype(float).reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Dropbox/CISC - Global Population/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.tiff")
+        img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.tiff")
 
         # prepare everything for the next iteration
 

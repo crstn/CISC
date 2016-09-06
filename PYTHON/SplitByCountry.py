@@ -3,28 +3,28 @@ from PIL import Image
 from osgeo import gdal
 
 # load countries TIFF and convert to NumPy array
-f = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Nations Raster/Nations_2010_clipped.tiff'
+f = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/Nations_2010_clipped.tiff'
 src = gdal.Open(f, gdal.GA_Update)
 band = src.GetRasterBand(1)
 countryBoundaries = np.array(band.ReadAsArray())
 
 # replace unique IDs with UN country codes
-attTable = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Asia/CountriesAttributes.xml'
+attTable = os.path.expanduser('~') + '/Dropbox/CISC Data/Asia/CountriesAttributes.xml'
 countryBoundaries = tn.replaceCountryCodes(countryBoundaries, attTable)
 
 # load urban rural TIFF and convert to NumPy array
-f = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/GLUR Raster/GLUR_Pop20101.tiff'
+f = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GLUR_Pop20101.tiff'
 src = gdal.Open(f, gdal.GA_Update)
 band = src.GetRasterBand(1)
 urbanRural = np.array(band.ReadAsArray())
 
 # load population TIFFs and convert to NumPy array
-f = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Population 2000 Raster/Pop_2000_clipped.tiff'
+f = os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2000 Raster/Pop_2000_clipped.tiff'
 src = gdal.Open(f, gdal.GA_Update)
 band = src.GetRasterBand(1)
 population2000 = np.array(band.ReadAsArray())
 
-f = os.path.expanduser('~') + '/Dropbox/CISC - Global Population/Population 2010 Raster/Pop_2010_clipped.tiff'
+f = os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff'
 src = gdal.Open(f, gdal.GA_Update)
 band = src.GetRasterBand(1)
 population2010 = np.array(band.ReadAsArray())
@@ -45,18 +45,18 @@ for country in np.unique(countryBoundaries):
 
         # cut out this rectangular block from the country Boundaries
         justCountry = countryBoundaries[np.min(x):np.max(x), np.min(y):np.max(y)]
-        np.save(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/IndividualCountries/'+str(country)+'-boundary.npy', justCountry)
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-boundary.npy', justCountry)
 
         # cut out this rectangular block from the urban/rural data
         justCountry = urbanRural[np.min(x):np.max(x), np.min(y):np.max(y)]
-        np.save(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/IndividualCountries/'+str(country)+'-urbanRural.npy', justCountry)
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-urbanRural.npy', justCountry)
 
         # cut out this rectangular block from the 2000 and 2010 pop data
         justCountry = population2000[np.min(x):np.max(x), np.min(y):np.max(y)]
-        np.save(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/IndividualCountries/'+str(country)+'-pop2000.npy', justCountry)
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-pop2000.npy', justCountry)
 
         justCountry = population2010[np.min(x):np.max(x), np.min(y):np.max(y)]
-        np.save(os.path.expanduser('~') + '/Dropbox/CISC - Global Population/IndividualCountries/'+str(country)+'-pop2010.npy', justCountry)
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-pop2010.npy', justCountry)
 
         # use this to test:
         # img = Image.fromarray(justCountry)
