@@ -32,10 +32,10 @@ def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries,
 # between whats in the populationProjected and the
 # DESA population projection CSV
 def logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural):
-    urbraster = np.sum(populationProjected[
+    urbraster = np.nansum(populationProjected[
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == urbanCell)])
-    rurraster = np.sum(populationProjected[
+    rurraster = np.nansum(populationProjected[
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == ruralCell)])
 
@@ -75,7 +75,7 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
 
     topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
     # we'll use the mean of the top n URBAN cells of each country as the threshold
-    mx = np.sum(topN) / topNcells
+    mx = np.nansum(topN) / topNcells
     # ... considering the thinning factor
     limit = mx * thinningFactor
 
@@ -101,7 +101,7 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
             urbanRural[cell] = urbanCell
 
     print "No. urban cells after urbanization: " + str(urbanRural[urbanRural == urbanCell].size)
-    
+
     return urbanRural
 
 
@@ -113,10 +113,10 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
     # figure out the difference between the populationProjected
     # input raster and what's in the table:
 
-    urbraster = np.sum(populationProjected[
+    urbraster = np.nansum(populationProjected[
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == urbanCell)])
-    rurraster = np.sum(populationProjected[
+    rurraster = np.nansum(populationProjected[
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == ruralCell)])
 
@@ -178,7 +178,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
     b = urbanRural == cellType
 
     randoms = np.all((a, b), axis=0)
-    if np.sum(randoms) < 0:
+    if np.nansum(randoms) < 0:
         logging.error("Can't add population to "
                       + WTP[str(country)][MAJ]
                       + ", country and " + str(cellType) + "conditions not"
@@ -219,7 +219,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
 
 
             # we'll use the mean of the top n cells of each country as the maximum
-            mx = np.sum(topN) / topN.size
+            mx = np.nansum(topN) / topN.size
             # ... considering the thinning factor
             limit = mx * thinningFactor
 
@@ -298,7 +298,7 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
         randoms = np.all((a, b, c), axis=0)
 
         belowZero = populationProjected < 0
-        count = np.abs(np.sum(populationProjected[belowZero]))
+        count = np.abs(np.nansum(populationProjected[belowZero]))
 
         # print " --- "
         # print populationProjected[np.all((a, c, belowZero), axis=0)]
