@@ -60,6 +60,10 @@ def main():
     populationOld[populationOld==np.nanmin(populationOld)] = np.nan
     populationNew[populationNew==np.nanmin(populationNew)] = np.nan
 
+    # next, we'll cast the pop numbers to int (should save some memory):
+    populationOld = populationOld.astype(np.int64)
+    populationNew = populationNew.astype(np.int64)
+
     # make an array of all indexes; we'll use this later:
     allIndexes = np.arange(countryBoundaries.size)
 
@@ -71,7 +75,7 @@ def main():
 
         populationProjected = populationNew
 
-        pop.logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural)
+        # pop.logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural)
 
         # adjust for the difference between raster and csv projection data:
         pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
@@ -89,10 +93,8 @@ def main():
         img = Image.fromarray(urbanRural.reshape(matrix))
         img.save(os.path.expanduser('~') + "/Dropbox/CISC - Global Population/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
 
-        img = Image.fromarray(populationNew.reshape(matrix))
+        img = Image.fromarray(populationNew.astype(float).reshape(matrix))
         img.save(os.path.expanduser('~') + "/Dropbox/CISC - Global Population/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.tiff")
-
-
 
         # prepare everything for the next iteration
 

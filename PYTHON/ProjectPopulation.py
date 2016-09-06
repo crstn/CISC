@@ -9,6 +9,9 @@ import PopFunctions as pop
 
 old_settings = np.seterr(invalid="ignore")
 
+# print nunmbers the 'normal' way, not in scientific notation
+# should make the logs more readable
+np.set_printoptions(suppress=True)
 
 
 # run the simulation only on specific countries, or on all countries found in the input files?

@@ -9,11 +9,11 @@ urbanCell = 2
 MAJ = 'Major area, region, country or area'
 
 # Factor to simulate densities in the highest density areas going down.
-# TODO: talk to Peter to see whether this is a good idea, and what a good number might be.
-# For now, we keep this at 1.0, ie. no thinning
+# TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play around with different values. Need to play around with different values.
 thinningFactor = 0.8
 
 # number of top cells to take into account when calculating the average of the N cells with the highest population per country:
+# TODO: Maybe this should be a % of all cells in a country, rather than a fixed number? E.g. 3%?
 topNcells = 20
 
 
@@ -39,9 +39,20 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == ruralCell)])
 
+
     popcsv = int(WTP[country][str(year)]) * 1000
     urbcsv = int(WUP[country][str(year)]) * 1000
-    rurcsv = (popcsv-urbcsv)
+    rurcsv = (popcsv - urbcsv)
+
+    print "urban raster: " + str(urbraster)
+    print "urban csv:    " + str(urbcsv)
+    print " "
+    print "rural raster: " + str(rurraster)
+    print "rural csv:    " + str(rurcsv)
+    print " "
+    print "total raster: " + str(rurraster+urbraster)
+    print "total csv:    " + str(rurcsv+urbcsv)
+    print " "
 
     urbDiff = urbcsv - urbraster
     rurDiff = rurcsv - rurraster
@@ -55,10 +66,12 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
 # 1. population is at least $thinningFactor of the mean of the $topNcells
 # 2. At least three of the neighboring cells are already urban
 def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
-    # print "urbanization started..."
 
     a = countryBoundaries == int(country)
     b = urbanRural == urbanCell
+
+    print " "
+    print "No. urban cells before urbanization in " +str(year)+ ": " + str(urbanRural[urbanRural == urbanCell].size)
 
     topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
     # we'll use the mean of the top n URBAN cells of each country as the threshold
@@ -87,6 +100,8 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
         if(urbanNeighbors >= 3):
             urbanRural[cell] = urbanCell
 
+    print "No. urban cells after urbanization: " + str(urbanRural[urbanRural == urbanCell].size)
+    
     return urbanRural
 
 
@@ -114,6 +129,8 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
 
     # This probably slows things down a bit... we've already computed the
     # required values, let's just use these...
+    print " "
+    print "Numbers before adjustment in year " + str(year)
     logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
     logging.info("Adjusting")
@@ -140,6 +157,8 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
                                                np.abs(rurDiff), country,
                                                ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
 
+    print " "
+    print "Numbers after adjustment"
     logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
     return populationProjected
@@ -295,21 +314,15 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
             # and then remove the people we have just added somewhere else:
             np.subtract.at(populationProjected, randomIndexes, 1)
             belowZero = populationProjected < 0
-        except Exception, e:
+        except Exception as e:
             # TODO this is a dirty hack to get around a bug I couldn't fix
             # Sometimes the script throws an error for some countries when there
             # is only one cell with a negative population number left.
             # The next iteration on this country should fix this, but it basicall means
             # that the total number is a bit off from the UN numbers for this one year
             populationProjected[belowZero] = 0.0
-            print "Error skipped: "
-            print e
-
-    # except Exception, e:
-    #     logging.error("Could not remove population from cells of type "
-    #                   + str(cellType) + " in "
-    #                   + WTP[str(country)][MAJ])
-    #     logging.error(e)
+            logging.error("Error skipped: ")
+            logging.error(e)
 
     return populationProjected
 
