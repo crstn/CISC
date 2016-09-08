@@ -86,7 +86,7 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
     # for every matching cell, check whether at least 3 neighbors are already urban:
     for cell in allIndexes[np.all((a, b, c), axis=0)]:
 
-        wilsons = getNeighbours(cell, shape)
+        wilsons = getNeighbours(cell, shape, 3)
 
         # print wilsons
 
@@ -347,7 +347,7 @@ def spillover(populationProjected, country, limit, countryBoundaries, urbanRural
         # reset those cells to the limit value:
         populationProjected[fullCell] = limit
         # and move the extra people to the neighbors:
-        wilsons = getNeighbours(fullCell, shape)
+        wilsons = getNeighbours(fullCell, shape, 3)
         rI = np.random.choice(wilsons, int(surplus))
         np.add.at(populationProjected, rI, 1)
 
@@ -355,18 +355,26 @@ def spillover(populationProjected, country, limit, countryBoundaries, urbanRural
 
 
 
-# Returns an array of indexes that correspond to the 3x3 neighborhood of the index cell
+# Returns an array of indexes that correspond to the n x n neighborhood of the index cell
 # in a raveled (1D) matrix based on the # shape of the original (2D) matrix.
 # Returns only neighbors within shape, exlcuding the input cell
-def getNeighbours(index, shape):
+# If n is an even number, will generate the neighborhood for n+1, so that the cell at
+# index is always at the center 
+def getNeighbours(index, shape, n):
     twoDIndex = oneDtoTwoD(index, shape)
     row = twoDIndex[0]
     col = twoDIndex[1]
 
     neighbors = []
 
-    for r in range(-1, 2):
-        for c in range(-1, 2):
+    start = (n/2) * -1
+    end = (n/2) + 1
+
+    print start
+    print end
+
+    for r in range(start, end):
+        for c in range(start, end):
             rn = row + r
             cn = col + c
             if r != 0 or c !=0: # don't add the original cell
@@ -407,7 +415,10 @@ def projectLinear(first, second):
     out[out<0] = 0
     return out
 
-
+def openTIFFasNParray(file):
+    src = gdal.Open(file, gdal.GA_Update)
+    band = src.GetRasterBand(1)
+    return np.array(band.ReadAsArray())
 
 # saves a raster as a geotiff to dst_filename
 def array_to_raster(array, dst_filename, referencetiff):
