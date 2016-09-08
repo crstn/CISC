@@ -359,7 +359,7 @@ def spillover(populationProjected, country, limit, countryBoundaries, urbanRural
 # in a raveled (1D) matrix based on the # shape of the original (2D) matrix.
 # Returns only neighbors within shape, exlcuding the input cell
 # If n is an even number, will generate the neighborhood for n+1, so that the cell at
-# index is always at the center 
+# index is always at the center
 def getNeighbours(index, shape, n):
     twoDIndex = oneDtoTwoD(index, shape)
     row = twoDIndex[0]
@@ -369,9 +369,6 @@ def getNeighbours(index, shape, n):
 
     start = (n/2) * -1
     end = (n/2) + 1
-
-    print start
-    print end
 
     for r in range(start, end):
         for c in range(start, end):
