@@ -34,9 +34,9 @@ def main():
     logging.info('Reading CSVs')
 
     # world URBAN population
-    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/Code/CISC/Data/DESA/WUP2014Urban.csv')), "Country Code")
+    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUP2014Urban.csv')), "Country Code")
     # world TOTAL population
-    WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/Code/CISC/Data/DESA/WTP2014.csv')), "Country Code")
+    WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WTP2014.csv')), "Country Code")
 
     logging.info('Reading Numpy arrays')
 
