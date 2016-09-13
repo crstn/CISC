@@ -9,7 +9,7 @@ urbanCell = 2
 MAJ = 'Major area, region, country or area'
 
 # Factor to simulate densities in the highest density areas going down.
-# TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play around with different values. Need to play around with different values.
+# TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play around with different values. 
 thinningFactor = 0.8
 
 # number of top cells to take into account when calculating the average of the N cells with the highest population per country:

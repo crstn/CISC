@@ -3,14 +3,10 @@ from PIL import Image
 from osgeo import gdal
 
 # load countries TIFF and convert to NumPy array
-f = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/Nations_2010_clipped.tiff'
+f = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
 src = gdal.Open(f, gdal.GA_Update)
 band = src.GetRasterBand(1)
 countryBoundaries = np.array(band.ReadAsArray())
-
-# replace unique IDs with UN country codes
-attTable = os.path.expanduser('~') + '/Dropbox/CISC Data/Asia/CountriesAttributes.xml'
-countryBoundaries = tn.replaceCountryCodes(countryBoundaries, attTable)
 
 # load urban rural TIFF and convert to NumPy array
 f = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GLUR_Pop20101.tiff'
