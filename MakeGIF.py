@@ -1,12 +1,5 @@
-import os, numpy as np
+import os, sys, numpy as np
 import moviepy.editor as mpy
-
-country = 156
-endyear = 2050
-
-arrays = []
-
-year = 2020
 
 def arrays2GIF(arrays, gif):
     mx = 0
@@ -25,12 +18,25 @@ def arrays2GIF(arrays, gif):
     print "Output written to "+gif
     # os.system('open ' + gif)
 
-arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'.0-pop2000.npy'))
+def projections2GIF(country, endyear):
+    arrays = []
+    arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'.0-pop2000.npy'))
 
-arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'.0-pop2010.npy'))
+    arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'.0-pop2010.npy'))
 
-while year <= endyear:
-    arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/'+str(country)+'-'+str(year)+'-pop.npy'))
-    year = year + 10
+    year = 2020
+    while year <= endyear:
+        arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/'+str(country)+'-'+str(year)+'-pop.npy'))
+        year = year + 10
 
-arrays2GIF(arrays, os.path.expanduser('~') + '/Desktop/'+str(country)+'.gif')
+    arrays2GIF(arrays, os.path.expanduser('~') + '/Desktop/'+str(country)+'.gif')
+
+if __name__ == '__main__':
+
+    if len(sys.argv) != 3:
+        print "This script expects two parameters, the country code and the last year of the projections, e.g."
+        print "python MakeGIF.py 156 2050"
+        print "to make a GIF from the projections for China. Check the WUP/WTP csv files for the IDs."
+        sys.exit()
+
+    projections2GIF(int(sys.argv[1]), int(sys.argv[2]))
