@@ -9,7 +9,7 @@ urbanCell = 2
 MAJ = 'Major area, region, country or area'
 
 # Factor to simulate densities in the highest density areas going down.
-# TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play around with different values. 
+# TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play around with different values.
 thinningFactor = 0.8
 
 # number of top cells to take into account when calculating the average of the N cells with the highest population per country:
@@ -40,8 +40,8 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
                        urbanRural == ruralCell)])
 
 
-    popcsv = int(WTP[country][str(year)]) * 1000
-    urbcsv = int(WUP[country][str(year)]) * 1000
+    popcsv = getNumberForYear(WTP, year, country)
+    urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
     print "urban raster: " + str(urbraster)
@@ -61,6 +61,12 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     logging.info("Urban difference for " + c + ": " + str(urbDiff))
     logging.info("Rural difference for " + c + ": " + str(rurDiff))
 
+
+# Looks up the population number for a country in a given year from a table.
+def getNumberForYear(table, year, country):
+    # CSVs have weird number formatting with blanks (thanks for nothing, Excel),
+    # that's why we need the "replace" bit
+    return int(table[country][str(year)].replace(" ", "")) * 1000
 
 # turns rural into urban cells based on two criteria:
 # 1. population is at least $thinningFactor of the mean of the $topNcells
@@ -120,8 +126,8 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == ruralCell)])
 
-    popcsv = int(WTP[country][str(year)]) * 1000
-    urbcsv = int(WUP[country][str(year)]) * 1000
+    popcsv = getNumberForYear(WTP, year, country)
+    urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
     urbDiff = urbcsv - urbraster

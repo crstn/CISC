@@ -9,12 +9,6 @@ import PopFunctions as pop
 # This will get rid of some floating point issues (well, reporting of them!)
 old_settings = np.seterr(invalid="ignore")
 
-# this will be added to the output file names, useful for testing.
-postfix = "spilltest"
-
-# how many times do we want to simulate?
-RUNS = 1
-
 # some global variables that most functions need access to:
 populationOld = []
 populationNew = []
@@ -25,7 +19,7 @@ WTP = 0
 WUP = 0
 
 def main():
-    global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, postfix
+    global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries
 
     # we'll read in the first command line arugument as the country ID we'll work on
     country = sys.argv[1]
@@ -34,14 +28,14 @@ def main():
     logging.info('Reading CSVs')
 
     # world URBAN population
-    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUP2014Urban.csv')), "Country Code")
+    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUP2014-F03-Urban_Population.csv')), "Country Code")
     # world TOTAL population
-    WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WTP2014.csv')), "Country Code")
+    WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
 
     logging.info('Reading Numpy arrays')
 
     # in this dataset: 1=rural, 2=urban
-    urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'-urbanRural.npy')
+    urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-urbanRural.npy')
 
     # save the shape of these arrays for later, so that we
     # can properly reshape them after flattening:
@@ -49,11 +43,11 @@ def main():
 
     # we flatten all arrays to 1D, so we don't have to deal with 2D arrays:
     urbanRural = urbanRural.ravel()
-    countryBoundaries = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'-boundary.npy').ravel()
+    countryBoundaries = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-boundary.npy').ravel()
 
     # load population raster datasets for 2000 and 2010
-    populationOld = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'-pop2000.npy').ravel()
-    populationNew = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'-pop2010.npy').ravel()
+    populationOld = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-pop2000.npy').ravel()
+    populationNew = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-pop2010.npy').ravel()
 
     # these arrays use very small negative numbers as NULL,
     # let's convert these to NAN
@@ -117,7 +111,7 @@ if __name__ == '__main__':
         sys.exit()
 
     logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
-                        filename='output-'+datetime.utcnow().strftime("%Y%m%d")+'' '+sys.argv[1]+'.log',
+                        filename='output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
     main()
