@@ -36,24 +36,26 @@ for country in np.unique(countryBoundaries):
     if country > 0: # skip NaN cells
         # find min and max X and Y indices for this country
         x, y = np.where(countryBoundaries==country)
-        # print x
-        # print y
+        minx = np.min(x)
+        maxx = np.max(x)+1 # include the last column where this country appears!
+        miny = np.min(y)
+        maxy = np.max(y)+1 # include the last row where this country appears!
 
         # cut out this rectangular block from the country Boundaries
-        justCountry = countryBoundaries[np.min(x):np.max(x), np.min(y):np.max(y)]
+        justCountry = countryBoundaries[minx:maxx, miny:maxy]
         np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-boundary.npy', justCountry)
-
-        # cut out this rectangular block from the urban/rural data
-        justCountry = urbanRural[np.min(x):np.max(x), np.min(y):np.max(y)]
-        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-urbanRural.npy', justCountry)
-
-        # cut out this rectangular block from the 2000 and 2010 pop data
-        justCountry = population2000[np.min(x):np.max(x), np.min(y):np.max(y)]
-        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-pop2000.npy', justCountry)
-
-        justCountry = population2010[np.min(x):np.max(x), np.min(y):np.max(y)]
-        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-pop2010.npy', justCountry)
 
         # use this to test:
         # img = Image.fromarray(justCountry)
-        # img.save('out.tiff')
+        # img.save(str(country)+'out.tiff')
+
+        # cut out this rectangular block from the urban/rural data
+        justCountry = urbanRural[minx:maxx, miny:maxy]
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-urbanRural.npy', justCountry)
+
+        # cut out this rectangular block from the 2000 and 2010 pop data
+        justCountry = population2000[minx:maxx, miny:maxy]
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-pop2000.npy', justCountry)
+
+        justCountry = population2010[minx:maxx, miny:maxy]
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-pop2010.npy', justCountry)
