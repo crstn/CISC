@@ -88,8 +88,8 @@ def main():
         # img = Image.fromarray(urbanRural.reshape(matrix))
         # img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
 
-        img = Image.fromarray(populationNew.astype(float).reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.tiff")
+        # img = Image.fromarray(populationNew.astype(float).reshape(matrix))
+        # img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.tiff")
 
         # prepare everything for the next iteration
 

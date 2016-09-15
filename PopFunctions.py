@@ -44,15 +44,15 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
-    print "urban raster: " + str(urbraster)
-    print "urban csv:    " + str(urbcsv)
-    print " "
-    print "rural raster: " + str(rurraster)
-    print "rural csv:    " + str(rurcsv)
-    print " "
-    print "total raster: " + str(rurraster+urbraster)
-    print "total csv:    " + str(rurcsv+urbcsv)
-    print " "
+    # print "urban raster: " + str(urbraster)
+    # print "urban csv:    " + str(urbcsv)
+    # print " "
+    # print "rural raster: " + str(rurraster)
+    # print "rural csv:    " + str(rurcsv)
+    # print " "
+    # print "total raster: " + str(rurraster+urbraster)
+    # print "total csv:    " + str(rurcsv+urbcsv)
+    # print " "
 
     urbDiff = urbcsv - urbraster
     rurDiff = rurcsv - rurraster
@@ -76,8 +76,8 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
     a = countryBoundaries == int(country)
     b = urbanRural == urbanCell
 
-    print " "
-    print "No. urban cells before urbanization in " +str(year)+ ": " + str(urbanRural[urbanRural == urbanCell].size)
+    # print " "
+    # print "No. urban cells before urbanization in " +str(year)+ ": " + str(urbanRural[urbanRural == urbanCell].size)
 
     topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
     # we'll use the mean of the top n URBAN cells of each country as the threshold
@@ -106,7 +106,7 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
         if(urbanNeighbors >= 3):
             urbanRural[cell] = urbanCell
 
-    print "No. urban cells after urbanization: " + str(urbanRural[urbanRural == urbanCell].size)
+    # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural == urbanCell].size)
 
     return urbanRural
 
@@ -135,9 +135,9 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
 
     # This probably slows things down a bit... we've already computed the
     # required values, let's just use these...
-    print " "
-    print "Numbers before adjustment in year " + str(year)
-    logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
+    # print " "
+    # print "Numbers before adjustment in year " + str(year)
+    # logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
     logging.info("Adjusting")
 
@@ -163,8 +163,8 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
                                                np.abs(rurDiff), country,
                                                ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
 
-    print " "
-    print "Numbers after adjustment"
+    # print " "
+    # print "Numbers after adjustment"
     logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
     return populationProjected
