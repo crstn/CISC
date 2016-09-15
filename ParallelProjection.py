@@ -3,14 +3,6 @@
 
 import sys, multiprocessing, subprocess, os, time, os.path
 
-# just to be able to check for how long this has been running:
-print time.ctime()
-# compare the output from this to the timestamp of the newest
-# file in the output directory like so (when everything is done!):
-# import os, glob
-# newest = max(glob.iglob('*.[Mm][Pp]3'), key=os.path.getctime)
-
-
 tasks = sys.argv[1:]
 
 print tasks
