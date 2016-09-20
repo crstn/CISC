@@ -1,7 +1,7 @@
 import os, sys, numpy as np
 import moviepy.editor as mpy
 
-def arrays2GIF(arrays, gif):
+def normalize(arrays):
     mx = 0
 
     for a in arrays:
@@ -12,6 +12,9 @@ def arrays2GIF(arrays, gif):
     for a in arrays:
         a = a / mx
 
+    return arrays;
+
+def arrays2GIF(arrays, gif):
     clip = mpy.ImageSequenceClip(arrays, fps=1)
     clip.write_gif(gif)
 
@@ -29,7 +32,8 @@ def projections2GIF(country, endyear):
         arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/'+str(country)+'-'+str(year)+'-pop.npy'))
         year = year + 10
 
-    arrays2GIF(arrays, os.path.expanduser('~') + '/Desktop/'+str(country)+'.gif')
+    # make GIF from the NORMALIZED arrays
+    arrays2GIF(normalize(arrays), os.path.expanduser('~') + '/Desktop/'+str(country)+'-population.gif')
 
 if __name__ == '__main__':
 
