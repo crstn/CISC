@@ -44,15 +44,15 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
-    print "urban raster: " + str(urbraster)
-    print "urban csv:    " + str(urbcsv)
-    print " "
-    print "rural raster: " + str(rurraster)
-    print "rural csv:    " + str(rurcsv)
-    print " "
-    print "total raster: " + str(rurraster+urbraster)
-    print "total csv:    " + str(rurcsv+urbcsv)
-    print " "
+    # print "urban raster: " + str(urbraster)
+    # print "urban csv:    " + str(urbcsv)
+    # print " "
+    # print "rural raster: " + str(rurraster)
+    # print "rural csv:    " + str(rurcsv)
+    # print " "
+    # print "total raster: " + str(rurraster+urbraster)
+    # print "total csv:    " + str(rurcsv+urbcsv)
+    # print " "
 
     urbDiff = urbcsv - urbraster
     rurDiff = rurcsv - rurraster
@@ -80,15 +80,15 @@ def getThreshold(country, populationProjected, countryBoundaries, urbanRural, WT
     b = urbanRural == urbanCell
 
     urbanMedian = np.nanmedian(populationProjected[np.all((a, b), axis=0)])
-    print getCountryByID(country, WTP) + " urban median: " + str(urbanMedian)
+    # print getCountryByID(country, WTP) + " urban median: " + str(urbanMedian)
 
     b = urbanRural == ruralCell
 
     ruralMedian = np.nanmedian(populationProjected[np.all((a,b), axis=0)])
-    print getCountryByID(country, WTP) + " rural median: " + str(ruralMedian)
+    # print getCountryByID(country, WTP) + " rural median: " + str(ruralMedian)
 
     threshold = (urbanMedian + ruralMedian) / 2
-    print getCountryByID(country, WTP) + " threshold: " + str(threshold)
+    # print getCountryByID(country, WTP) + " threshold: " + str(threshold)
 
     return threshold
 
@@ -100,8 +100,8 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
     a = countryBoundaries == int(country)
     b = urbanRural == urbanCell
 
-    print " "
-    print "No. urban cells before urbanization in " +str(year)+ ": " + str(urbanRural[urbanRural == urbanCell].size)
+    # print " "
+    # print "No. urban cells before urbanization in " +str(year)+ ": " + str(urbanRural[urbanRural == urbanCell].size)
 
     topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
     # we'll use the mean of the top n URBAN cells of each country as the threshold
@@ -135,7 +135,7 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
         if(urbanNeighbors >= 3):
             urbanRural[cell] = urbanCell
 
-    print "No. urban cells after urbanization: " + str(urbanRural[urbanRural == urbanCell].size)
+    # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural == urbanCell].size)
 
     return urbanRural
 

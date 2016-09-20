@@ -3,9 +3,22 @@
 
 import sys, multiprocessing, subprocess, os, time, os.path
 
-tasks = sys.argv[1:]
+# if this script is called without arguments, run the whole world:
+if len(sys.argv) == 1:
+    tasks = []
+    for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries'):
+        if filename.endswith(".npy"):
+            # the year is between the dashes
+            end = filename.find('.0-')
+            if filename[:end] not in tasks:
+                tasks.append(filename[:end])
 
+else:
+    tasks = sys.argv[1:]
+
+print "running the following countries:"
 print tasks
+
 started = []
 
 cpus = multiprocessing.cpu_count()
@@ -21,9 +34,8 @@ while (len(tasks) > 0):
         # aren't run again? Only a problem if we change the projection algorithm!
         print started
 
-        # there was a weird error where i would sometimes be out of bounds of the list
-        # ...which should not be possible when running the code below, but it still
-        # came up. Anyway, this solves it. ¯\_(ツ)_/¯
+        # there was a weird error where i would sometimes be out of bounds of the # list ...which should not be possible when running the code below, 
+        # but it still came up. Anyway, this solves it. ¯\_(ツ)_/¯
         if i < len(started):
             feil = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+str(started[i])+"-2050-pop.npy"
             if(os.path.isfile(feil)):
