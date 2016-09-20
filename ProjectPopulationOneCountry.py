@@ -85,11 +85,11 @@ def main():
 
         # also save as a tiff (not georeferenced, just to look at the data in QGIS)
         # Turn this off when in production!
-        # img = Image.fromarray(urbanRural.reshape(matrix))
-        # img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
+        img = Image.fromarray(urbanRural.reshape(matrix))
+        img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
 
-        # img = Image.fromarray(populationNew.astype(float).reshape(matrix))
-        # img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.tiff")
+        img = Image.fromarray(populationNew.astype(float).reshape(matrix))
+        img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.tiff")
 
         # prepare everything for the next iteration
 

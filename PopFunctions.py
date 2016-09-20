@@ -44,15 +44,15 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
-    # print "urban raster: " + str(urbraster)
-    # print "urban csv:    " + str(urbcsv)
-    # print " "
-    # print "rural raster: " + str(rurraster)
-    # print "rural csv:    " + str(rurcsv)
-    # print " "
-    # print "total raster: " + str(rurraster+urbraster)
-    # print "total csv:    " + str(rurcsv+urbcsv)
-    # print " "
+    print "urban raster: " + str(urbraster)
+    print "urban csv:    " + str(urbcsv)
+    print " "
+    print "rural raster: " + str(rurraster)
+    print "rural csv:    " + str(rurcsv)
+    print " "
+    print "total raster: " + str(rurraster+urbraster)
+    print "total csv:    " + str(rurcsv+urbcsv)
+    print " "
 
     urbDiff = urbcsv - urbraster
     rurDiff = rurcsv - rurraster
@@ -68,6 +68,30 @@ def getNumberForYear(table, year, country):
     # that's why we need the "replace" bit
     return int(table[country][str(year)].replace(" ", "")) * 1000
 
+# Looks up the country name by UN ID
+def getCountryByID(country, WTP):
+    return WTP[str(country)][MAJ]
+
+# Calculates the population threshold for turning a cell urban.
+# Current approach: threshold is the mean between the mean pop for urban cells
+# and the mean pop for rural cells.
+def getThreshold(country, populationProjected, countryBoundaries, urbanRural, WTP):
+    a = countryBoundaries == int(country)
+    b = urbanRural == urbanCell
+
+    urbanMean = np.nanmean(populationProjected[np.all((a, b), axis=0)])
+    print getCountryByID(country, WTP) + " urban mean: " + str(urbanMean)
+
+    b = urbanRural == ruralCell
+
+    ruralMean = np.nanmean(populationProjected[np.all((a,b), axis=0)])
+    print getCountryByID(country, WTP) + " rural mean: " + str(ruralMean)
+
+    threshold = (urbanMean + ruralMean) / 2
+    print getCountryByID(country, WTP) + " threshold: " + str(threshold)
+
+    return threshold
+
 # turns rural into urban cells based on two criteria:
 # 1. population is at least $thinningFactor of the mean of the $topNcells
 # 2. At least three of the neighboring cells are already urban
@@ -76,14 +100,16 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
     a = countryBoundaries == int(country)
     b = urbanRural == urbanCell
 
-    # print " "
-    # print "No. urban cells before urbanization in " +str(year)+ ": " + str(urbanRural[urbanRural == urbanCell].size)
+    print " "
+    print "No. urban cells before urbanization in " +str(year)+ ": " + str(urbanRural[urbanRural == urbanCell].size)
 
     topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
     # we'll use the mean of the top n URBAN cells of each country as the threshold
     mx = np.nansum(topN) / topNcells
     # ... considering the thinning factor
-    limit = mx * thinningFactor
+    # limit = mx * thinningFactor
+
+    limit = getThreshold(country, populationProjected, countryBoundaries, urbanRural, WTP)
 
     # check rural cells in this country for population threshold:
     b = urbanRural == ruralCell
@@ -106,7 +132,7 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
         if(urbanNeighbors >= 3):
             urbanRural[cell] = urbanCell
 
-    # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural == urbanCell].size)
+    print "No. urban cells after urbanization: " + str(urbanRural[urbanRural == urbanCell].size)
 
     return urbanRural
 
@@ -186,7 +212,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
     randoms = np.all((a, b), axis=0)
     if np.nansum(randoms) < 0:
         logging.error("Can't add population to "
-                      + WTP[str(country)][MAJ]
+                      + getCountryByID(country, WTP)
                       + ", country and " + str(cellType) + "conditions not"
                       + "satisfied?")
         return populationProjected
