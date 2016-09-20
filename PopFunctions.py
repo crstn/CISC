@@ -79,15 +79,15 @@ def getThreshold(country, populationProjected, countryBoundaries, urbanRural, WT
     a = countryBoundaries == int(country)
     b = urbanRural == urbanCell
 
-    urbanMean = np.nanmean(populationProjected[np.all((a, b), axis=0)])
-    print getCountryByID(country, WTP) + " urban mean: " + str(urbanMean)
+    urbanMedian = np.nanmedian(populationProjected[np.all((a, b), axis=0)])
+    print getCountryByID(country, WTP) + " urban median: " + str(urbanMedian)
 
     b = urbanRural == ruralCell
 
-    ruralMean = np.nanmean(populationProjected[np.all((a,b), axis=0)])
-    print getCountryByID(country, WTP) + " rural mean: " + str(ruralMean)
+    ruralMedian = np.nanmedian(populationProjected[np.all((a,b), axis=0)])
+    print getCountryByID(country, WTP) + " rural median: " + str(ruralMedian)
 
-    threshold = (urbanMean + ruralMean) / 2
+    threshold = (urbanMedian + ruralMedian) / 2
     print getCountryByID(country, WTP) + " threshold: " + str(threshold)
 
     return threshold
@@ -115,7 +115,10 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
     b = urbanRural == ruralCell
     c = populationProjected > limit
 
+    # urbanRural[np.all((a, b, c), axis=0)] = urbanCell
+
     # for every matching cell, check whether at least 3 neighbors are already urban:
+
     for cell in allIndexes[np.all((a, b, c), axis=0)]:
 
         wilsons = getNeighbours(cell, shape, 3)
