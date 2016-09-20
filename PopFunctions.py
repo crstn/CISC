@@ -93,7 +93,7 @@ def getThreshold(country, populationProjected, countryBoundaries, urbanRural, WT
     return threshold
 
 # turns rural into urban cells based on two criteria:
-# 1. population is at least $thinningFactor of the mean of the $topNcells
+# 1. population is above national threshold (see getThreshold)
 # 2. At least three of the neighboring cells are already urban
 def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
 

@@ -74,8 +74,13 @@ def main():
         # adjust for the difference between raster and csv projection data:
         pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
 
-        # run the urbanization
-        urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
+        # run the urbanization, but only if the urban population has increased!
+        if (pop.getNumberForYear(WUP, year, country) > pop.getNumberForYear(WUP, year-10, country)):
+            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
+        # else:
+        #     print "Skipping urbanization."
+        #     print pop.getCountryByID(country, WTP) + " urban pop " + str(year) +": " + str(pop.getNumberForYear(WUP, year, country))
+        #     print pop.getCountryByID(country, WTP) + " urban pop " + str(year-10) +": " + str(pop.getNumberForYear(WUP, year-10, country))
 
 
         # save the numpy arrays
