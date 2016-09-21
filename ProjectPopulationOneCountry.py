@@ -19,6 +19,9 @@ WTP = 0
 WUP = 0
 
 def main():
+
+    endyear = 2050
+
     global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries
 
     # we'll read in the first command line arugument as the country ID we'll work on
@@ -31,6 +34,25 @@ def main():
     WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUP2014-F03-Urban_Population.csv')), "Country Code")
     # world TOTAL population
     WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+
+    try:
+        print " --- "
+        print "Starting " + pop.getCountryByID(country, WTP) + "("+country+")"
+        print " --- "
+    except KeyError:
+        print " --- "
+        print "ERROR: COUNTRY " + country + " NOT IN CSV"
+        print "Skipping, saving empty .npy files"
+        print " --- "
+        # save empty files so that the parallel processing
+        # moves on to the next country
+        year = 2020
+        step = 10
+        while year <= endyear:
+            open(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.npy", 'a')
+            open(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.npy", 'a')
+            year = year + step
+
 
     logging.info('Reading Numpy arrays')
 
@@ -65,7 +87,7 @@ def main():
 
     year = 2020
     step = 10
-    while year <= 2050:
+    while year <= endyear:
 
         populationProjected = populationNew
 
