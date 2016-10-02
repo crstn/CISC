@@ -1,10 +1,11 @@
 # coding: utf-8
 #!/usr/bin/env python
 
-import os, numpy as np, tif2num as tn
+import os, time, numpy as np, tif2num as tn, PopFunctions as pop
 from PIL import Image
 from osgeo import gdal
-import PopFunctions as pop
+
+print time.ctime()
 
 print "Loading countries TIFF and converting to NumPy array"
 countryBoundaries = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff')
@@ -121,3 +122,6 @@ for year in years:
     pop.array_to_raster(popDict[year], os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/pop-'+str(year)+'.tiff', os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff')
 
     pop.array_to_raster(urbanRuralDict[year], os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/urbanRural-'+str(year)+'.tiff', os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff')
+
+print 'Done ¯\_(ツ)_/¯'
+print time.ctime()
