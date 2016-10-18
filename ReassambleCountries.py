@@ -62,6 +62,7 @@ def replaceCellsInArray(a, b, where):
     a[where] = b [where]
     return a
 
+# find all years we have data for:
 for filename in os.listdir('./Projections'):
     if filename.endswith(".npy"):
         # the year is between the dashes
@@ -70,14 +71,13 @@ for filename in os.listdir('./Projections'):
         if filename[start:end] not in years:
             years.append(filename[start:end])
 
-
-
 # make copies of the global raster for every year:
 for year in years:
     urbanRuralDict[year] = np.copy(urbanRural2010)
     popDict[year] = np.copy(population2010)
 
-
+print "Reassembling global map for the following years:"
+print years
 # for year in years:
 #     wo(popDict[year])
 
@@ -85,37 +85,41 @@ for year in years:
 # iterate through folder with projections for each country:
 for filename in os.listdir('./Projections'):
     if filename.endswith(".npy"):
-        print "Processing " + filename
+        if os.stat('./Projections/'+filename).st_size == 0:
+            print filename + " is empty - skipping"
+        else:
 
-        firstDash = filename.find('-')
-        secondDash = filename.rfind('-')
+            firstDash = filename.find('-')
+            secondDash = filename.rfind('-')
 
-        country = filename[:firstDash]
-        year    = filename[firstDash+1:secondDash]
-        maptype = filename[secondDash+1:]
+            country = filename[:firstDash]
+            year    = filename[firstDash+1:secondDash]
+            maptype = filename[secondDash+1:]
 
-        # replace the country in the global raster with the projected values
-        f = countriesDir + country + ".0-boundary.npy"
-        justCountryBoundary = np.load(f).astype(int)
-        projected = np.load('./Projections/'+filename)
+            if year in years:
+                print "Processing " + filename
+                # replace the country in the global raster with the projected values
+                f = countriesDir + country + ".0-boundary.npy"
+                justCountryBoundary = np.load(f).astype(int)
+                projected = np.load('./Projections/'+filename)
 
-        x, y = np.where(countryBoundaries==int(country))
+                x, y = np.where(countryBoundaries==int(country))
 
-        if maptype == "pop.npy":
-            # cut this block from the global population projections raster:
-            subblock = copySubBlock(popDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
-        elif maptype == "urbanRural.npy":
-            subblock = copySubBlock(urbanRuralDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
+                if maptype == "pop.npy":
+                    # cut this block from the global population projections raster:
+                    subblock = copySubBlock(popDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
+                elif maptype == "urbanRural.npy":
+                    subblock = copySubBlock(urbanRuralDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
 
-        # replace the population numbers in this subblock, but ONLY within the borders of the country:
-        where = np.where(justCountryBoundary == int(country))
-        replaceCellsInArray(subblock, projected, where)
+                # replace the population numbers in this subblock, but ONLY within the borders of the country:
+                where = np.where(justCountryBoundary == int(country))
+                replaceCellsInArray(subblock, projected, where)
 
-        #  put the subblock back into its place in the original raster:
-        if maptype == "pop.npy":
-            replaceBlockInArray(popDict[year], subblock, np.min(x), np.min(y))
-        elif maptype == "urbanRural.npy":
-            replaceBlockInArray(urbanRuralDict[year], subblock, np.min(x), np.min(y))
+                #  put the subblock back into its place in the original raster:
+                if maptype == "pop.npy":
+                    replaceBlockInArray(popDict[year], subblock, np.min(x), np.min(y))
+                elif maptype == "urbanRural.npy":
+                    replaceBlockInArray(urbanRuralDict[year], subblock, np.min(x), np.min(y))
 
 for year in years:
     print "Saving TIFFs for " + str(year)
