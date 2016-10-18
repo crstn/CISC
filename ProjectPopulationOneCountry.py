@@ -20,7 +20,7 @@ WUP = 0
 
 def main():
 
-    endyear = 2050
+    endyear = 2100
 
     global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries
 
@@ -31,7 +31,7 @@ def main():
     logging.info('Reading CSVs')
 
     # world URBAN population
-    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUP2014-F03-Urban_Population.csv')), "Country Code")
+    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
     # world TOTAL population
     WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
 

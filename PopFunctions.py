@@ -10,11 +10,11 @@ MAJ = 'Major area, region, country or area'
 
 # Factor to simulate densities in the highest density areas going down.
 # TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play around with different values.
-thinningFactor = 0.8
+thinningFactor = 0.85
 
 # number of top cells to take into account when calculating the average of the N cells with the highest population per country:
 # TODO: Maybe this should be a % of all cells in a country, rather than a fixed number? E.g. 3%?
-topNcells = 20
+topNcells = 50
 
 
 def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural):
@@ -40,7 +40,7 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
                        urbanRural == ruralCell)])
 
 
-    popcsv = getNumberForYear(WTP, year, country)
+    popcsv = getNumberForYear(WTP, year, country, 1000)
     urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
@@ -63,10 +63,12 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
 
 
 # Looks up the population number for a country in a given year from a table.
-def getNumberForYear(table, year, country):
+# Multiplication factor can be used on tables that count in thousands, like the
+# world total population (WTP). Defaults to 1 (no multiplication).
+def getNumberForYear(table, year, country, multiply = 1):
     # CSVs have weird number formatting with blanks (thanks for nothing, Excel),
     # that's why we need the "replace" bit
-    return int(table[country][str(year)].replace(" ", "")) * 1000
+    return int(table[country][str(year)].replace(" ", "")) * multiply
 
 # Looks up the country name by UN ID
 def getCountryByID(country, WTP):
@@ -155,7 +157,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == ruralCell)])
 
-    popcsv = getNumberForYear(WTP, year, country)
+    popcsv = getNumberForYear(WTP, year, country, 1000)
     urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
