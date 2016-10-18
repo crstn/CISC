@@ -20,7 +20,8 @@ print "Making copies of the last two for every year that we have projections for
 urbanRuralDict = {'2010': urbanRural2010}
 popDict = {'2010': population2010}
 
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries')
+countriesDir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
+os.chdir('/Volumes/Solid Guy')
 
 years = []
 
@@ -35,7 +36,7 @@ def wo(arr):
 # Returns a copy of a subblock from a 2D array.
 # Size of the subblock is determined by
 # startrow,endrow (included!), startcol,endcol (included!)
-# Does NOT throw an error message of part of the block is
+# Does NOT throw an error message if part of the block is
 # outside of a
 def copySubBlock(a,startrow,endrow,startcol,endcol):
     return np.copy(a[startrow:endrow+1,startcol:endcol+1])
@@ -52,10 +53,10 @@ def replaceBlockInArray(a, b, startrow, startcol):
     a[startrow:endrow, startcol:endcol] = b
     return a
 
-# Replaces cells in A with the values from the same cells in B. Cell indicies
-# are specified in "where", which contains the indicies for the cells to be replaced
+# Replaces cells in a with the values from the same cells in b. Cell indicies
+# are specified in "where", which contains the indicies for the cells to be replaced.
 # a and b need to be of equal size!
-# Returns the updated array A. This works DIRECTLY on array a,
+# Returns the updated array a. This works DIRECTLY on array a,
 #, i.e., not returning a copy.
 def replaceCellsInArray(a, b, where):
     a[where] = b [where]
@@ -94,7 +95,7 @@ for filename in os.listdir('./Projections'):
         maptype = filename[secondDash+1:]
 
         # replace the country in the global raster with the projected values
-        f = country+".0-boundary.npy"
+        f = countriesDir + country + ".0-boundary.npy"
         justCountryBoundary = np.load(f).astype(int)
         projected = np.load('./Projections/'+filename)
 
