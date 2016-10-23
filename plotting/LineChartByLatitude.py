@@ -39,6 +39,7 @@ matplotlib.rcParams.update({'font.size': 8})
 # plot the raw population numbers
 for y in ys:
     year = years[y]
+    globalTotal = 0
 
     # replace NAN with 0
     year[year < 0 ] = 0
@@ -51,6 +52,7 @@ for y in ys:
     for row in blocks:
         sm = np.sum(year[row:row+blocksize,]) / 1000000
         sumsPerBlock.append(sm)
+        globalTotal = globalTotal + sm
 
     # now calculate the latitutde for every row that we have a number for and use those on the y axis:
     latblocks = []
@@ -58,6 +60,8 @@ for y in ys:
         latblocks.append(rowToLat(row))
 
     pyplot.plot(sumsPerBlock, latblocks, label=str(y), linewidth = 1.0, color=mycolors[str(y)])
+
+    print 'Global population in ' + str(year) + ': ' + str(globalTotal)
 
 pyplot.xlabel('Million people')
 pyplot.ylabel('Degrees latitude')
