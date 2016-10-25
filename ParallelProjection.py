@@ -37,10 +37,10 @@ while (len(tasks) > 0):
         # there was a weird error where i would sometimes be out of bounds of the # list ...which should not be possible when running the code below,
         # but it still came up. Anyway, this solves it. ¯\_(ツ)_/¯
         if i < len(started):
-            feil = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+str(started[i])+"-2050-pop.npy"
+            feil = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+str(started[i])+"-2100-pop.npy"
             if(os.path.isfile(feil)):
                 # complete, remove from started
-                del(started[i])            
+                del(started[i])
 
     # check if we have a free CPU to start a new process
     if(len(started) < cpus):
