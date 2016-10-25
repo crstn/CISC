@@ -61,7 +61,7 @@ for y in ys:
 
     pyplot.plot(sumsPerBlock, latblocks, label=str(y), linewidth = 1.0, color=mycolors[str(y)])
 
-    print 'Global population in ' + str(year) + ': ' + str(globalTotal)
+    print 'Global population in ' + str(y) + ': ' + str(globalTotal)
 
 pyplot.xlabel('Million people')
 pyplot.ylabel('Degrees latitude')
