@@ -21,7 +21,8 @@ urbanRuralDict = {'2010': urbanRural2010}
 popDict = {'2010': population2010}
 
 countriesDir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
-os.chdir('/Volumes/Solid Guy')
+# os.chdir('/Volumes/Solid Guy')
+os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries')
 
 years = []
 
