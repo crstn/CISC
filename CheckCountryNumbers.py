@@ -97,16 +97,16 @@ for country in countries:
         print rurraster
         print " "
 
-        pyplot.plot(years, popcsv, label="Total CSV", linewidth = 1.0)
-        pyplot.plot(years, popraster, label="Total Raster", linewidth = 1.0)
-        pyplot.plot(years, urbcsv, label="Urban CSV", linewidth = 1.0)
-        pyplot.plot(years, urbraster, label="Urban raster", linewidth = 1.0)
-        pyplot.plot(years, rurcsv, label="Rural CSV", linewidth = 1.0)
-        pyplot.plot(years, rurraster, label="Rural raster", linewidth = 1.0)
+        pyplot.plot(years, popcsv, label="Total CSV", linewidth = 1.0, linestyle="dashed", color="black")
+        pyplot.plot(years, popraster, label="Total Raster", linewidth = 1.0, linestyle="dotted", color="black")
+        pyplot.plot(years, urbcsv, label="Urban CSV", linewidth = 1.0, linestyle="dashed", color="red")
+        pyplot.plot(years, urbraster, label="Urban raster", linewidth = 1.0, linestyle="dotted", color="red")
+        pyplot.plot(years, rurcsv, label="Rural CSV", linewidth = 1.0, linestyle="dashed", color="green")
+        pyplot.plot(years, rurraster, label="Rural raster", linewidth = 1.0, linestyle="dotted", color="green")
 
         pyplot.xlabel('Year')
         pyplot.ylabel('Population')
-        pyplot.title(pop.getCountryByID(country, WTP))
+        pyplot.title(pop.getCountryByID(country, WTP)+" ("+str(country)+")")
         pyplot.legend(loc='lower right')
         pyplot.savefig(os.path.expanduser('~')+'/Desktop/plots/'+pop.getCountryByID(country, WTP)+'.pdf', bbox_inches='tight', dpi=300)
 
