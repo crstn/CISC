@@ -7,7 +7,7 @@ from PIL import Image
 import PopFunctions as pop
 
 # This will get rid of some floating point issues (well, reporting of them!)
-old_settings = np.seterr(invalid="ignore")
+# old_settings = np.seterr(invalid="ignore")
 
 # some global variables that most functions need access to:
 populationOld = []
@@ -72,9 +72,9 @@ def main():
     populationNew = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-pop2010.npy').ravel()
 
     # these arrays use very small negative numbers as NULL,
-    # let's convert these to NAN
-    populationOld[populationOld==np.nanmin(populationOld)] = np.nan
-    populationNew[populationNew==np.nanmin(populationNew)] = np.nan
+    # let's just set these to 0:
+    populationOld[populationOld < 0] = 0
+    populationNew[populationNew < 0] = 0
 
     # next, we'll cast the pop numbers to int (should save some memory):
     populationOld = populationOld.astype(np.int64)
@@ -112,11 +112,11 @@ def main():
 
         # also save as a tiff (not georeferenced, just to look at the data in QGIS)
         # Turn this off when in production!
-        # img = Image.fromarray(urbanRural.reshape(matrix))
-        # img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
-        #
-        # img = Image.fromarray(populationNew.astype(float).reshape(matrix))
-        # img.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.tiff")
+        img = Image.fromarray(urbanRural.reshape(matrix))
+        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
+
+        img = Image.fromarray(populationNew.astype(float).reshape(matrix))
+        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-pop.tiff")
 
         # prepare everything for the next iteration
 
