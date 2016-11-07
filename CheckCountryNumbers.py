@@ -1,4 +1,4 @@
-import os, csv, numpy as np, PopFunctions as pop, matplotlib
+import os, csv, sys, numpy as np, PopFunctions as pop, matplotlib
 from matplotlib import pyplot
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -7,20 +7,25 @@ limit = 2100 # we'll look for countries that have projections up to this year
 
 os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections')
 
-countries = []
 
-# collect all countries that have projections up to our limit:
-for filename in os.listdir('.'):
-    if filename.endswith(".npy"):
-        # the year is between the dashes
-        start = filename.find('-')
-        end = filename.rfind('-')
+# if this script is called with arguments, use them as the countries.
+if len(sys.argv) > 1:
+    countries = sys.argv[1:]
 
-        country = filename[:start]
-        year = filename[start+1:end]
+else: # otherwise, do all countries
+    countries = []
+    # collect all countries that have projections up to our limit:
+    for filename in os.listdir('.'):
+        if filename.endswith(".npy"):
+            # the year is between the dashes
+            start = filename.find('-')
+            end = filename.rfind('-')
 
-        if year == str(limit) and country not in countries:
-            countries.append(country)
+            country = filename[:start]
+            year = filename[start+1:end]
+
+            if year == str(limit) and country not in countries:
+                countries.append(country)
 
 
 # load the population projection numbers:
