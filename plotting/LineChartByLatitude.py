@@ -120,7 +120,7 @@ landmio = []
 for area in landareas:
     landmio.append(area/1000000)
 
-plot total area vs land area:
+#plot total area vs land area:
 pyplot.plot(totalmio, latblocks, label="Total area", linewidth = 1.0)
 pyplot.plot(landmio, latblocks, label="Land area", linewidth = 1.0)
 pyplot.xlabel('Area in Million SqKM')
