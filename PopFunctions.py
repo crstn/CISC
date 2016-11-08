@@ -61,8 +61,8 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     rurDiff = rurcsv - rurraster
 
     c = WTP[str(country)][MAJ]
-    logging.error("Urban difference for " + c + " in " + str(year) + ": " + str(urbDiff))
-    logging.error("Rural difference for " + c + " in " + str(year) + ": " + str(rurDiff))
+    logging.info("Urban difference for " + c + " in " + str(year) + ": " + str(urbDiff))
+    logging.info("Rural difference for " + c + " in " + str(year) + ": " + str(rurDiff))
 
 
 # Looks up the population number for a country in a given year from a table.
@@ -102,43 +102,43 @@ def getThreshold(country, populationProjected, countryBoundaries, urbanRural, WT
 # 2. At least three of the neighboring cells are already urban
 def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
 
-    a = countryBoundaries == int(country)
-    b = urbanRural == urbanCell
-
-    # print " "
-    # print "No. urban cells before urbanization in " +str(year)+ ": " +
-    # str(urbanRural[urbanRural == urbanCell].size)
-
-    topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
-    # we'll use the mean of the top n URBAN cells of each country as the
-    # threshold
-    mx = np.nansum(topN) / topNcells
-
-    limit = getThreshold(country, populationProjected,
-                         countryBoundaries, urbanRural, WTP)
-
-    # check rural cells in this country for population threshold:
-    b=urbanRural == ruralCell
-    c=populationProjected > limit
-
-    # for every matching cell, check whether at least 3 neighbors are already
-    # urban:
-    for cell in allIndexes[np.all((a, b, c), axis = 0)]:
-
-        wilsons=getNeighbours(cell, shape, 3)
-
-        # if so, turn urban
-        # TODO this is pretty inefficient
-        urbanNeighbors=0
-        for w in wilsons:
-            if urbanRural[w] == urbanCell:
-                urbanNeighbors=urbanNeighbors + 1
-
-        if(urbanNeighbors >= 3):
-            urbanRural[cell]=urbanCell
-
-    # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural
-    # == urbanCell].size)
+    # a = countryBoundaries == int(country)
+    # b = urbanRural == urbanCell
+    #
+    # # print " "
+    # # print "No. urban cells before urbanization in " +str(year)+ ": " +
+    # # str(urbanRural[urbanRural == urbanCell].size)
+    #
+    # topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
+    # # we'll use the mean of the top n URBAN cells of each country as the
+    # # threshold
+    # mx = np.nansum(topN) / topNcells
+    #
+    # limit = getThreshold(country, populationProjected,
+    #                      countryBoundaries, urbanRural, WTP)
+    #
+    # # check rural cells in this country for population threshold:
+    # b=urbanRural == ruralCell
+    # c=populationProjected > limit
+    #
+    # # for every matching cell, check whether at least 3 neighbors are already
+    # # urban:
+    # for cell in allIndexes[np.all((a, b, c), axis = 0)]:
+    #
+    #     wilsons=getNeighbours(cell, shape, 3)
+    #
+    #     # if so, turn urban
+    #     # TODO this is pretty inefficient
+    #     urbanNeighbors=0
+    #     for w in wilsons:
+    #         if urbanRural[w] == urbanCell:
+    #             urbanNeighbors=urbanNeighbors + 1
+    #
+    #     if(urbanNeighbors >= 3):
+    #         urbanRural[cell]=urbanCell
+    #
+    # # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural
+    # # == urbanCell].size)
 
     return urbanRural
 
@@ -165,31 +165,31 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
     urbDiff=urbcsv - urbraster
     rurDiff=rurcsv - rurraster
 
-    logging.error("Numbers before adjustment:")
+    logging.info("Numbers before adjustment:")
     logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
     # urban:
     if (urbDiff > 0):  # add people
-        logging.error("adding urban population")
+        logging.info("adding urban population")
         populationProjected=addPopulation(populationProjected, urbDiff,
                                             country, urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
     else:   # remove people
-        logging.error("removing urban population")
+        logging.info("removing urban population")
         populationProjected=removePopulation(populationProjected,
                                                np.abs(urbDiff), country,
                                                urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
 
     # and rural:
     if (rurDiff > 0):  # add people
-        logging.error("adding rural population")
+        logging.info("adding rural population")
         populationProjected=addPopulation(populationProjected, rurDiff,
                                             country, ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
     else:   # remove people
-        logging.error("removing rural population")
+        logging.info("removing rural population")
         populationProjected=removePopulation(populationProjected,
                                                np.abs(rurDiff), country,
                                                ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
-    logging.error("Numbers after adjustment:")
+    logging.info("Numbers after adjustment:")
     logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
     return populationProjected
@@ -312,7 +312,7 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
     if (allIndexes[randoms].size > 0):
         randomIndexes = np.random.choice(allIndexes[randoms], int(pop))
 
-        logging.error("Removing 1 person from " + str(len(randomIndexes)) + " cells.")
+        logging.info("Removing 1 person from " + str(len(randomIndexes)) + " cells.")
 
         np.subtract.at(populationProjected, randomIndexes, 1)
 
@@ -340,7 +340,7 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
                 # set cells < 0 to 0
                 populationProjected[belowZero] = 0.0
                 # and then remove the people we have just added somewhere else:
-                logging.error("Removing 1 person from " + str(len(randomIndexes)) + " cells.")
+                logging.info("Removing 1 person from " + str(len(randomIndexes)) + " cells.")
                 np.subtract.at(populationProjected, randomIndexes, 1)
                 belowZero = populationProjected < 0
             except Exception as e:
