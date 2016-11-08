@@ -1,18 +1,25 @@
-import os, csv, sys, numpy as np, PopFunctions as pop, matplotlib
+import os
+import csv
+import sys
+import numpy as np
+import PopFunctions as pop
+import matplotlib
+import pync
 from matplotlib import pyplot
 from matplotlib.backends.backend_pdf import PdfPages
 
+notify = True
+limit = 2100  # we'll look for countries that have projections up to this year
 
-limit = 2100 # we'll look for countries that have projections up to this year
-
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections')
+os.chdir(os.path.expanduser('~') +
+         '/Dropbox/CISC Data/IndividualCountries/Projections')
 
 
 # if this script is called with arguments, use them as the countries.
 if len(sys.argv) > 1:
     countries = sys.argv[1:]
 
-else: # otherwise, do all countries
+else:  # otherwise, do all countries
     countries = []
     # collect all countries that have projections up to our limit:
     for filename in os.listdir('.'):
@@ -22,7 +29,7 @@ else: # otherwise, do all countries
             end = filename.rfind('-')
 
             country = filename[:start]
-            year = filename[start+1:end]
+            year = filename[start + 1:end]
 
             if year == str(limit) and country not in countries:
                 countries.append(country)
@@ -30,21 +37,25 @@ else: # otherwise, do all countries
 
 # load the population projection numbers:
 # world URBAN population
-WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
+WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
+    '~') + '/Dropbox/CISC Data/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
 # world TOTAL population
-WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
+    '~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
 
 matplotlib.style.use('fivethirtyeight')
 # make the font smaller, so that the legends don't take up too much space
 matplotlib.rcParams.update({'font.size': 8})
 
-# for each country and each projected year, compare the numbers (total, rural, urban):
+# for each country and each projected year, compare the numbers (total,
+# rural, urban):
 for country in countries:
 
     try:
 
         # the boundary will stay the same, so only load it once
-        boundary = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-boundary.npy').ravel()
+        boundary = np.load(os.path.expanduser(
+            '~') + '/Dropbox/CISC Data/IndividualCountries/' + country + '.0-boundary.npy').ravel()
 
         years = []
 
@@ -59,24 +70,26 @@ for country in countries:
         globalurban = []
         globalrural = []
 
-        for year in range(2020, limit+1, 10):
+        for year in range(2020, limit + 1, 10):
             years.append(year)
 
-            #load CSV numbers
+            # load CSV numbers
             p = pop.getNumberForYear(WTP, year, country, 1000)
             popcsv.append(p)
             u = pop.getNumberForYear(WUP, year, country)
             urbcsv.append(u)
-            rurcsv.append(p-u)
+            rurcsv.append(p - u)
 
             # initialize the globals with 0s:
             globaltotal.append(0)
             globalurban.append(0)
             globalrural.append(0)
 
-            #load numpy arrays for country/year
-            urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/'+country+'-'+str(year)+'-urbanRural.npy').ravel()
-            population = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/'+country+'-'+str(year)+'-pop.npy').ravel()
+            # load numpy arrays for country/year
+            urbanRural = np.load(os.path.expanduser(
+                '~') + '/Dropbox/CISC Data/IndividualCountries/Projections/' + country + '-' + str(year) + '-urbanRural.npy').ravel()
+            population = np.load(os.path.expanduser(
+                '~') + '/Dropbox/CISC Data/IndividualCountries/Projections/' + country + '-' + str(year) + '-pop.npy').ravel()
 
             popraster.append(np.nansum(population[boundary == int(country)]))
             urbraster.append(np.nansum(population[
@@ -102,18 +115,26 @@ for country in countries:
         print rurraster
         print " "
 
-        pyplot.plot(years, popcsv, label="Total CSV", linewidth = 1.0, linestyle="dashed", color="black")
-        pyplot.plot(years, popraster, label="Total Raster", linewidth = 1.0, linestyle="dotted", color="black")
-        pyplot.plot(years, urbcsv, label="Urban CSV", linewidth = 1.0, linestyle="dashed", color="red")
-        pyplot.plot(years, urbraster, label="Urban raster", linewidth = 1.0, linestyle="dotted", color="red")
-        pyplot.plot(years, rurcsv, label="Rural CSV", linewidth = 1.0, linestyle="dashed", color="green")
-        pyplot.plot(years, rurraster, label="Rural raster", linewidth = 1.0, linestyle="dotted", color="green")
+        pyplot.plot(years, popcsv, label="Total CSV",
+                    linewidth=1.0, linestyle="dashed", color="black")
+        pyplot.plot(years, popraster, label="Total Raster",
+                    linewidth=1.0, linestyle="dotted", color="black")
+        pyplot.plot(years, urbcsv, label="Urban CSV",
+                    linewidth=1.0, linestyle="dashed", color="red")
+        pyplot.plot(years, urbraster, label="Urban raster",
+                    linewidth=1.0, linestyle="dotted", color="red")
+        pyplot.plot(years, rurcsv, label="Rural CSV",
+                    linewidth=1.0, linestyle="dashed", color="green")
+        pyplot.plot(years, rurraster, label="Rural raster",
+                    linewidth=1.0, linestyle="dotted", color="green")
 
         pyplot.xlabel('Year')
         pyplot.ylabel('Population')
-        pyplot.title(pop.getCountryByID(country, WTP)+" ("+str(country)+")")
-        pyplot.legend(loc='lower right')
-        pyplot.savefig(os.path.expanduser('~')+'/Desktop/plots/'+pop.getCountryByID(country, WTP)+'.pdf', bbox_inches='tight', dpi=300)
+        pyplot.title(pop.getCountryByID(country, WTP) +
+                     " (" + str(country) + ")")
+        # pyplot.legend(loc='lower right')
+        pyplot.savefig(os.path.expanduser('~') + '/Desktop/plots/' +
+                       pop.getCountryByID(country, WTP) + '.pdf', bbox_inches='tight', dpi=300)
 
         # clear this figure, start a new one:
         pyplot.clf()
@@ -128,7 +149,8 @@ for country in countries:
         print e
 
 
-# when we're done with all countries, spit out the global numbers from the raster:
+# when we're done with all countries, spit out the global numbers from the
+# raster:
 print "Global totals:"
 print years
 print globaltotal
@@ -136,3 +158,6 @@ print "Global urban:"
 print globalurban
 print "Global rural:"
 print globalrural
+
+if notify:
+    pync.Notifier.notify('Number checking complete.', title='Python')
