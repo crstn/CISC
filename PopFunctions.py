@@ -45,34 +45,24 @@ def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries,
 # DESA population projection CSV
 def logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural):
     incountry = countryBoundaries == int(country)
-    u = urbanRural == urbanCell)
-    r=urbanRural == ruralCell)
+    u         = urbanRural == urbanCell
+    r         = urbanRural == ruralCell
+
     urbraster=np.nansum(populationProjected[
-        np.logical_and(incountry, u])
+        np.logical_and(incountry, u)])
     rurraster = np.nansum(populationProjected[
         np.logical_and(incountry, r)])
-
 
     popcsv = getNumberForYear(WTP, year, country, 1000)
     urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
-    # print "urban raster: " + str(urbraster)
-    # print "urban csv:    " + str(urbcsv)
-    # print " "
-    # print "rural raster: " + str(rurraster)
-    # print "rural csv:    " + str(rurcsv)
-    # print " "
-    # print "total raster: " + str(rurraster+urbraster)
-    # print "total csv:    " + str(rurcsv+urbcsv)
-    # print " "
-
     urbDiff = urbcsv - urbraster
     rurDiff = rurcsv - rurraster
 
     c = WTP[str(country)][MAJ]
-    logging.info("Urban difference for " + c + ": " + str(urbDiff))
-    logging.info("Rural difference for " + c + ": " + str(rurDiff))
+    logging.error("Urban difference for " + c + " in " + str(year) + ": " + str(urbDiff))
+    logging.error("Rural difference for " + c + " in " + str(year) + ": " + str(rurDiff))
 
 
 # Looks up the population number for a country in a given year from a table.
@@ -175,41 +165,32 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
     urbDiff=urbcsv - urbraster
     rurDiff=rurcsv - rurraster
 
-    # This probably slows things down a bit... we've already computed the
-    # required values, let's just use these...
-    # print " "
-    # print "Numbers before adjustment in year " + str(year)
-    # logDifference(populationProjected, year, country, WTP, WUP,
-    # countryBoundaries, urbanRural)
-
-    logging.info("Adjusting")
+    logging.error("Numbers before adjustment:")
+    logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
     # urban:
     if (urbDiff > 0):  # add people
-        logging.info("adding urban population")
+        logging.error("adding urban population")
         populationProjected=addPopulation(populationProjected, urbDiff,
                                             country, urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
     else:   # remove people
-        logging.info("removing urban population")
+        logging.error("removing urban population")
         populationProjected=removePopulation(populationProjected,
                                                np.abs(urbDiff), country,
                                                urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
 
     # and rural:
     if (rurDiff > 0):  # add people
-        logging.info("adding rural population")
+        logging.error("adding rural population")
         populationProjected=addPopulation(populationProjected, rurDiff,
                                             country, ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
     else:   # remove people
-        logging.info("removing rural population")
+        logging.error("removing rural population")
         populationProjected=removePopulation(populationProjected,
                                                np.abs(rurDiff), country,
                                                ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
-
-    # print " "
-    # print "Numbers after adjustment"
-    logDifference(populationProjected, year, country,
-                  WTP, WUP, countryBoundaries, urbanRural)
+    logging.error("Numbers after adjustment:")
+    logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
     return populationProjected
 
@@ -233,6 +214,8 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
                       + getCountryByID(country, WTP)
                       + ", country and " + str(cellType) + "conditions not"
                       + "satisfied?")
+        logging.error(a)
+        logging.error(b)
         return populationProjected
 
     # This just makes sure we actually have cells for the current country.
@@ -273,6 +256,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
             # ... considering the thinning factor
             limit = mx * thinningFactor
 
+            logging.info("Limit for population per cell after thinning:")
             logging.info(limit)
 
             # Print some stats after the spillover:
@@ -280,42 +264,35 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
             urb = urbanRural == urbanCell
             rur = urbanRural == ruralCell
 
-            # logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
-            # logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
-            # logging.info("Urban max:"  + str(np.nanmax(populationProjected[np.all((a, urb), axis=0)])))
-
-
-            # Repeat the spillover function as long as there are cells above the limit
-            # TODO: this may run into an infinite loop!
-            while (int(np.nanmax(populationProjected[np.all((a, b), axis=0)])) > int(limit)):
-
-                currentMax = np.nanmax(populationProjected[np.all((a, b), axis=0)])
-
-                logging.info("Limit: " + str(limit))
-
-                logging.info("Current max:" + str(currentMax))
-
-                # logging.info("Are we over the limit? " + str(int(currentMax) > int(limit)))
-
-                c = populationProjected > limit
-
-                logging.info("Cells over limit: " + str(populationProjected[np.all((a, b, c), axis=0)]))
-                logging.info("Indexes: " + str(allIndexes[np.all((a, b, c), axis=0)]))
-
-                populationProjected = spillover(populationProjected, country, limit, countryBoundaries, urbanRural, allIndexes, shape)
-
-            # Print some stats after the spillover:
-
             logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
             logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
             logging.info("Urban max:"  + str(np.nanmax(populationProjected[np.all((a, urb), axis=0)])))
 
 
-        # except Exception, e:
-        #     logging.error("Could not add population to cells of type "
-        #                   + str(cellType) + " in "
-        #                   + WTP[str(country)][MAJ])
-        #     logging.error(e)
+            # Repeat the spillover function as long as there are cells above the limit
+            # TODO: this may run into an infinite loop!
+            # while (int(np.nanmax(populationProjected[np.all((a, b), axis=0)])) > int(limit)):
+            #
+            #     currentMax = np.nanmax(populationProjected[np.all((a, b), axis=0)])
+            #
+            #     logging.info("Limit: " + str(limit))
+            #
+            #     logging.info("Current max:" + str(currentMax))
+            #
+            #     # logging.info("Are we over the limit? " + str(int(currentMax) > int(limit)))
+            #
+            #     c = populationProjected > limit
+            #
+            #     logging.info("Cells over limit: " + str(populationProjected[np.all((a, b, c), axis=0)]))
+            #     logging.info("Indexes: " + str(allIndexes[np.all((a, b, c), axis=0)]))
+            #
+            #     populationProjected = spillover(populationProjected, country, limit, countryBoundaries, urbanRural, allIndexes, shape)
+            #
+            # # Print some stats after the spillover:
+            #
+            # logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
+            # logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
+            # logging.info("Urban max:"  + str(np.nanmax(populationProjected[np.all((a, urb), axis=0)])))
 
     return populationProjected
 
@@ -323,25 +300,25 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
 
 def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, countryBoundaries, urbanRural, allIndexes):
 
-    # try:
     # Added the condition that the cell has to have more than 0 population
     # Since we're doing subtract at with 1, this means we should create
     # fewer 'negative' cells...
 
-    a = countryBoundaries == int(country)
+    a = countryBoundaries == float(country)
     b = populationProjected >= 1.0
     c = urbanRural == cellType
     randoms = np.all((a, b, c), axis=0)
 
     if (allIndexes[randoms].size > 0):
         randomIndexes = np.random.choice(allIndexes[randoms], int(pop))
-        np.subtract.at(populationProjected, randomIndexes, 1)
 
-        belowZero = populationProjected < 0
+        logging.error("Removing 1 person from " + str(len(randomIndexes)) + " cells.")
+
+        np.subtract.at(populationProjected, randomIndexes, 1)
 
 
         # as long as we have cells of this type in this country that have a negative population number, shuffle people around (i.e., add back in to make the cell 0, then remove the same number somewhere else)
-        while(populationProjected[np.all((a, c, belowZero), axis=0)].size > 0):
+        while(populationProjected[np.all((a, c, populationProjected < 0), axis=0)].size > 0):
             # select random cells again, based on the number of people we need to remove again:
 
             # a and c don't change (see above), but b does:
@@ -363,10 +340,11 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
                 # set cells < 0 to 0
                 populationProjected[belowZero] = 0.0
                 # and then remove the people we have just added somewhere else:
+                logging.error("Removing 1 person from " + str(len(randomIndexes)) + " cells.")
                 np.subtract.at(populationProjected, randomIndexes, 1)
                 belowZero = populationProjected < 0
             except Exception as e:
-                # TODO this is a dirty hack to get around a bug I couldn't fix
+                # TODO this is a dirty hack to get around a bug I couldn't fix.
                 # Sometimes the script throws an error for some countries when there
                 # is only one cell with a negative population number left.
                 # The next iteration on this country should fix this, but it basicall means
@@ -374,12 +352,15 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
                 populationProjected[belowZero] = 0.0
                 logging.error("Error skipped: ")
                 logging.error(e)
-        # if there are no cells matching the criteria, print an error msg:
-        else:
-            print " "
-            print "ERROR: Cannot remove population from country " + getCountryByID(country, WTP);
-            print "Cell type: " + str(cellType)
-            print " "
+    # if there are no cells matching the criteria, print an error msg:
+    else:
+        logging.error( " " )
+        logging.error( "ERROR: Cannot remove population from country " + getCountryByID(country, WTP) + " ("+country+")")
+        logging.error( "Cell type: " + str(cellType) )
+        logging.error( " " )
+
+
+
 
     return populationProjected
 

@@ -89,6 +89,11 @@ def main():
     step = 10
     while year <= endyear:
 
+        logging.error(" --- ")
+        logging.error(str(year))
+        logging.error(" --- ")
+
+
         populationProjected = populationNew
 
         # pop.logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural)
@@ -118,11 +123,14 @@ def main():
         # img = Image.fromarray(populationNew.astype(float).reshape(matrix))
         # img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-pop.tiff")
 
-        # prepare everything for the next iteration
+        # pop.logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
+        # prepare everything for the next iteration
         populationOld = populationNew
         populationNew = populationProjected
         year = year + step
+
+
 
     logging.info('Done.')
 
@@ -137,7 +145,7 @@ if __name__ == '__main__':
         print "to project the population for China. Check the WUP/WTP csv files for the IDs."
         sys.exit()
 
-    logging.basicConfig(level=logging.INFO,  # toggle this between INFO for debugging and ERROR for "production"
+    logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
                         filename='output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
