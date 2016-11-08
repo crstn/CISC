@@ -112,11 +112,11 @@ def main():
 
         # also save as a tiff (not georeferenced, just to look at the data in QGIS)
         # Turn this off when in production!
-        img = Image.fromarray(urbanRural.reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
-
-        img = Image.fromarray(populationNew.astype(float).reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-pop.tiff")
+        # img = Image.fromarray(urbanRural.reshape(matrix))
+        # img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
+        #
+        # img = Image.fromarray(populationNew.astype(float).reshape(matrix))
+        # img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-pop.tiff")
 
         # prepare everything for the next iteration
 
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         print "to project the population for China. Check the WUP/WTP csv files for the IDs."
         sys.exit()
 
-    logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
+    logging.basicConfig(level=logging.INFO,  # toggle this between INFO for debugging and ERROR for "production"
                         filename='output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')

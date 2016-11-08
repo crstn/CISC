@@ -1,5 +1,12 @@
 from osgeo import gdal, osr
-import os, datetime, sys, operator, logging, math, csv, bottleneck
+import os
+import datetime
+import sys
+import operator
+import logging
+import math
+import csv
+import bottleneck
 import numpy as np
 from datetime import datetime
 
@@ -9,11 +16,13 @@ urbanCell = 2
 MAJ = 'Major area, region, country or area'
 
 # Factor to simulate densities in the highest density areas going down.
-# TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play around with different values.
+# TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play
+# around with different values.
 thinningFactor = 0.85
 
 # number of top cells to take into account when calculating the average of the N cells with the highest population per country:
-# TODO: Maybe this should be a % of all cells in a country, rather than a fixed number? E.g. 3%?
+# TODO: Maybe this should be a % of all cells in a country, rather than a
+# fixed number? E.g. 3%?
 topNcells = 50
 
 
@@ -22,9 +31,12 @@ def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries,
     logging.info("  ----   ")
     logging.info("Array sizes for " + WTP[str(country)][MAJ])
 
-    logging.info("Population: " + str(populationProjected[countryBoundaries == int(country)].size))
-    logging.info("Urban: " + str(urbanRural[np.logical_and(countryBoundaries == int(country), urbanRural == urbanCell)].size))
-    logging.info("Rural: " + str(urbanRural[np.logical_and(countryBoundaries == int(country), urbanRural == ruralCell)].size))
+    logging.info("Population: " +
+                 str(populationProjected[countryBoundaries == int(country)].size))
+    logging.info("Urban: " + str(urbanRural[np.logical_and(
+        countryBoundaries == int(country), urbanRural == urbanCell)].size))
+    logging.info("Rural: " + str(urbanRural[np.logical_and(
+        countryBoundaries == int(country), urbanRural == ruralCell)].size))
     logging.info("  ----   ")
 
 
@@ -32,12 +44,13 @@ def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries,
 # between whats in the populationProjected and the
 # DESA population projection CSV
 def logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural):
-    urbraster = np.nansum(populationProjected[
-        np.logical_and(countryBoundaries == int(country),
-                       urbanRural == urbanCell)])
+    incountry = countryBoundaries == int(country)
+    u = urbanRural == urbanCell)
+    r=urbanRural == ruralCell)
+    urbraster=np.nansum(populationProjected[
+        np.logical_and(incountry, u])
     rurraster = np.nansum(populationProjected[
-        np.logical_and(countryBoundaries == int(country),
-                       urbanRural == ruralCell)])
+        np.logical_and(incountry, r)])
 
 
     popcsv = getNumberForYear(WTP, year, country, 1000)
@@ -65,7 +78,7 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
 # Looks up the population number for a country in a given year from a table.
 # Multiplication factor can be used on tables that count in thousands, like the
 # world total population (WTP). Defaults to 1 (no multiplication).
-def getNumberForYear(table, year, country, multiply = 1):
+def getNumberForYear(table, year, country, multiply=1):
     # CSVs have weird number formatting with blanks (thanks for nothing, Excel),
     # that's why we need the "replace" bit
     return int(table[country][str(year)].replace(" ", "")) * multiply
@@ -86,7 +99,7 @@ def getThreshold(country, populationProjected, countryBoundaries, urbanRural, WT
 
     b = urbanRural == ruralCell
 
-    ruralMedian = np.nanmedian(populationProjected[np.all((a,b), axis=0)])
+    ruralMedian = np.nanmedian(populationProjected[np.all((a, b), axis=0)])
     # print getCountryByID(country, WTP) + " rural median: " + str(ruralMedian)
 
     threshold = (urbanMedian + ruralMedian) / 2
@@ -103,41 +116,39 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
     b = urbanRural == urbanCell
 
     # print " "
-    # print "No. urban cells before urbanization in " +str(year)+ ": " + str(urbanRural[urbanRural == urbanCell].size)
+    # print "No. urban cells before urbanization in " +str(year)+ ": " +
+    # str(urbanRural[urbanRural == urbanCell].size)
 
     topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
-    # we'll use the mean of the top n URBAN cells of each country as the threshold
+    # we'll use the mean of the top n URBAN cells of each country as the
+    # threshold
     mx = np.nansum(topN) / topNcells
-    # ... considering the thinning factor
-    # limit = mx * thinningFactor
 
-    limit = getThreshold(country, populationProjected, countryBoundaries, urbanRural, WTP)
+    limit = getThreshold(country, populationProjected,
+                         countryBoundaries, urbanRural, WTP)
 
     # check rural cells in this country for population threshold:
-    b = urbanRural == ruralCell
-    c = populationProjected > limit
+    b=urbanRural == ruralCell
+    c=populationProjected > limit
 
-    # urbanRural[np.all((a, b, c), axis=0)] = urbanCell
+    # for every matching cell, check whether at least 3 neighbors are already
+    # urban:
+    for cell in allIndexes[np.all((a, b, c), axis = 0)]:
 
-    # for every matching cell, check whether at least 3 neighbors are already urban:
-
-    for cell in allIndexes[np.all((a, b, c), axis=0)]:
-
-        wilsons = getNeighbours(cell, shape, 3)
-
-        # print wilsons
+        wilsons=getNeighbours(cell, shape, 3)
 
         # if so, turn urban
         # TODO this is pretty inefficient
-        urbanNeighbors = 0
+        urbanNeighbors=0
         for w in wilsons:
             if urbanRural[w] == urbanCell:
-                urbanNeighbors = urbanNeighbors + 1
+                urbanNeighbors=urbanNeighbors + 1
 
         if(urbanNeighbors >= 3):
-            urbanRural[cell] = urbanCell
+            urbanRural[cell]=urbanCell
 
-    # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural == urbanCell].size)
+    # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural
+    # == urbanCell].size)
 
     return urbanRural
 
@@ -150,60 +161,62 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
     # figure out the difference between the populationProjected
     # input raster and what's in the table:
 
-    urbraster = np.nansum(populationProjected[
+    urbraster=np.nansum(populationProjected[
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == urbanCell)])
-    rurraster = np.nansum(populationProjected[
+    rurraster=np.nansum(populationProjected[
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == ruralCell)])
 
-    popcsv = getNumberForYear(WTP, year, country, 1000)
-    urbcsv = getNumberForYear(WUP, year, country)
-    rurcsv = (popcsv - urbcsv)
+    popcsv=getNumberForYear(WTP, year, country, 1000)
+    urbcsv=getNumberForYear(WUP, year, country)
+    rurcsv=(popcsv - urbcsv)
 
-    urbDiff = urbcsv - urbraster
-    rurDiff = rurcsv - rurraster
+    urbDiff=urbcsv - urbraster
+    rurDiff=rurcsv - rurraster
 
     # This probably slows things down a bit... we've already computed the
     # required values, let's just use these...
     # print " "
     # print "Numbers before adjustment in year " + str(year)
-    # logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
+    # logDifference(populationProjected, year, country, WTP, WUP,
+    # countryBoundaries, urbanRural)
 
     logging.info("Adjusting")
 
     # urban:
     if (urbDiff > 0):  # add people
         logging.info("adding urban population")
-        populationProjected = addPopulation(populationProjected, urbDiff,
+        populationProjected=addPopulation(populationProjected, urbDiff,
                                             country, urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
     else:   # remove people
         logging.info("removing urban population")
-        populationProjected = removePopulation(populationProjected,
+        populationProjected=removePopulation(populationProjected,
                                                np.abs(urbDiff), country,
                                                urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
 
     # and rural:
     if (rurDiff > 0):  # add people
         logging.info("adding rural population")
-        populationProjected = addPopulation(populationProjected, rurDiff,
+        populationProjected=addPopulation(populationProjected, rurDiff,
                                             country, ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
     else:   # remove people
         logging.info("removing rural population")
-        populationProjected = removePopulation(populationProjected,
+        populationProjected=removePopulation(populationProjected,
                                                np.abs(rurDiff), country,
                                                ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
 
     # print " "
     # print "Numbers after adjustment"
-    logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
+    logDifference(populationProjected, year, country,
+                  WTP, WUP, countryBoundaries, urbanRural)
 
     return populationProjected
 
 
 # returns the values of the top N cells
 def getTopNCells(N, populationProjected):
-    return bottleneck.partsort(populationProjected, populationProjected.size-N)[-N:]
+    return bottleneck.partsort(populationProjected, populationProjected.size -N)[-N:]
 
 
 
@@ -211,10 +224,10 @@ def getTopNCells(N, populationProjected):
 def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
 
     # try:
-    a = countryBoundaries == int(country)
-    b = urbanRural == cellType
+    a= countryBoundaries == int(country)
+    b= urbanRural == cellType
 
-    randoms = np.all((a, b), axis=0)
+    randoms = np.all((a, b), axis =0)
     if np.nansum(randoms) < 0:
         logging.error("Can't add population to "
                       + getCountryByID(country, WTP)
