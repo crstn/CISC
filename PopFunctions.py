@@ -75,7 +75,10 @@ def getNumberForYear(table, year, country, multiply=1):
 
 # Looks up the country name by UN ID
 def getCountryByID(country, WTP):
-    return WTP[str(country)][MAJ]
+    try:
+        return WTP[str(country)][MAJ]
+    except KeyError e:
+        return "No country found for ID " + str(country)
 
 # Calculates the population threshold for turning a cell urban.
 # Current approach: threshold is the mean between the mean pop for urban cells
