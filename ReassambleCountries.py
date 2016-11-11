@@ -1,10 +1,15 @@
 # coding: utf-8
 #!/usr/bin/env python
 
-import os, time, numpy as np, tif2num as tn, PopFunctions as pop
+import os, time, numpy as np, tif2num as tn, PopFunctions as pop, sys
 from PIL import Image
 from osgeo import gdal
 import pync
+
+if len(sys.argv) != 2:
+    print "Call this script with the year to reassemble, e.g.:"
+    print "python ReassambleCountries.py 2020"
+    sys.exit()
 
 print time.ctime()
 
@@ -24,8 +29,6 @@ popDict = {'2010': population2010}
 countriesDir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
 # os.chdir('/Volumes/Solid Guy')
 os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries')
-
-years = []
 
 # some functions we'll need:
 
@@ -72,15 +75,8 @@ def outlineCountries(a):
     a[countryBoundaries == 0] = -1
     return a
 
-
-# find all years we have data for:
-for filename in os.listdir('./Projections'):
-    if filename.endswith(".npy"):
-        # the year is between the dashes
-        start = filename.find('-')+1
-        end = filename.rfind('-')
-        if filename[start:end] not in years:
-            years.append(filename[start:end])
+years = []
+years.append(sys.argv[1])
 
 # make empty versions of the global raster for every year to fill in later:
 for year in years:
@@ -91,7 +87,6 @@ print "Reassembling global map for the following years:"
 print years
 # for year in years:
 #     wo(popDict[year])
-
 
 # iterate through folder with projections for each country:
 for filename in os.listdir('./Projections'):
