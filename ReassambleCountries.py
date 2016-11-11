@@ -4,6 +4,7 @@
 import os, time, numpy as np, tif2num as tn, PopFunctions as pop
 from PIL import Image
 from osgeo import gdal
+import pync
 
 print time.ctime()
 
@@ -63,6 +64,15 @@ def replaceCellsInArray(a, b, where):
     a[where] = b [where]
     return a
 
+# Replaces cells in a that are outside of all country boundaries with -1
+# (which will then be set as NAN when saving as TIFF).
+# Returns the updated array a. This works DIRECTLY on array a,
+#, i.e., not returning a copy.
+def outlineCountries(a):
+    a[countryBoundaries == 0] = -1
+    return a
+
+
 # find all years we have data for:
 for filename in os.listdir('./Projections'):
     if filename.endswith(".npy"):
@@ -72,10 +82,10 @@ for filename in os.listdir('./Projections'):
         if filename[start:end] not in years:
             years.append(filename[start:end])
 
-# make copies of the global raster for every year:
+# make empty versions of the global raster for every year to fill in later:
 for year in years:
     urbanRuralDict[year] = np.copy(urbanRural2010)
-    popDict[year] = np.copy(population2010)
+    popDict[year] = np.zeros(population2010.shape, dtype=np.int)
 
 print "Reassembling global map for the following years:"
 print years
@@ -125,9 +135,11 @@ for filename in os.listdir('./Projections'):
 for year in years:
     print "Saving TIFFs for " + str(year)
 
-    pop.array_to_raster(popDict[year], os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/pop-'+str(year)+'.tiff', os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff')
+    ref = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
 
-    pop.array_to_raster(urbanRuralDict[year], os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/urbanRural-'+str(year)+'.tiff', os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff')
+    pop.array_to_raster(outlineCountries(popDict[year]), os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/pop-'+str(year)+'.tiff', ref)
 
-print 'Done ¯\_(ツ)_/¯'
+    pop.array_to_raster(urbanRuralDict[year], os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/urbanRural-'+str(year)+'.tiff', ref)
+
 print time.ctime()
+pync.Notifier.notify('Reassembling complete ¯\_(ツ)_/¯ ', title='Python')
