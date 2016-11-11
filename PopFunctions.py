@@ -472,11 +472,11 @@ def array_to_raster(array, dst_filename, referencetiff):
         reffile.RasterXSize,
         reffile.RasterYSize,
         1,
-        gdal.GDT_Float32, )
+        gdal.GDT_Int32, )
 
     dataset.SetGeoTransform(geotransform)
 
     dataset.SetProjection(reffile.GetProjection())
-    dataset.GetRasterBand(1).SetNoDataValue(-3.4028230607371e+38)
+    dataset.GetRasterBand(1).SetNoDataValue(-1)
     dataset.GetRasterBand(1).WriteArray(array)
     dataset.FlushCache()  # Write to disk.
