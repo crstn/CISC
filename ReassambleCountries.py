@@ -137,4 +137,4 @@ for year in years:
     pop.array_to_raster(urbanRuralDict[year], os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/urbanRural-'+str(year)+'.tiff', ref)
 
 print time.ctime()
-pync.Notifier.notify('Reassembling complete ¯\_(ツ)_/¯ ', title='Python')
+pync.Notifier.notify('Reassembling '+sys.argv[1]+' complete ¯\_(ツ)_/¯ ', title='Python')
