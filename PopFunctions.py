@@ -472,7 +472,8 @@ def array_to_raster(array, dst_filename, referencetiff):
         reffile.RasterXSize,
         reffile.RasterYSize,
         1,
-        gdal.GDT_Int32, )
+        gdal.GDT_Int32,
+        options = [ 'COMPRESS=LZW' ])
 
     dataset.SetGeoTransform(geotransform)
 
