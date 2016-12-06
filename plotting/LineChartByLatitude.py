@@ -59,7 +59,11 @@ for y in ys:
     for row in blocks:
         latblocks.append(rowToLat(row))
 
-    pyplot.plot(sumsPerBlock, latblocks, label=str(y), linewidth = 1.0, color=mycolors[str(y)])
+    axes = pyplot.gca()
+    axes.set_xlim([0,350])
+    axes.set_axis_bgcolor('white')
+
+    pyplot.plot(sumsPerBlock, latblocks, label=str(y), linewidth = 1.0, color = mycolors[str(y)])
 
     print 'Global population in ' + str(y) + ' (sum from blocks): ' + str(globalTotal)
 
@@ -67,7 +71,7 @@ pyplot.xlabel('Million people')
 pyplot.ylabel('Degrees latitude')
 pyplot.title('Total population per 1 degree latitude band')
 pyplot.legend(loc='upper right')
-pyplot.savefig(os.path.expanduser('~') + '/Dropbox/Code/CISC/plotting/TotalPopByLat2100.pdf', bbox_inches='tight', dpi=300)
+pyplot.savefig(os.path.expanduser('~') + '/Dropbox/Code/CISC/plotting/TotalPopByLat'+str(y)+'.pdf', bbox_inches='tight', dpi=300, facecolor='white', transparent=True)
 
 
 # clear this figure, start a new one:
@@ -100,6 +104,10 @@ for y in ys:
     for row in blocks:
         latblocks.append(rowToLat(row))
 
+    axes = pyplot.gca()
+    axes.set_xlim([0,400])
+    axes.set_axis_bgcolor('white')
+
     pyplot.plot(sumsPerBlockSQKM, latblocks, label=str(y), linewidth = 1.0, color=mycolors[str(y)])
 
 
@@ -107,7 +115,7 @@ pyplot.xlabel('People/SqKM')
 pyplot.ylabel('Degrees latitude')
 pyplot.title('Population per sq km land, per 1 degree latitude band')
 pyplot.legend(loc='upper right')
-pyplot.savefig(os.path.expanduser('~') + '/Dropbox/Code/CISC/plotting/PopByLatPerSQKMLand2100.pdf', bbox_inches='tight', dpi=300)
+pyplot.savefig(os.path.expanduser('~') + '/Dropbox/Code/CISC/plotting/PopByLatPerSQKMLand'+str(y)+'.pdf', bbox_inches='tight', dpi=300, facecolor='white', transparent=True)
 
 # clear this figure, start a new one:
 pyplot.clf()
