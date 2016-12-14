@@ -12,13 +12,14 @@ from datetime import datetime
 
 # some constants:
 ruralCell = 1
-urbanCell = 2
+suburbanCell = 2
+urbanCell = 3
 MAJ = 'Major area, region, country or area'
 
 # Factor to simulate densities in the highest density areas going down.
 # TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play
 # around with different values.
-thinningFactor = 0.85
+thinningFactor = 0.95
 
 # number of top cells to take into account when calculating the average of the N cells with the highest population per country:
 # TODO: Maybe this should be a % of all cells in a country, rather than a
@@ -80,68 +81,75 @@ def getCountryByID(country, WTP):
     except KeyError:
         return "No country found for ID " + str(country)
 
-# Calculates the population threshold for turning a cell urban.
-# Current approach: threshold is the mean between the mean pop for urban cells
-# and the mean pop for rural cells.
-def getThreshold(country, populationProjected, countryBoundaries, urbanRural, WTP):
+# Calculates the population thresholds for turning a cell from rural to suburban and from suburban to urban, respectively.
+# Current approach: Urban threshold is the mean between the mean pop for urban cells
+# and the mean pop for suburban cells. Suburban threshold is the suburban median.
+def getThresholds(country, population, countryBoundaries, urbanRural, WTP):
     a = countryBoundaries == int(country)
     b = urbanRural == urbanCell
 
-    urbanMedian = np.nanmedian(populationProjected[np.all((a, b), axis=0)])
-    # print getCountryByID(country, WTP) + " urban median: " + str(urbanMedian)
+    urbanMedian = np.nanmedian(population[np.all((a, b), axis=0)])
 
-    b = urbanRural == ruralCell
+    b = urbanRural == suburbanCell
 
-    ruralMedian = np.nanmedian(populationProjected[np.all((a, b), axis=0)])
-    # print getCountryByID(country, WTP) + " rural median: " + str(ruralMedian)
+    suburbanMedian = np.nanmedian(population[np.all((a, b), axis=0)])
 
-    threshold = (urbanMedian + ruralMedian) / 2
-    # print getCountryByID(country, WTP) + " threshold: " + str(threshold)
+    urbanthreshold = (urbanMedian + suburbanMedian) / 2
+    suburbanthreshold = suburbanMedian
 
-    return threshold
+    return urbanthreshold, suburbanthreshold
 
-# turns rural into urban cells based on two criteria:
-# 1. population is above national threshold (see getThreshold)
-# 2. At least three of the neighboring cells are already urban
-def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
 
-    # a = countryBoundaries == int(country)
-    # b = urbanRural == urbanCell
-    #
-    # # print " "
-    # # print "No. urban cells before urbanization in " +str(year)+ ": " +
-    # # str(urbanRural[urbanRural == urbanCell].size)
-    #
+# turns suburban into urban cells (and rural into suburban) if national thresholds (see getThreshold) are exceeded
+def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape, urbanthreshold, suburbanthreshold):
+
+    a = countryBoundaries == int(country)
+    b = urbanRural == urbanCell
+
+    # print " "
+    # print "No. urban cells before urbanization in " +str(year)+ ": " +
+    # str(urbanRural[urbanRural == urbanCell].size)
+
     # topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
-    # # we'll use the mean of the top n URBAN cells of each country as the
-    # # threshold
+    # we'll use the mean of the top n URBAN cells of each country as the
+    # threshold
     # mx = np.nansum(topN) / topNcells
-    #
+
     # limit = getThreshold(country, populationProjected,
     #                      countryBoundaries, urbanRural, WTP)
-    #
-    # # check rural cells in this country for population threshold:
-    # b=urbanRural == ruralCell
-    # c=populationProjected > limit
-    #
-    # # for every matching cell, check whether at least 3 neighbors are already
-    # # urban:
+
+    # check suburban cells in this country for population threshold:
+    b = urbanRural == suburbanCell
+    c = populationProjected > urbanthreshold
+
+    # turn these cells urban
+    urbanRural[np.all((a, b, c), axis = 0)] = urbanCell
+
+    #repeat for turning rural cells suburban:
+    b = urbanRural == ruralCell
+    c = populationProjected > suburbanthreshold
+
+    # turn these cells suburban
+    urbanRural[np.all((a, b, c), axis = 0)] = suburbanCell
+
+    # for every matching cell, check whether at least 3 neighbors are already
+    # urban:
     # for cell in allIndexes[np.all((a, b, c), axis = 0)]:
-    #
-    #     wilsons=getNeighbours(cell, shape, 3)
-    #
-    #     # if so, turn urban
-    #     # TODO this is pretty inefficient
-    #     urbanNeighbors=0
-    #     for w in wilsons:
-    #         if urbanRural[w] == urbanCell:
-    #             urbanNeighbors=urbanNeighbors + 1
-    #
-    #     if(urbanNeighbors >= 3):
-    #         urbanRural[cell]=urbanCell
-    #
-    # # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural
-    # # == urbanCell].size)
+
+        # wilsons=getNeighbours(cell, shape, 3)
+        #
+        # # if so, turn urban
+        # # TODO this is pretty inefficient
+        # urbanNeighbors=0
+        # for w in wilsons:
+        #     if urbanRural[w] == urbanCell:
+        #         urbanNeighbors=urbanNeighbors + 1
+        #
+        # if(urbanNeighbors >= 3):
+        # urbanRural[cell]=urbanCell
+
+    # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural
+    # == urbanCell].size)
 
     return urbanRural
 
@@ -274,28 +282,28 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
 
             # Repeat the spillover function as long as there are cells above the limit
             # TODO: this may run into an infinite loop!
-            # while (int(np.nanmax(populationProjected[np.all((a, b), axis=0)])) > int(limit)):
-            #
-            #     currentMax = np.nanmax(populationProjected[np.all((a, b), axis=0)])
-            #
-            #     logging.info("Limit: " + str(limit))
-            #
-            #     logging.info("Current max:" + str(currentMax))
-            #
-            #     # logging.info("Are we over the limit? " + str(int(currentMax) > int(limit)))
-            #
-            #     c = populationProjected > limit
-            #
-            #     logging.info("Cells over limit: " + str(populationProjected[np.all((a, b, c), axis=0)]))
-            #     logging.info("Indexes: " + str(allIndexes[np.all((a, b, c), axis=0)]))
-            #
-            #     populationProjected = spillover(populationProjected, country, limit, countryBoundaries, urbanRural, allIndexes, shape)
-            #
-            # # Print some stats after the spillover:
-            #
-            # logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
-            # logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
-            # logging.info("Urban max:"  + str(np.nanmax(populationProjected[np.all((a, urb), axis=0)])))
+            while (int(np.nanmax(populationProjected[np.all((a, b), axis=0)])) > int(limit)):
+
+                currentMax = np.nanmax(populationProjected[np.all((a, b), axis=0)])
+
+                logging.info("Limit: " + str(limit))
+
+                logging.info("Current max:" + str(currentMax))
+
+                # logging.info("Are we over the limit? " + str(int(currentMax) > int(limit)))
+
+                c = populationProjected > limit
+
+                logging.info("Cells over limit: " + str(populationProjected[np.all((a, b, c), axis=0)]))
+                logging.info("Indexes: " + str(allIndexes[np.all((a, b, c), axis=0)]))
+
+                populationProjected = spillover(populationProjected, country, limit, countryBoundaries, urbanRural, allIndexes, shape)
+
+            # Print some stats after the spillover:
+
+            logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
+            logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
+            logging.info("Urban max:"  + str(np.nanmax(populationProjected[np.all((a, urb), axis=0)])))
 
     return populationProjected
 

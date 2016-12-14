@@ -6,6 +6,9 @@ from PIL import Image
 
 import PopFunctions as pop
 
+# Turn saving of TIFFS for debugging on or off:
+savetiffs = True
+
 # This will get rid of some floating point issues (well, reporting of them!)
 # old_settings = np.seterr(invalid="ignore")
 
@@ -17,6 +20,7 @@ countryBoundaries = []
 urbanRural = []
 WTP = 0
 WUP = 0
+
 
 def main():
 
@@ -56,12 +60,13 @@ def main():
 
     logging.info('Reading Numpy arrays')
 
-    # in this dataset: 1=rural, 2=urban
-    urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-urbanRural.npy')
+    urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-urbanSuburbanRural.npy')
 
     # save the shape of these arrays for later, so that we
     # can properly reshape them after flattening:
     matrix = urbanRural.shape
+
+
 
     # we flatten all arrays to 1D, so we don't have to deal with 2D arrays:
     urbanRural = urbanRural.ravel()
@@ -69,7 +74,25 @@ def main():
 
     # load population raster datasets for 2000 and 2010
     populationOld = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-pop2000.npy').ravel()
+
     populationNew = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-pop2010.npy').ravel()
+
+    if savetiffs:
+        # also save copies of the input for visualization
+        img = Image.fromarray(urbanRural.reshape(matrix))
+        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-2010-urbanRural.tiff")
+
+        img = Image.fromarray(populationOld.astype(float).reshape(matrix))
+        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-2000-pop.tiff")
+
+        img = Image.fromarray(populationNew.astype(float).reshape(matrix))
+        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-2010-pop.tiff")
+
+
+    # calculate thresholds for urbanization before we start the simulation:
+
+    urbanthreshold, suburbanthreshold = pop.getThresholds(country, populationOld, countryBoundaries, urbanRural, WTP)
+
 
     # these arrays use very small negative numbers as NULL,
     # let's just set these to 0:
@@ -89,9 +112,9 @@ def main():
     step = 10
     while year <= endyear:
 
-        logging.error(" --- ")
-        logging.error(str(year))
-        logging.error(" --- ")
+        logging.info(" --- ")
+        logging.info(str(year))
+        logging.info(" --- ")
 
 
         populationProjected = populationNew
@@ -103,7 +126,12 @@ def main():
 
         # run the urbanization, but only if the urban population has increased!
         if (pop.getNumberForYear(WUP, year, country) > pop.getNumberForYear(WUP, year-10, country)):
-            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
+            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix, urbanthreshold, suburbanthreshold)
+
+            pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
+
+            # after the urbanization, we have to re-adjust the population, because # otherwise the numbers for urban and rural will be off from the DESA numbers
+
         # else:
         #     print "Skipping urbanization."
         #     print pop.getCountryByID(country, WTP) + " urban pop " + str(year) +": " + str(pop.getNumberForYear(WUP, year, country))
@@ -117,11 +145,11 @@ def main():
 
         # also save as a tiff (not georeferenced, just to look at the data in QGIS)
         # Turn this off when in production!
-        # img = Image.fromarray(urbanRural.reshape(matrix))
-        # img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
-        #
-        # img = Image.fromarray(populationNew.astype(float).reshape(matrix))
-        # img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-pop.tiff")
+        img = Image.fromarray(urbanRural.reshape(matrix))
+        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
+
+        img = Image.fromarray(populationNew.astype(float).reshape(matrix))
+        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-pop.tiff")
 
         # pop.logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 

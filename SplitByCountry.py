@@ -9,7 +9,7 @@ band = src.GetRasterBand(1)
 countryBoundaries = np.array(band.ReadAsArray())
 
 # load urban rural TIFF and convert to NumPy array
-f = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GLUR_Pop20101.tiff'
+f = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GLUR_Pop20101_suburban.tiff'
 src = gdal.Open(f, gdal.GA_Update)
 band = src.GetRasterBand(1)
 urbanRural = np.array(band.ReadAsArray())
@@ -31,8 +31,11 @@ print countryBoundaries.shape
 print population2000.shape
 print population2010.shape
 
+countries = np.unique(countryBoundaries)
+i = 1
+
 # Iterate through countries:
-for country in np.unique(countryBoundaries):
+for country in countries:
     if country > 0: # skip NaN cells
         # find min and max X and Y indices for this country
         x, y = np.where(countryBoundaries==country)
@@ -51,7 +54,7 @@ for country in np.unique(countryBoundaries):
 
         # cut out this rectangular block from the urban/rural data
         justCountry = urbanRural[minx:maxx, miny:maxy]
-        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-urbanRural.npy', justCountry)
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-urbanSuburbanRural.npy', justCountry)
 
         # cut out this rectangular block from the 2000 and 2010 pop data
         justCountry = population2000[minx:maxx, miny:maxy]
@@ -59,3 +62,6 @@ for country in np.unique(countryBoundaries):
 
         justCountry = population2010[minx:maxx, miny:maxy]
         np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-pop2010.npy', justCountry)
+
+    print "Processed " + str(i) + " out of " + str(len(countries)) + " countries"
+    i = i + 1

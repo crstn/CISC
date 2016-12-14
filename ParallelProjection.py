@@ -32,7 +32,6 @@ while (len(tasks) > 0):
         # TODO: not ideal because an old version of that file might be there;
         # or maybe this is actually a feature, because countries we have run already
         # aren't run again? Only a problem if we change the projection algorithm!
-        #print started
 
         # there was a weird error where i would sometimes be out of bounds of the # list ...which should not be possible when running the code below,
         # but it still came up. Anyway, this solves it. ¯\_(ツ)_/¯
