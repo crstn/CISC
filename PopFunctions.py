@@ -88,7 +88,13 @@ def getThresholds(country, population, countryBoundaries, urbanRural, WTP):
     a = countryBoundaries == int(country)
     b = urbanRural == urbanCell
 
-    urbanMedian = np.nanmedian(population[np.all((a, b), axis=0)])
+    # some countries don't have urban cells, they need special treatment:
+    urban = population[np.all((a, b), axis=0)]
+    if urban.size == 0:
+        # set threshold to 1000 TODO: change?
+        urbanMedian = 1000
+    else:
+        urbanMedian = np.nanmedian(urban)
 
     b = urbanRural == suburbanCell
 
@@ -182,8 +188,14 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
     # urban:
     if (urbDiff > 0):  # add people
         logging.info("adding urban population")
-        populationProjected=addPopulation(populationProjected, urbDiff,
-                                            country, urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
+        try:
+            populationProjected=addPopulation(populationProjected, urbDiff,
+                                                country, urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
+        except ValueError as e:
+            # TODO need a way to create new urban cells in countries that don't have any
+            logging.error("ValueError while adding urban population -- no urban cells present")
+            logging.error(e)
+
     else:   # remove people
         logging.info("removing urban population")
         populationProjected=removePopulation(populationProjected,

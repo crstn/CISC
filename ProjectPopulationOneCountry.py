@@ -7,7 +7,7 @@ from PIL import Image
 import PopFunctions as pop
 
 # Turn saving of TIFFS for debugging on or off:
-savetiffs = True
+savetiffs = False
 
 # This will get rid of some floating point issues (well, reporting of them!)
 # old_settings = np.seterr(invalid="ignore")
