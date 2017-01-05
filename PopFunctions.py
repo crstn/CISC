@@ -79,7 +79,9 @@ def getCountryByID(country, WTP):
     try:
         return WTP[str(country)][MAJ]
     except KeyError:
-        return "No country found for ID " + str(country)
+        print "No country found for ID " + str(country)
+        logging.error("No country found for ID " + str(country))
+        return 0
 
 # Calculates the population thresholds for turning a cell from rural to suburban and from suburban to urban, respectively.
 # Current approach: Urban threshold is the mean between the mean pop for urban cells

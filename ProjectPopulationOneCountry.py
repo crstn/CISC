@@ -9,6 +9,11 @@ import PopFunctions as pop
 # Turn saving of TIFFS for debugging on or off:
 savetiffs = False
 
+# overwrite existing projections for the same country?
+overwrite = False
+
+endyear = 2100
+
 # This will get rid of some floating point issues (well, reporting of them!)
 # old_settings = np.seterr(invalid="ignore")
 
@@ -22,11 +27,10 @@ WTP = 0
 WUP = 0
 
 
+
 def main():
 
-    endyear = 2100
-
-    global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries
+    global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, endyear
 
     # we'll read in the first command line arugument as the country ID we'll work on
     country = sys.argv[1]
@@ -41,8 +45,8 @@ def main():
 
     try:
         print " --- "
-        print "Starting " + pop.getCountryByID(country, WTP) + "("+country+")"
-        print " --- "
+        print "Starting " + str(pop.getCountryByID(country, WTP)) + "("+str(country)+")"
+
     except KeyError:
         print " --- "
         print "ERROR: COUNTRY " + country + " NOT IN CSV"
@@ -70,6 +74,7 @@ def main():
 
     # we flatten all arrays to 1D, so we don't have to deal with 2D arrays:
     urbanRural = urbanRural.ravel()
+
     countryBoundaries = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-boundary.npy').ravel()
 
     # load population raster datasets for 2000 and 2010
@@ -143,13 +148,14 @@ def main():
         np.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.npy", populationNew.reshape(matrix))
 
 
-        # also save as a tiff (not georeferenced, just to look at the data in QGIS)
-        # Turn this off when in production!
-        img = Image.fromarray(urbanRural.reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
+        if savetiffs:
+            # also save as a tiff (not georeferenced, just to look at the data in QGIS)
+            # Turn this off when in production!
+            img = Image.fromarray(urbanRural.reshape(matrix))
+            img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
 
-        img = Image.fromarray(populationNew.astype(float).reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-pop.tiff")
+            img = Image.fromarray(populationNew.astype(float).reshape(matrix))
+            img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-pop.tiff")
 
         # pop.logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
@@ -177,4 +183,8 @@ if __name__ == '__main__':
                         filename='output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
-    main()
+
+    if os.path.isfile(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+sys.argv[1]+"-"+str(endyear)+"-pop.npy"):
+        print "Simulations for " +sys.argv[1]+ " already done."
+    else:
+        main()

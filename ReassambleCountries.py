@@ -107,25 +107,29 @@ for filename in os.listdir('./Projections'):
                 # replace the country in the global raster with the projected values
                 f = countriesDir + country + ".0-boundary.npy"
                 justCountryBoundary = np.load(f).astype(int)
-                projected = np.load('./Projections/'+filename)
+                try:
+                    projected = np.load('./Projections/'+filename)
 
-                x, y = np.where(countryBoundaries==int(country))
+                    x, y = np.where(countryBoundaries==int(country))
 
-                if maptype == "pop.npy":
-                    # cut this block from the global population projections raster:
-                    subblock = copySubBlock(popDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
-                elif maptype == "urbanRural.npy":
-                    subblock = copySubBlock(urbanRuralDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
+                    if maptype == "pop.npy":
+                        # cut this block from the global population projections raster:
+                        subblock = copySubBlock(popDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
+                    elif maptype == "urbanRural.npy":
+                        subblock = copySubBlock(urbanRuralDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
 
-                # replace the population numbers in this subblock, but ONLY within the borders of the country:
-                where = np.where(justCountryBoundary == int(country))
-                replaceCellsInArray(subblock, projected, where)
+                    # replace the population numbers in this subblock, but ONLY within the borders of the country:
+                    where = np.where(justCountryBoundary == int(country))
+                    replaceCellsInArray(subblock, projected, where)
 
-                #  put the subblock back into its place in the original raster:
-                if maptype == "pop.npy":
-                    replaceBlockInArray(popDict[year], subblock, np.min(x), np.min(y))
-                elif maptype == "urbanRural.npy":
-                    replaceBlockInArray(urbanRuralDict[year], subblock, np.min(x), np.min(y))
+                    #  put the subblock back into its place in the original raster:
+                    if maptype == "pop.npy":
+                        replaceBlockInArray(popDict[year], subblock, np.min(x), np.min(y))
+                    elif maptype == "urbanRural.npy":
+                        replaceBlockInArray(urbanRuralDict[year], subblock, np.min(x), np.min(y))
+                except ValueError as e:
+                    print filename + " contains an error - skipped."
+
 
 for year in years:
     print "Saving TIFFs for " + str(year)
