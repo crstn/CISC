@@ -10,7 +10,7 @@ from openpyxl import load_workbook
 years = {'2005': 'F', '2010': 'G', '2020': 'H', '2030': 'I', '2040': 'J', '2050': 'K', '2060': 'L', '2070': 'M', '2080': 'N', '2090': 'O', '2100': 'P'}
 
 # header for the output CSVs
-header = 'Numeric,Alpha,2010,2020,2030,2040,2050,2060,2070,2080,2090,2100\n '
+header = '"Major area, region, country or area",Country Code,ISO,2010,2020,2030,2040,2050,2060,2070,2080,2090,2100\n '
 
 # will store the output as one string per scenario and model; each will be written to an individual file at the end
 output = {}
@@ -54,8 +54,7 @@ def getName(code):
 # and returns it as a string that can be passed to attachToOutput
 def fetchrow(type, sheet, row):
     code = sheet['C'+str(row)].value
-    print code
-    out = str(getCountryCode(code))+","+code
+    out = str(getCountryCode(code))+','+code+',"'+getName(code)+'"'
     for y in range(2010, 2101, 10):
         if type == 'pop':
             out = out + ',' + str(getIntPop(sheet, row, y))
