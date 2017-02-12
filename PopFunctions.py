@@ -16,6 +16,8 @@ suburbanCell = 2
 urbanCell = 3
 MAJ = 'Major area, region, country or area'
 
+multiply = 1 # set to 1000 when running the DESA numbers!
+
 # Factor to simulate densities in the highest density areas going down.
 # TODO: 0.8 might be a bit too low, i.e. cause too much thinning. Play
 # around with different values.
@@ -54,7 +56,7 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     rurraster = np.nansum(populationProjected[
         np.logical_and(incountry, r)])
 
-    popcsv = getNumberForYear(WTP, year, country, 1000)
+    popcsv = getNumberForYear(WTP, year, country, multiply)
     urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
@@ -177,7 +179,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
         np.logical_and(countryBoundaries == int(country),
                        urbanRural == ruralCell)])
 
-    popcsv=getNumberForYear(WTP, year, country, 1000)
+    popcsv=getNumberForYear(WTP, year, country, multiply)
     urbcsv=getNumberForYear(WUP, year, country)
     rurcsv=(popcsv - urbcsv)
 

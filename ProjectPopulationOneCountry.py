@@ -12,6 +12,9 @@ savetiffs = False
 # overwrite existing projections for the same country?
 overwrite = False
 
+# select from SSP1 through SSP5
+scenario = 'SSP5'
+
 endyear = 2100
 
 # This will get rid of some floating point issues (well, reporting of them!)
@@ -38,10 +41,13 @@ def main():
     logging.info('Starting...')
     logging.info('Reading CSVs')
 
-    # world URBAN population
-    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
-    # world TOTAL population
-    WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+    # TOTAL population per country
+    # WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+    WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/SSPs/pop-'+scenario+'.csv')), "Country code")
+    # URBAN population per country
+    # WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
+    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/SSPs/urbpop-'+scenario+'.csv')), "Country code")
+
 
     try:
         print " --- "
@@ -179,7 +185,7 @@ if __name__ == '__main__':
         print "to project the population for China. Check the WUP/WTP csv files for the IDs."
         sys.exit()
 
-    logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
+    logging.basicConfig(level=logging.INFO,  # toggle this between INFO for debugging and ERROR for "production"
                         filename='output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
