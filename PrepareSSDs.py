@@ -12,7 +12,7 @@ years = {'2005': 'F', '2010': 'G', '2020': 'H', '2030': 'I', '2040': 'J',
          '2100': 'P'}
 
 # header for the output CSVs
-header = 'Country Code,ISO,2010,2020,2030,2040,2050,2060,2070,2080,2090,2100,"Major area, region, country or area"\n'
+header = 'Country code,ISO,2010,2020,2030,2040,2050,2060,2070,2080,2090,2100,"Major area, region, country or area"\n'
 
 # will store the output as one string per scenario and model; each will be
 # written to an individual file at the end
