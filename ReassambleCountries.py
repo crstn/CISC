@@ -5,13 +5,23 @@ import os, time, numpy as np, tif2num as tn, PopFunctions as pop, sys
 from PIL import Image
 from osgeo import gdal
 import pync
+import os.path
 
-src = '/Volumes/Solid Guy/SSP5 2017-02-12/'
+src = '/Volumes/Solid Guy/SSP3 2017-02-12/'
 
 if len(sys.argv) != 2:
     print "Call this script with the year to reassemble, e.g.:"
     print "python ReassambleCountries.py 2020"
     sys.exit()
+
+# wait until the files for USA (840) are there; this is the last large country,
+# when its simulations for the current year are there, the simulation is complete.
+while not os.path.exists(src+"840-"+sys.argv[1]+"-pop.npy"):
+    print "Waiting for "+src+"840-"+sys.argv[1]+"-pop.npy"+" to finish..."
+    time.sleep(10)
+while not os.path.exists(src+"840-"+sys.argv[1]+"-urbanRural.npy"):
+    print "Waiting for "+src+"840-"+sys.argv[1]+"-urbanRural.npy"+" to finish..."
+    time.sleep(10)
 
 print time.ctime()
 
