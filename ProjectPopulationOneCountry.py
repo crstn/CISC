@@ -6,6 +6,9 @@ from PIL import Image
 
 import PopFunctions as pop
 
+# target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
+target = '/Volumes/Solid Guy/SSP5 2017-02-12/'
+
 # Turn saving of TIFFS for debugging on or off:
 savetiffs = False
 
@@ -33,7 +36,7 @@ WUP = 0
 
 def main():
 
-    global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, endyear
+    global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, endyear, target
 
     # we'll read in the first command line arugument as the country ID we'll work on
     country = sys.argv[1]
@@ -52,21 +55,28 @@ def main():
     try:
         print " --- "
         print "Starting " + str(pop.getCountryByID(country, WTP)) + "("+str(country)+")"
+        # just to see if this works:
+        test = pop.getNumberForYear(WTP, 2010, country)
 
     except KeyError:
         print " --- "
         print "ERROR: COUNTRY " + country + " NOT IN CSV"
         print "Skipping, saving empty .npy files"
         print " --- "
+
+        with open("skippedcountries.log", "a") as myfile:
+            myfile.write(str(country)+', ')
+
         # save empty files so that the parallel processing
         # moves on to the next country
         year = 2020
         step = 10
         while year <= endyear:
-            open(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.npy", 'a')
-            open(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.npy", 'a')
+            open(target+country+"-"+str(year)+"-urbanRural.npy", 'a')
+            open(target+country+"-"+str(year)+"-pop.npy", 'a')
             year = year + step
 
+        return
 
     logging.info('Reading Numpy arrays')
 
@@ -150,8 +160,8 @@ def main():
 
 
         # save the numpy arrays
-        np.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-urbanRural.npy", urbanRural.reshape(matrix))
-        np.save(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+country+"-"+str(year)+"-pop.npy", populationNew.reshape(matrix))
+        np.save(target + country + "-"+str(year)+"-urbanRural.npy", urbanRural.reshape(matrix))
+        np.save(target + country + "-"+str(year)+"-pop.npy", populationNew.reshape(matrix))
 
 
         if savetiffs:
@@ -185,12 +195,12 @@ if __name__ == '__main__':
         print "to project the population for China. Check the WUP/WTP csv files for the IDs."
         sys.exit()
 
-    logging.basicConfig(level=logging.INFO,  # toggle this between INFO for debugging and ERROR for "production"
+    logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
                         filename='output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
 
-    if os.path.isfile(os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"+sys.argv[1]+"-"+str(endyear)+"-pop.npy"):
+    if os.path.isfile(target + sys.argv[1]+"-"+str(endyear)+"-pop.npy"):
         print "Simulations for " +sys.argv[1]+ " already done."
     else:
         main()

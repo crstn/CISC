@@ -104,10 +104,7 @@ def getThresholds(country, population, countryBoundaries, urbanRural, WTP):
 
     suburbanMedian = np.nanmedian(population[np.all((a, b), axis=0)])
 
-    urbanthreshold = (urbanMedian + suburbanMedian) / 2
-    suburbanthreshold = suburbanMedian
-
-    return urbanthreshold, suburbanthreshold
+    return urbanMedian, suburbanMedian
 
 
 # turns suburban into urban cells (and rural into suburban) if national thresholds (see getThreshold) are exceeded
@@ -181,6 +178,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
 
     popcsv=getNumberForYear(WTP, year, country, multiply)
     urbcsv=getNumberForYear(WUP, year, country)
+    
     rurcsv=(popcsv - urbcsv)
 
     urbDiff=urbcsv - urbraster
