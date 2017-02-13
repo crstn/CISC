@@ -6,6 +6,8 @@ from PIL import Image
 from osgeo import gdal
 import pync
 
+src = '/Volumes/Solid Guy/SSP5 2017-02-12/'
+
 if len(sys.argv) != 2:
     print "Call this script with the year to reassemble, e.g.:"
     print "python ReassambleCountries.py 2020"
@@ -27,8 +29,7 @@ urbanRuralDict = {'2010': urbanRural2010}
 popDict = {'2010': population2010}
 
 countriesDir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
-# os.chdir('/Volumes/Solid Guy')
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries')
+os.chdir(src)
 
 # some functions we'll need:
 
@@ -89,9 +90,9 @@ print years
 #     wo(popDict[year])
 
 # iterate through folder with projections for each country:
-for filename in os.listdir('./Projections'):
+for filename in os.listdir('.'):
     if filename.endswith(".npy"):
-        if os.stat('./Projections/'+filename).st_size == 0:
+        if os.stat(filename).st_size == 0:
             print filename + " is empty - skipping"
         else:
 
@@ -108,7 +109,7 @@ for filename in os.listdir('./Projections'):
                 f = countriesDir + country + ".0-boundary.npy"
                 justCountryBoundary = np.load(f).astype(int)
                 try:
-                    projected = np.load('./Projections/'+filename)
+                    projected = np.load(filename)
 
                     x, y = np.where(countryBoundaries==int(country))
 
@@ -136,9 +137,9 @@ for year in years:
 
     ref = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
 
-    pop.array_to_raster(outlineCountries(popDict[year]), os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/pop-'+str(year)+'.tiff', ref)
+    pop.array_to_raster(outlineCountries(popDict[year]), src+'/pop-'+str(year)+'.tiff', ref)
 
-    pop.array_to_raster(urbanRuralDict[year], os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/urbanRural-'+str(year)+'.tiff', ref)
+    pop.array_to_raster(urbanRuralDict[year], src+'/urbanRural-'+str(year)+'.tiff', ref)
 
 print time.ctime()
 pync.Notifier.notify('Reassembling '+sys.argv[1]+' complete ¯\_(ツ)_/¯ ', title='Python')
