@@ -6,7 +6,6 @@ import operator
 import logging
 import math
 import csv
-import bottleneck
 import numpy as np
 from datetime import datetime
 
@@ -178,7 +177,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
 
     popcsv=getNumberForYear(WTP, year, country, multiply)
     urbcsv=getNumberForYear(WUP, year, country)
-    
+
     rurcsv=(popcsv - urbcsv)
 
     urbDiff=urbcsv - urbraster
@@ -222,7 +221,10 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
 
 # returns the values of the top N cells
 def getTopNCells(N, populationProjected):
-    return bottleneck.partsort(populationProjected, populationProjected.size -N)[-N:]
+    p = np.partition(-populationProjected, N)
+    pp = -p[:N]
+
+    return pp
 
 
 

@@ -25,12 +25,12 @@ print tasks
 started = []
 
 cpus = multiprocessing.cpu_count()
-print cpus
+print "Running " +str(cpus)+ " countries in parallel"
 
 while (len(tasks) > 0):
     # check if any of the started processes is done yet:
     for i in range(len(started)):
-        # if the population projections for 2050 are there, the process is done
+        # if the population projections for 2100 are there, the process is done
         # TODO: not ideal because an old version of that file might be there;
         # or maybe this is actually a feature, because countries we have run already
         # aren't run again? Only a problem if we change the projection algorithm!
