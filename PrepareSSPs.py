@@ -6,6 +6,8 @@ import pync
 import csv
 from openpyxl import load_workbook
 
+import AddMissingCountries as ad
+
 # assigns years to column names in the spreadsheet
 years = {'2005': 'F', '2010': 'G', '2020': 'H', '2030': 'I', '2040': 'J',
          '2050': 'K', '2060': 'L', '2070': 'M', '2080': 'N', '2090': 'O',
@@ -149,6 +151,9 @@ for ssp in range(1,6): # SSP1–5
                 attachToOutput('urbpop', 'SSP'+str(ssp), outputline)
 
 saveOutput()
+
+# add missing countries to the CSVs
+ad.addMissingCountries()
 
 pync.Notifier.notify('Preparing SSDs complete 🎉',
                      title='Population projections')
