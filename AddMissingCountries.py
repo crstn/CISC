@@ -42,9 +42,9 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
             # print pop.getCountryByID(missed, DESA_pop) + " is part of " + pop.getCountryByID(parent, DESA_pop) + " in the SSPs"
 
             output_missed_pop = output_missed_pop + missed + "," + codes[missed] + ", ,"
-            output_parent_pop = output_parent_pop + missed + "," + codes[parent] + ", ,"
+            output_parent_pop = output_parent_pop + parent + "," + codes[parent] + ", ,"
             output_missed_urban = output_missed_urban + missed + "," + codes[missed] + ", ,"
-            output_parent_urban = output_parent_urban + missed + "," + codes[parent] + ", ,"
+            output_parent_urban = output_parent_urban + parent + "," + codes[parent] + ", ,"
 
             # for every year, subtract the DESA number from the missed country from
             # the SSP parent country
