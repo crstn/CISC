@@ -56,7 +56,7 @@ def main():
         print " --- "
         print "Starting " + str(pop.getCountryByID(country, WTP)) + "("+str(country)+")"
         # just to see if this works:
-        test = pop.getNumberForYear(WTP, 2010, country)
+        test = pop.getNumberForYear(WTP, 2020, country)
 
     except KeyError:
         print " --- "
@@ -145,18 +145,10 @@ def main():
         # adjust for the difference between raster and csv projection data:
         pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
 
-        # run the urbanization, but only if the urban population has increased!
-        if (pop.getNumberForYear(WUP, year, country) > pop.getNumberForYear(WUP, year-10, country)):
-            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix, urbanthreshold, suburbanthreshold)
-
-            pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
-
-            # after the urbanization, we have to re-adjust the population, because # otherwise the numbers for urban and rural will be off from the DESA numbers
-
-        # else:
-        #     print "Skipping urbanization."
-        #     print pop.getCountryByID(country, WTP) + " urban pop " + str(year) +": " + str(pop.getNumberForYear(WUP, year, country))
-        #     print pop.getCountryByID(country, WTP) + " urban pop " + str(year-10) +": " + str(pop.getNumberForYear(WUP, year-10, country))
+        # run the urbanization
+        urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix, urbanthreshold, suburbanthreshold)
+        # after the urbanization, we have to re-adjust the population, because # otherwise the numbers for urban and rural will be off from the DESA numbers
+        pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
 
 
         # save the numpy arrays
