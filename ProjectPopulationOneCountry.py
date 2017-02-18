@@ -16,7 +16,7 @@ target = '/Volumes/Solid Guy/SSP3 2017-02-12/'
 savetiffs = False
 
 # overwrite existing projections for the same country?
-overwrite = False
+overwrite = True
 
 endyear = 2100
 
@@ -200,7 +200,7 @@ if __name__ == '__main__':
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
 
-    if os.path.isfile(target + sys.argv[1]+"-"+str(endyear)+"-pop.npy"):
-        print "Simulations for " +sys.argv[1]+ " already done."
+    if os.path.isfile(target + sys.argv[1]+"-"+str(endyear)+"-pop.npy") and not overwrite :
+        print "Simulations for " +sys.argv[1]+ " already done; overwriting is turned off."
     else:
         main()
