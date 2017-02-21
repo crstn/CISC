@@ -7,10 +7,10 @@ from PIL import Image
 import PopFunctions as pop
 
 # select from SSP1 through SSP5
-scenario = 'SSP3'
+scenario = 'SSP5'
 
 # target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
-target = '/Volumes/Solid Guy/SSP3 2017-02-12/'
+target = '/Volumes/Solid Guy/SSP5 2017-02-17/'
 
 # Turn saving of TIFFS for debugging on or off:
 savetiffs = False
