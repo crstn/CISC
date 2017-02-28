@@ -7,7 +7,7 @@ from osgeo import gdal
 import pync
 import os.path
 
-src = '/Volumes/Solid Guy/SSP5 2017-02-17/'
+src = '/Volumes/Solid Guy/SSP4 2017-02-23/'
 
 if len(sys.argv) != 2:
     print "Call this script with the year to reassemble, e.g.:"

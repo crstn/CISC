@@ -4,7 +4,7 @@
 import sys, multiprocessing, subprocess, os, time, os.path
 
 # target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
-target = '/Volumes/Solid Guy/SSP5 2017-02-17/'
+target = '/Volumes/Solid Guy/SSP2 2017-02-22/'
 
 # if this script is called without arguments, run the whole world:
 if len(sys.argv) == 1:
