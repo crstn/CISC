@@ -38,5 +38,5 @@ with open('CitiesAttributes.csv', 'r') as citiesFile:
                         name = unicode(row['NAME'], 'utf8')
                         break
 
-                newLine = str(city) + ',"' + name + '",' + str('%f' % totalPopForCity) + '\n'
+                newLine = str(city) + ',"' + name + '",' + str(totalPopForCity) + '\n'
                 outputFile.write(newLine) #write the row to the csv
