@@ -1,3 +1,6 @@
+#run the script as "citiesCalcWithArgs.py" for calculation of all cities or 
+#"citiesCalcWithArgs.py 'Moscow' 'New York' etc. for calculation of those cities.
+
 from osgeo import gdal
 import numpy as np
 import csv             #for reading csv
