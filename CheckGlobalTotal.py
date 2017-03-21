@@ -12,4 +12,4 @@ for filename in os.listdir('.'):
         data[data<0] = 0
         print filename + ": " + "{:,}".format(np.nansum(data))
 
-pync.Notifier.notify('Global totals checked', title='Python')
+pync.Notifier.notify('Global total and urban population checked', title='Python')
