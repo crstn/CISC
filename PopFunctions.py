@@ -343,9 +343,9 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
     b = populationProjected >= 1.0
 
     if(cellType == ruralCell):
-        b = urbanRural <= suburbanCell
+        c = urbanRural <= suburbanCell
     else:
-        b = urbanRural == cellType
+        c = urbanRural == cellType
 
     randoms = np.all((a, b, c), axis=0)
 
