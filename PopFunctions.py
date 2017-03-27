@@ -50,7 +50,8 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     u         = urbanRural == urbanCell
     r         = urbanRural == ruralCell
 
-    urbraster=np.nansum(populationProjected[
+    popraster = np.nansum(populationProjected[incountry])
+    urbraster = np.nansum(populationProjected[
         np.logical_and(incountry, u)])
     rurraster = np.nansum(populationProjected[
         np.logical_and(incountry, r)])
@@ -59,12 +60,15 @@ def logDifference(populationProjected, year, country, WTP, WUP, countryBoundarie
     urbcsv = getNumberForYear(WUP, year, country)
     rurcsv = (popcsv - urbcsv)
 
-    urbDiff = urbcsv - urbraster
-    rurDiff = rurcsv - rurraster
+    popDiff = "{:,}".format(popcsv - popraster)
+    urbDiff = "{:,}".format(urbcsv - urbraster)
+    rurDiff = "{:,}".format(rurcsv - rurraster)
 
     c = WTP[str(country)][MAJ]
-    logging.info("Urban difference for " + c + " in " + str(year) + ": " + str(urbDiff))
-    logging.info("Rural difference for " + c + " in " + str(year) + ": " + str(rurDiff))
+    logging.error("Total difference for " + c + " in " + str(year) + ": " + popDiff)
+    logging.error("Urban difference for " + c + " in " + str(year) + ": " + urbDiff)
+    logging.error("Rural difference for " + c + " in " + str(year) + ": " + rurDiff)
+    logging.error("")
 
 
 # Looks up the population number for a country in a given year from a table.

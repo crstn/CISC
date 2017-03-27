@@ -7,13 +7,16 @@ from PIL import Image
 import PopFunctions as pop
 
 # select from SSP1 through SSP5
-scenario = 'SSP2'
+scenario = 'SSP1'
 
 # target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
-target = '/Volumes/Solid Guy/SSP2 2017-02-22/'
+target = '/Volumes/Solid Guy/Sandbox/'
 
 # Turn saving of TIFFS for debugging on or off:
 savetiffs = False
+
+# Turn logging of urban / rural / total population at evvery step on of off:
+checkNumbers = True
 
 # overwrite existing projections for the same country?
 overwrite = True
@@ -154,6 +157,10 @@ def main():
         # save the numpy arrays
         np.save(target + country + "-"+str(year)+"-urbanRural.npy", urbanRural.reshape(matrix))
         np.save(target + country + "-"+str(year)+"-pop.npy", populationNew.reshape(matrix))
+
+
+        if checkNumbers:
+            pop.logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
 
         if savetiffs:
