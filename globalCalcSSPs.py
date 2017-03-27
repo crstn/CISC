@@ -5,40 +5,66 @@ from osgeo import gdal
 import numpy as np
 import csv             #for reading csv
 import os, sys
+import pandas as pd
 
 models = ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]
-years = range(2020,2101,10)
+years =  [2030, 2050, 2070, 2100]
 
-filename = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/SSPstats.csv'
-
-# Make sure we don't overwrite an existing citiesPop.csv, this one takes
-# hours to generate!
-if os.path.exists(filename):
-    print filename+" already exists. If you want to recalculate it, delete it first."
-    sys.exit()
+def getNumberFromCSV(model, year, rastertype):
+    csvdir = os.path.expanduser('~') + '/Dropbox/CISC Data/SSPs/'
+    data = pd.read_csv(csvdir+rastertype+'-'+model+'.csv')
+    sums = data.sum()
+    return sums[str(year)]
 
 
-with open(filename, 'a') as outputFile:
-    outputFile.write(';2020;2030;2040;2050;2060;2070;2080;2090;2100\n')  #write the header row
+for m in models:
 
-    for m in models:
+    print
+    print ' ----------------------------------'
+    print
+    print m
+    print
 
-        outputFile.write(m+';')
+    datadir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/'+m
 
-        datadir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/'+m
+    for y in years:
 
-        for y in years:
-            src = gdal.Open(datadir+'/pop-'+str(y)+'.tiff', gdal.GA_Update)
-            band = src.GetRasterBand(1)
-            pop = np.array(band.ReadAsArray())
-            pop[pop < 0] = 0  #set all population values below 0 as 0
+        print ' --- '
+        print y
+        print
 
-            globaltotal = np.nansum(pop)
-            g = "{:,}".format(globaltotal)
+        # load population layer
+        src = gdal.Open(datadir+'/pop-'+str(y)+'.tiff', gdal.GA_Update)
+        band = src.GetRasterBand(1)
+        pop = np.array(band.ReadAsArray())
+        pop[pop < 0] = 0  #set all population values below 0 as 0
 
-            print m + " in " + str(y) +": " + g
+        # load urban/rural layer
+        src = gdal.Open(datadir+'/urbanRural-'+str(y)+'.tiff', gdal.GA_Update)
+        band = src.GetRasterBand(1)
+        ur = np.array(band.ReadAsArray())
 
-            if y == 2100:
-                outputFile.write(g+'\n')
-            else:
-                outputFile.write(g+';')
+
+        globaltotalraster = np.nansum(pop)
+        gtr = "{:,}".format(globaltotalraster)
+        print 'Total raster: ' + gtr
+
+        globaltotalcsv = getNumberFromCSV(m, y, 'pop')
+        gtc = "{:,}".format(globaltotalcsv)
+        print 'Total csv: ' + gtc
+
+        totaldiff = globaltotalraster - globaltotalcsv
+        td = "{:,}".format(totaldiff)
+        print 'Total difference: ' + td
+
+        urbantotalraster = np.nansum(pop[np.where(ur == 3)])
+        utr = "{:,}".format(urbantotalraster)
+        print 'Urban raster: ' + utr
+
+        urbantotalcsv = getNumberFromCSV(m, y, 'urbpop')
+        utc = "{:,}".format(urbantotalcsv)
+        print 'Urban csv: ' + utc
+
+        urbandiff = urbantotalraster - urbantotalcsv
+        udiff = "{:,}".format(urbandiff)
+        print 'Urban difference: ' + udiff
