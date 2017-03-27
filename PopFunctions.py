@@ -38,7 +38,7 @@ def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries,
     logging.info("Urban: " + str(urbanRural[np.logical_and(
         countryBoundaries == int(country), urbanRural == urbanCell)].size))
     logging.info("Rural: " + str(urbanRural[np.logical_and(
-        countryBoundaries == int(country), urbanRural == ruralCell)].size))
+        countryBoundaries == int(country), urbanRural <= suburbanCell)].size))
     logging.info("  ----   ")
 
 
@@ -48,7 +48,7 @@ def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries,
 def logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural):
     incountry = countryBoundaries == int(country)
     u         = urbanRural == urbanCell
-    r         = urbanRural == ruralCell
+    r         = urbanRural <= suburbanCell
 
     popraster = np.nansum(populationProjected[incountry])
     urbraster = np.nansum(populationProjected[
@@ -177,7 +177,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
                        urbanRural == urbanCell)])
     rurraster=np.nansum(populationProjected[
         np.logical_and(countryBoundaries == int(country),
-                       urbanRural == ruralCell)])
+                       urbanRural <= suburbanCell)])
 
     popcsv=getNumberForYear(WTP, year, country, multiply)
     urbcsv=getNumberForYear(WUP, year, country)
@@ -237,7 +237,11 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
 
     # try:
     a= countryBoundaries == int(country)
-    b= urbanRural == cellType
+
+    if(cellType == ruralCell):
+        b = urbanRural <= suburbanCell
+    else:
+        b = urbanRural == cellType
 
     randoms = np.all((a, b), axis =0)
     if np.nansum(randoms) < 0:
@@ -293,7 +297,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
             # Print some stats after the spillover:
 
             urb = urbanRural == urbanCell
-            rur = urbanRural == ruralCell
+            rur = urbanRural <= suburbanCell
 
             logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
             logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
@@ -337,7 +341,12 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
 
     a = countryBoundaries == float(country)
     b = populationProjected >= 1.0
-    c = urbanRural == cellType
+
+    if(cellType == ruralCell):
+        b = urbanRural <= suburbanCell
+    else:
+        b = urbanRural == cellType
+
     randoms = np.all((a, b, c), axis=0)
 
     if (allIndexes[randoms].size > 0):
