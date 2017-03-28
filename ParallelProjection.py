@@ -6,8 +6,15 @@ import sys, multiprocessing, subprocess, os, time, os.path
 # target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
 target = '/Volumes/Solid Guy/Sandbox/'
 
-# if this script is called without arguments, run the whole world:
+# if this script is called without arguments, throw an error:
 if len(sys.argv) == 1:
+    print "Please provide at least the scenario name as parameter to run, e.g.:"
+    print "python ParallelProjection.py SSP3"
+    print "This will run the whole world for that scenario. Optionally, also provide the IDs of specific countries to run:"
+    print "python ParallelProjection.py SSP3 156 376 [...]"
+    sys.exit()
+
+elif len(sys.argv) == 2: # specifying just the scenario, run the whole world:
     tasks = []
     for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries'):
         if filename.endswith(".npy"):
@@ -17,7 +24,7 @@ if len(sys.argv) == 1:
                 tasks.append(filename[:end])
 
 else:
-    tasks = sys.argv[1:]
+    tasks = sys.argv[2:]
 
 print "running the following countries:"
 print tasks
@@ -38,14 +45,14 @@ while (len(tasks) > 0):
         # there was a weird error where i would sometimes be out of bounds of the # list ...which should not be possible when running the code below,
         # but it still came up. Anyway, this solves it. ¯\_(ツ)_/¯
         if i < len(started):
-            feil = target + str(started[i])+"-2100-pop.npy"
+            feil = target + sys.argv[1] +"/" + str(started[i])+"-2100-pop.npy"
             if(os.path.isfile(feil)):
                 # complete, remove from started
                 del(started[i])
 
     # check if we have a free CPU to start a new process
     if(len(started) < cpus):
-        subprocess.Popen(["python", "ProjectPopulationOneCountry.py", str(tasks[0])])
+        subprocess.Popen(["python", "ProjectPopulationOneCountry.py", str(tasks[0]), sys.argv[1]])
         # move to "started" list
         started.append(tasks[0])
         del(tasks[0])

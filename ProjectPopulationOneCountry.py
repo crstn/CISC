@@ -6,9 +6,6 @@ from PIL import Image
 
 import PopFunctions as pop
 
-# select from SSP1 through SSP5
-scenario = 'SSP1'
-
 # target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
 target = '/Volumes/Solid Guy/Sandbox/'
 
@@ -16,7 +13,7 @@ target = '/Volumes/Solid Guy/Sandbox/'
 savetiffs = False
 
 # Turn logging of urban / rural / total population at evvery step on of off:
-checkNumbers = True
+checkNumbers = False
 
 # overwrite existing projections for the same country?
 overwrite = True
@@ -43,6 +40,7 @@ def main():
 
     # we'll read in the first command line arugument as the country ID we'll work on
     country = sys.argv[1]
+    scenario = sys.argv[2]
 
     logging.info('Starting...')
     logging.info('Reading CSVs')
@@ -75,8 +73,8 @@ def main():
         year = 2020
         step = 10
         while year <= endyear:
-            open(target+country+"-"+str(year)+"-urbanRural.npy", 'a')
-            open(target+country+"-"+str(year)+"-pop.npy", 'a')
+            open(target +country+"-"+str(year)+"-urbanRural.npy", 'a')
+            open(target +country+"-"+str(year)+"-pop.npy", 'a')
             year = year + step
 
         return
@@ -188,14 +186,21 @@ def main():
 
 if __name__ == '__main__':
 
-    if len(sys.argv) != 2:
-        print "This script expects a country ID as parameter, e.g."
-        print "python ProjectPopulationOneCountry.py 156"
+    if len(sys.argv) != 3:
+        print "This script expects a country ID and a scenario as parameter, e.g."
+        print "python ProjectPopulationOneCountry.py 156 SSP1"
         print "to project the population for China. Check the WUP/WTP csv files for the IDs."
         sys.exit()
 
+
+    # create output dir if it doesn't exist yet:
+    target = target + sys.argv[2]+"/"
+    if not os.path.exists(target):
+        os.makedirs(target)
+
+
     logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
-                        filename='output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'.log',
+                        filename='output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'-'+sys.argv[2]+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
 
