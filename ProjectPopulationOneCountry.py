@@ -65,7 +65,7 @@ def main():
         print "Skipping, saving empty .npy files"
         print " --- "
 
-        with open("skippedcountries.log", "a") as myfile:
+        with open("logs/skippedcountries.log", "a") as myfile:
             myfile.write(str(country)+', ')
 
         # save empty files so that the parallel processing
@@ -200,7 +200,7 @@ if __name__ == '__main__':
 
 
     logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
-                        filename='output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'-'+sys.argv[2]+'.log',
+                        filename='logs/output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'-'+sys.argv[2]+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
 
