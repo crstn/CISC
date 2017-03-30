@@ -7,12 +7,12 @@ from osgeo import gdal
 import pync
 import os.path
 
-src = '/Volumes/Solid Guy/Sandbox/SSP2/'
-
-if len(sys.argv) != 2:
-    print "Call this script with the year to reassemble, e.g.:"
-    print "python ReassambleCountries.py 2020"
+if len(sys.argv) != 3:
+    print "Call this script with the year to reassemble and the scenario, e.g.:"
+    print "python ReassambleCountries.py 2020 SSP4"
     sys.exit()
+
+src = '/Volumes/Solid Guy/Sandbox/'+sys.argv[2]+'/'
 
 # wait until the files for USA (840) are there; this is the last large country,
 # when its simulations for the current year are there, the simulation is complete.
