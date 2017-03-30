@@ -25,7 +25,7 @@ for m in models:
     print m
     print
 
-    datadir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/'+m
+    datadir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/2017-03-30/'+m
 
     for y in years:
 
