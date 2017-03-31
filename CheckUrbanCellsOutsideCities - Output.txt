@@ -1,0 +1,150 @@
+hecking cells outside of cities
+ ----------------------------------
+
+SSP1
+
+2020 # urban cells outside of cities:    121,204
+2020 urban population outside of cities: 592,071,436
+
+2030 # urban cells outside of cities:    226,766
+2030 urban population outside of cities: 744,897,437
+2040 # urban cells outside of cities:    228,710
+2040 urban population outside of cities: 921,196,112
+
+2050 # urban cells outside of cities:    229,852
+2050 urban population outside of cities: 1,058,648,398
+
+2060 # urban cells outside of cities:    230,938
+2060 urban population outside of cities: 1,146,744,929
+
+2070 # urban cells outside of cities:    232,662
+2070 urban population outside of cities: 1,184,682,809
+
+2080 # urban cells outside of cities:    234,105
+2080 urban population outside of cities: 1,169,699,795
+
+2090 # urban cells outside of cities:    234,887
+2090 urban population outside of cities: 1,111,865,595
+
+2100 # urban cells outside of cities:    235,861
+2100 urban population outside of cities: 1,019,747,504
+ ----------------------------------
+
+SSP2
+
+2020 # urban cells outside of cities:    121,684
+2020 urban population outside of cities: 582,983,551
+
+2030 # urban cells outside of cities:    236,043
+2030 urban population outside of cities: 738,354,250
+
+2040 # urban cells outside of cities:    239,913
+2040 urban population outside of cities: 900,140,424
+
+2050 # urban cells outside of cities:    241,060
+2050 urban population outside of cities: 1,044,597,144
+
+2060 # urban cells outside of cities:    242,195
+2060 urban population outside of cities: 1,160,488,211
+
+2070 # urban cells outside of cities:    243,469
+2070 urban population outside of cities: 1,244,480,369
+
+2080 # urban cells outside of cities:    245,924
+2080 urban population outside of cities: 1,298,977,484
+
+2090 # urban cells outside of cities:    247,228
+2090 urban population outside of cities: 1,328,427,761
+
+2100 # urban cells outside of cities:    248,663
+2100 urban population outside of cities: 1,338,003,516
+
+ ----------------------------------
+
+SSP3
+2020 # urban cells outside of cities:    122,147
+2020 urban population outside of cities: 567,014,475
+
+2030 # urban cells outside of cities:    246,553
+2030 urban population outside of cities: 720,010,586
+
+2040 # urban cells outside of cities:    254,441
+2040 urban population outside of cities: 845,124,385
+
+2050 # urban cells outside of cities:    259,590
+2050 urban population outside of cities: 969,197,694
+
+2060 # urban cells outside of cities:    263,876
+2060 urban population outside of cities: 1,088,346,347
+
+2070 # urban cells outside of cities:    267,309
+2070 urban population outside of cities: 1,202,753,564
+
+2080 # urban cells outside of cities:    272,661
+2080 urban population outside of cities: 1,317,268,754
+
+2090 # urban cells outside of cities:    279,960
+2090 urban population outside of cities: 1,442,979,154
+
+2100 # urban cells outside of cities:    292,163
+2100 urban population outside of cities: 1,581,266,051
+
+ ----------------------------------
+
+SSP4
+2020 # urban cells outside of cities:    119,392
+2020 urban population outside of cities: 590,240,077
+
+2030 # urban cells outside of cities:    225,857
+2030 urban population outside of cities: 745,847,180
+
+2040 # urban cells outside of cities:    228,137
+2040 urban population outside of cities: 955,494,504
+
+2050 # urban cells outside of cities:    229,371
+2050 urban population outside of cities: 1,144,631,052
+
+2060 # urban cells outside of cities:    230,760
+2060 urban population outside of cities: 1,297,490,606
+
+2070 # urban cells outside of cities:    232,995
+2070 urban population outside of cities: 1,415,208,901
+
+2080 # urban cells outside of cities:    234,425
+2080 urban population outside of cities: 1,497,988,091
+
+2090 # urban cells outside of cities:    236,537
+2090 urban population outside of cities: 1,558,396,274
+
+2100 # urban cells outside of cities:    239,266
+2100 urban population outside of cities: 1,613,219,854
+
+ ----------------------------------
+
+SSP5
+2020 # urban cells outside of cities:    121,244
+2020 urban population outside of cities: 593,347,683
+
+2030 # urban cells outside of cities:    226,969
+2030 urban population outside of cities: 749,077,433
+
+2040 # urban cells outside of cities:    228,872
+2040 urban population outside of cities: 926,353,106
+
+2050 # urban cells outside of cities:    230,009
+2050 urban population outside of cities: 1,064,872,245
+
+2060 # urban cells outside of cities:    231,157
+2060 urban population outside of cities: 1,154,922,917
+
+2070 # urban cells outside of cities:    232,928
+2070 urban population outside of cities: 1,194,885,139
+
+2080 # urban cells outside of cities:    234,458
+2080 urban population outside of cities: 1,184,556,412
+
+2090 # urban cells outside of cities:    235,540
+2090 urban population outside of cities: 1,133,714,374
+
+2100 # urban cells outside of cities:    236,204
+2100 urban population outside of cities: 1,046,173,944
