@@ -57,6 +57,7 @@ def main():
     try:
         print " --- "
         print "Starting " + str(pop.getCountryByID(country, WTP)) + "("+str(country)+")"
+        test = pop.getNumberForYear(WTP, 2010, country)
 
     except KeyError:
         print " --- "
@@ -69,7 +70,7 @@ def main():
 
         # save empty files so that the parallel processing
         # moves on to the next country
-        year = 2020
+        year = 2010
         step = 10
         while year <= endyear:
             open(target +country+"-"+str(year)+"-urbanRural.npy", 'a')

@@ -3,7 +3,7 @@
 
 import sys, multiprocessing, subprocess, os, time, os.path
 
-target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
+target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/GRUMP/"
 #target = '/Volumes/Solid Guy/Sandbox/'
 
 # if this script is called without arguments, throw an error:
