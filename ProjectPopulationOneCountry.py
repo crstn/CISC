@@ -10,10 +10,10 @@ target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Proje
 # target = '/Volumes/Solid Guy/Sandbox/'
 
 # Turn saving of TIFFS for debugging on or off:
-savetiffs = True
+savetiffs = False
 
-# Turn logging of urban / rural / total population at evvery step on of off:
-checkNumbers = True
+# Turn logging of urban / rural / total population at every step on of off:
+checkNumbers = False
 
 # overwrite existing projections for the same country?
 overwrite = True
@@ -127,9 +127,9 @@ def main():
     # make an array of all indexes; we'll use this later:
     allIndexes = np.arange(countryBoundaries.size)
 
-    logging.info("Growing population...")
+    logging.info("Starting simulation...")
 
-    year = 2020
+    year = 2010
     step = 10
     while year <= endyear:
 
@@ -145,10 +145,15 @@ def main():
         # adjust for the difference between raster and csv projection data:
         pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
 
-        # run the urbanization
-        urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix, urbanthreshold)
-        # after the urbanization, we have to re-adjust the population, because # otherwise the numbers for urban and rural will be off from the DESA numbers
-        pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
+        # Skip the urbanization for 2010, because we know the urban extents;
+        # the purpose of running the population adjstment for 2010 was just to make
+        # sure that our simulations start from a situation where the numbers in the CSVs
+        # match the maps.
+        if(year > 2010):
+            # run the urbanization
+            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix, urbanthreshold)
+            # after the urbanization, we have to re-adjust the population, because # otherwise the numbers for urban and rural will be off from the DESA numbers
+            pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
 
 
         # save the numpy arrays
