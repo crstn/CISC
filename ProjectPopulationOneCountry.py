@@ -6,7 +6,7 @@ from PIL import Image
 
 import PopFunctions as pop
 
-target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
+target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/GRUMP/"
 # target = '/Volumes/Solid Guy/Sandbox/'
 
 # Turn saving of TIFFS for debugging on or off:

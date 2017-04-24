@@ -12,7 +12,8 @@ if len(sys.argv) != 3:
     print "python ReassambleCountries.py 2020 SSP4"
     sys.exit()
 
-src = '/Volumes/Solid Guy/Sandbox/'+sys.argv[2]+'/'
+# src = '/Volumes/Solid Guy/Sandbox/'+sys.argv[2]+'/'
+src = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/GRUMP/"
 
 # wait until the files for USA (840) are there; this is the last large country,
 # when its simulations for the current year are there, the simulation is complete.
