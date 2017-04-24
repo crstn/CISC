@@ -8,13 +8,19 @@ src = gdal.Open(f, gdal.GA_Update)
 band = src.GetRasterBand(1)
 countryBoundaries = np.array(band.ReadAsArray())
 
-# load urban rural TIFF and convert to NumPy array
-f = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GLUR_Pop20101_suburban.tiff'
+# load urban rural TIFFs (GRUMP and GlobCover) and convert to NumPy arrays
+f = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GRUMP_UrbanRural.tiff'
 src = gdal.Open(f, gdal.GA_Update)
 band = src.GetRasterBand(1)
-urbanRural = np.array(band.ReadAsArray())
+urbanRural_GRUMP = np.array(band.ReadAsArray())
 
-# load population TIFFs and convert to NumPy array
+f = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GlobCover_UrbanRural.tiff'
+src = gdal.Open(f, gdal.GA_Update)
+band = src.GetRasterBand(1)
+urbanRural_GlobCover = np.array(band.ReadAsArray())
+
+
+# # load population TIFFs and convert to NumPy array
 f = os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2000 Raster/Pop_2000_clipped.tiff'
 src = gdal.Open(f, gdal.GA_Update)
 band = src.GetRasterBand(1)
@@ -26,7 +32,8 @@ band = src.GetRasterBand(1)
 population2010 = np.array(band.ReadAsArray())
 
 # just to check:
-print urbanRural.shape
+print urbanRural_GRUMP.shape
+print urbanRural_GlobCover.shape
 print countryBoundaries.shape
 print population2000.shape
 print population2010.shape
@@ -53,8 +60,11 @@ for country in countries:
         # img.save(str(country)+'out.tiff')
 
         # cut out this rectangular block from the urban/rural data
-        justCountry = urbanRural[minx:maxx, miny:maxy]
-        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-urbanSuburbanRural.npy', justCountry)
+        justCountry = urbanRural_GRUMP[minx:maxx, miny:maxy]
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-UrbanRural-GRUMP.npy', justCountry)
+
+        justCountry = urbanRural_GlobCover[minx:maxx, miny:maxy]
+        np.save(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'-UrbanRural-GlobCover.npy', justCountry)
 
         # cut out this rectangular block from the 2000 and 2010 pop data
         justCountry = population2000[minx:maxx, miny:maxy]
