@@ -11,8 +11,7 @@ from datetime import datetime
 
 # some constants:
 ruralCell = 1
-suburbanCell = 2
-urbanCell = 3
+urbanCell = 2
 MAJ = 'Major area, region, country or area'
 
 multiply = 1 # set to 1000 when running the DESA numbers!
@@ -38,7 +37,7 @@ def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries,
     logging.info("Urban: " + str(urbanRural[np.logical_and(
         countryBoundaries == int(country), urbanRural == urbanCell)].size))
     logging.info("Rural: " + str(urbanRural[np.logical_and(
-        countryBoundaries == int(country), urbanRural <= suburbanCell)].size))
+        countryBoundaries == int(country), urbanRural == ruralCell)].size))
     logging.info("  ----   ")
 
 
@@ -48,7 +47,7 @@ def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries,
 def logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural):
     incountry = countryBoundaries == int(country)
     u         = urbanRural == urbanCell
-    r         = urbanRural <= suburbanCell
+    r         = urbanRural == ruralCell
 
     popraster = np.nansum(populationProjected[incountry])
     urbraster = np.nansum(populationProjected[
@@ -88,10 +87,10 @@ def getCountryByID(country, WTP):
         logging.error("No country found for ID " + str(country))
         return 0
 
-# Calculates the population thresholds for turning a cell from rural to suburban and from suburban to urban, respectively.
+# Calculates the population thresholds for turning a cell from rural to urban.
 # Current approach: Urban threshold is the mean between the mean pop for urban cells
-# and the mean pop for suburban cells. Suburban threshold is the suburban median.
-def getThresholds(country, population, countryBoundaries, urbanRural, WTP):
+# and the mean pop for rural cells.
+def getUrbanThreshold(country, population, countryBoundaries, urbanRural, WTP):
     a = countryBoundaries == int(country)
     b = urbanRural == urbanCell
 
@@ -103,63 +102,19 @@ def getThresholds(country, population, countryBoundaries, urbanRural, WTP):
     else:
         urbanMedian = np.nanmedian(urban)
 
-    b = urbanRural == suburbanCell
-
-    suburbanMedian = np.nanmedian(population[np.all((a, b), axis=0)])
-
-    return urbanMedian, suburbanMedian
+    return urbanMedian
 
 
-# turns suburban into urban cells (and rural into suburban) if national thresholds (see getThreshold) are exceeded
-def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape, urbanthreshold, suburbanthreshold):
+# turns rural into urban cells if national thresholds (see getUrbanThreshold) are exceeded
+def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape, urbanthreshold):
 
+    # check rural cells in this country for population threshold:
     a = countryBoundaries == int(country)
-    b = urbanRural == urbanCell
-
-    # print " "
-    # print "No. urban cells before urbanization in " +str(year)+ ": " +
-    # str(urbanRural[urbanRural == urbanCell].size)
-
-    # topN = getTopNCells(topNcells, populationProjected[np.all((a, b), axis=0)])
-    # we'll use the mean of the top n URBAN cells of each country as the
-    # threshold
-    # mx = np.nansum(topN) / topNcells
-
-    # limit = getThreshold(country, populationProjected,
-    #                      countryBoundaries, urbanRural, WTP)
-
-    # check suburban cells in this country for population threshold:
-    b = urbanRural == suburbanCell
+    b = urbanRural == ruralCell
     c = populationProjected > urbanthreshold
 
     # turn these cells urban
     urbanRural[np.all((a, b, c), axis = 0)] = urbanCell
-
-    #repeat for turning rural cells suburban:
-    b = urbanRural == ruralCell
-    c = populationProjected > suburbanthreshold
-
-    # turn these cells suburban
-    urbanRural[np.all((a, b, c), axis = 0)] = suburbanCell
-
-    # for every matching cell, check whether at least 3 neighbors are already
-    # urban:
-    # for cell in allIndexes[np.all((a, b, c), axis = 0)]:
-
-        # wilsons=getNeighbours(cell, shape, 3)
-        #
-        # # if so, turn urban
-        # # TODO this is pretty inefficient
-        # urbanNeighbors=0
-        # for w in wilsons:
-        #     if urbanRural[w] == urbanCell:
-        #         urbanNeighbors=urbanNeighbors + 1
-        #
-        # if(urbanNeighbors >= 3):
-        # urbanRural[cell]=urbanCell
-
-    # print "No. urban cells after urbanization: " + str(urbanRural[urbanRural
-    # == urbanCell].size)
 
     return urbanRural
 
@@ -177,7 +132,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
                        urbanRural == urbanCell)])
     rurraster=np.nansum(populationProjected[
         np.logical_and(countryBoundaries == int(country),
-                       urbanRural <= suburbanCell)])
+                       urbanRural == ruralCell)])
 
     popcsv=getNumberForYear(WTP, year, country, multiply)
     urbcsv=getNumberForYear(WUP, year, country)
@@ -237,11 +192,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
 
     # try:
     a= countryBoundaries == int(country)
-
-    if(cellType == ruralCell):
-        b = urbanRural <= suburbanCell
-    else:
-        b = urbanRural == cellType
+    b = urbanRural == cellType
 
     randoms = np.all((a, b), axis =0)
     if np.nansum(randoms) < 0:
@@ -297,7 +248,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
             # Print some stats after the spillover:
 
             urb = urbanRural == urbanCell
-            rur = urbanRural <= suburbanCell
+            rur = urbanRural == ruralCell
 
             logging.info("Rural max:" + str(np.nanmax(populationProjected[np.all((a, rur), axis=0)])))
             logging.info("Urban min:"  + str(np.nanmin(populationProjected[np.all((a, urb), axis=0)])))
@@ -341,11 +292,7 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
 
     a = countryBoundaries == float(country)
     b = populationProjected >= 1.0
-
-    if(cellType == ruralCell):
-        c = urbanRural <= suburbanCell
-    else:
-        c = urbanRural == cellType
+    c = urbanRural == cellType
 
     randoms = np.all((a, b, c), axis=0)
 

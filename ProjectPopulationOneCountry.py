@@ -6,14 +6,14 @@ from PIL import Image
 
 import PopFunctions as pop
 
-# target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
-target = '/Volumes/Solid Guy/Sandbox/'
+target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
+# target = '/Volumes/Solid Guy/Sandbox/'
 
 # Turn saving of TIFFS for debugging on or off:
-savetiffs = False
+savetiffs = True
 
 # Turn logging of urban / rural / total population at evvery step on of off:
-checkNumbers = False
+checkNumbers = True
 
 # overwrite existing projections for the same country?
 overwrite = True
@@ -41,6 +41,7 @@ def main():
     # we'll read in the first command line arugument as the country ID we'll work on
     country = sys.argv[1]
     scenario = sys.argv[2]
+    urbanRuralVersion = sys.argv[3]
 
     logging.info('Starting...')
     logging.info('Reading CSVs')
@@ -56,8 +57,6 @@ def main():
     try:
         print " --- "
         print "Starting " + str(pop.getCountryByID(country, WTP)) + "("+str(country)+")"
-        # just to see if this works:
-        test = pop.getNumberForYear(WTP, 2020, country)
 
     except KeyError:
         print " --- "
@@ -81,7 +80,7 @@ def main():
 
     logging.info('Reading Numpy arrays')
 
-    urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-urbanSuburbanRural.npy')
+    urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-UrbanRural-'+urbanRuralVersion+'.npy')
 
     # save the shape of these arrays for later, so that we
     # can properly reshape them after flattening:
@@ -113,7 +112,7 @@ def main():
 
     # calculate thresholds for urbanization before we start the simulation:
 
-    urbanthreshold, suburbanthreshold = pop.getThresholds(country, populationOld, countryBoundaries, urbanRural, WTP)
+    urbanthreshold = pop.getUrbanThreshold(country, populationOld, countryBoundaries, urbanRural, WTP)
 
 
     # these arrays use very small negative numbers as NULL,
@@ -147,7 +146,7 @@ def main():
         pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
 
         # run the urbanization
-        urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix, urbanthreshold, suburbanthreshold)
+        urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix, urbanthreshold)
         # after the urbanization, we have to re-adjust the population, because # otherwise the numbers for urban and rural will be off from the DESA numbers
         pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
 
@@ -186,10 +185,10 @@ def main():
 
 if __name__ == '__main__':
 
-    if len(sys.argv) != 3:
-        print "This script expects a country ID and a scenario as parameter, e.g."
-        print "python ProjectPopulationOneCountry.py 156 SSP1"
-        print "to project the population for China. Check the WUP/WTP csv files for the IDs."
+    if len(sys.argv) != 4:
+        print "This script expects a country ID, a scenario (SSP1...SSP5), and the urban/rural version (GlobCover or GRUMP) as parameter, e.g."
+        print "python ProjectPopulationOneCountry.py 156 SSP1 GlobCover"
+        print "to project the population according to SSP1 and GlobCover for China. Check the WUP/WTP csv files for the country IDs."
         sys.exit()
 
 
@@ -200,7 +199,7 @@ if __name__ == '__main__':
 
 
     logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
-                        filename='logs/output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'-'+sys.argv[2]+'.log',
+                        filename='logs/output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'-'+sys.argv[2]+'-'+sys.argv[3]+'.log',
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
 
