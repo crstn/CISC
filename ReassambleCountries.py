@@ -7,13 +7,13 @@ from osgeo import gdal
 import pync
 import os.path
 
-if len(sys.argv) != 3:
-    print "Call this script with the year to reassemble and the scenario, e.g.:"
-    print "python ReassambleCountries.py 2020 SSP4"
+if len(sys.argv) != 4:
+    print "Call this script with the year, the scenario, and the urban/rural layer e.g.:"
+    print "python ReassambleCountries.py 2020 SSP4 GlobCover"
     sys.exit()
 
-# src = '/Volumes/Solid Guy/Sandbox/'+sys.argv[2]+'/'
-src = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/GRUMP/"
+src = '/Volumes/Solid Guy/Sandbox/'+sys.argv[3]+'/'+sys.argv[2]+'/'
+# src = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/GRUMP/"
 
 # wait until the files for USA (840) are there; this is the last large country,
 # when its simulations for the current year are there, the simulation is complete.
@@ -30,7 +30,7 @@ print "Loading countries TIFF and converting to NumPy array"
 countryBoundaries = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff')
 
 print "Loading urban-rural TIFF and converting to NumPy array"
-urbanRural2010 = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GLUR_Pop20101.tiff')
+urbanRural2010 = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/'+sys.argv[3]+'_UrbanRural.tiff')
 
 print "Loading population 2010 TIFF and convert to NumPy array"
 population2010 = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
