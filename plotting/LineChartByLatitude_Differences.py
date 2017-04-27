@@ -7,7 +7,7 @@ blocksize = 120 # 12 = 1 degree
 maxLat = 84.0 # northern boundary of the TIFFs
 resolution = 0.00833333 # size of a cell in the TIFF, in degrees
 
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global');
+os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/');
 
 def openTIFFasNParray(file):
     src = gdal.Open(file, gdal.GA_Update)
@@ -24,46 +24,52 @@ totalareas = [508297.764629487, 586047.126878042, 663603.953480684, 740942.87022
 
 landareas = [617.163708106176, 29473.0271612372, 46075.169699729, 49461.8617097094, 69540.9644289871, 71897.2757482392, 50585.7190621218, 60655.9326059245, 74228.9810797237, 38433.3750318941, 89819.3377532452, 129837.476582303, 137728.166520426, 205102.218946564, 309678.484990005, 322205.713527686, 382496.316699499, 250324.716458408, 448797.597066268, 643763.093509109, 368964.090303949, 511635.216874408, 548313.585816696, 553009.250946551, 528691.866010831, 394079.140800285, 401246.252779636, 340139.741102038, 402732.933074952, 451556.510802938, 610677.833757735, 710229.481480406, 780648.676694237, 216455.29380865, 1815506.24749525, 1282273.27048642, 1401855.96405389, 1294391.34916003, 1343349.40138334, 1256877.61608807, 1312164.59985771, 1177571.64218723, 634246.104131145, 1526038.60431272, 1534197.89859695, 1456894.05836676, 1201567.11902483, 1562722.71998493, 1558101.49628892, 1455238.84566661, 1417867.84182047, 1515542.74148025, 1519831.16862104, 1681740.15666678, 1743232.41431521, 1409784.27394607, 1352811.59719565, 1302791.46700836, 1325285.87103808, 1249783.17942245, 1301026.69024615, 1264685.52855074, 1198923.34222345, 1194757.23518356, 1185182.96546885, 1197715.42135113, 1140103.34346708, 1064209.44954229, 979230.023983409, 953049.971278701, 889143.178731181, 813800.551844844, 802634.362647154, 915748.754704213, 987174.623238131, 1042094.29832602, 1018648.24436273, 971551.669825232, 988536.35240679, 941215.179483993, 895617.841231708, 925085.199735872, 958890.464561541, 984532.163060272, 961233.826608034, 1032704.94451857, 1089807.65895712, 1157921.3715144, 1096982.95761864, 1074285.8270762, 1066750.98585948, 1062647.11418179, 993182.197675773, 822110.138697233, 837431.627127811, 827331.194764915, 857142.16675275, 888460.861959951, 944538.304303268, 995447.528960615, 1009280.61354538, 1062339.4485832, 1003873.64025309, 1015445.90135847, 1081455.01013984, 1073000.03484616, 1067487.74122388, 1022699.48110489, 998118.001454197, 907919.69894393, 897263.293905722, 885520.196028972, 821574.053245395, 783500.951737009, 757075.126664176, 395821.345687054, 556950.27242771, 516136.94032083, 364071.594508312, 281956.274137413, 273718.782505557, 259486.875440992, 195763.815421292, 136201.714102211, 123768.081514234, 136210.25549882, 130242.973819544, 107747.180427682, 102333.032056737, 94086.5834539324, 78632.2486041846, 72976.8181160366, 68692.6620614621, 64650.6430837979, 45897.3226264987, 38969.8898944794, 32681.2045499876, 29480.8278026611, 33224.6974156389, 7189.58581935647, 0.1]
 
-pop2100 = openTIFFasNParray('pop-2100.tiff')
-pop2010 = openTIFFasNParray('pop-2010.tiff')
 
-matplotlib.style.use('fivethirtyeight')
+for ssp in range(1,6):
 
-# make the font smaller, so that the legends don't take up too much space
-matplotlib.rcParams.update({'font.size': 8})
+    ssp = "SSP"+str(ssp)
+    for ur in ["GRUMP", "GlobCover"]:
 
-# replace NAN with 0
-pop2100[pop2100 < 0 ] = 0
-pop2010[pop2010 < 0 ] = 0
+        pop2100 = openTIFFasNParray(ur+'/'+ssp+'/pop-2100.tiff')
+        pop2010 = openTIFFasNParray(ur+'/'+ssp+'/pop-2010.tiff')
 
-rows = pop2100.shape[0]
-cols = pop2100.shape[1]
+        matplotlib.style.use('fivethirtyeight')
 
-sumsPerBlock = []
-blocks = range(0, rows, blocksize)
-for row in blocks:
-    sm2100 = np.sum(pop2100[row:row+blocksize,])
-    sm2010 = np.sum(pop2010[row:row+blocksize,])
-    diff = (sm2100 - sm2010) / 1000000
-    sumsPerBlock.append(diff)
+        # make the font smaller, so that the legends don't take up too much space
+        matplotlib.rcParams.update({'font.size': 8})
 
-# now calculate the latitutde for every row that we have a number for and use those on the y axis:
-latblocks = []
-for row in blocks:
-    latblocks.append(rowToLat(row))
+        # replace NAN with 0
+        pop2100[pop2100 < 0 ] = 0
+        pop2010[pop2010 < 0 ] = 0
 
-axes = pyplot.gca()
-axes.set_ylim([-90,90])
-axes.set_xlim([-50,350])
-axes.set_axis_bgcolor('white')
+        rows = pop2100.shape[0]
+        cols = pop2100.shape[1]
 
-pyplot.plot(sumsPerBlock, latblocks, label="Population difference", linewidth = 1.0)
+        sumsPerBlock = []
+        blocks = range(0, rows, blocksize)
+        for row in blocks:
+            sm2100 = np.sum(pop2100[row:row+blocksize,])
+            sm2010 = np.sum(pop2010[row:row+blocksize,])
+            diff = (sm2100 - sm2010) / 1000000
+            sumsPerBlock.append(diff)
 
-pyplot.xlabel('Difference between 2010 and 2100 in million people')
-pyplot.ylabel('Degrees latitude')
-pyplot.title('Population difference between 2010 and 2100 per 1 degree latitude band')
-pyplot.legend(loc='upper right')
-pyplot.savefig(os.path.expanduser('~') + '/Dropbox/Code/CISC/plotting/PopDiffByLat.pdf', bbox_inches='tight', dpi=300, facecolor='white', transparent=True)
+        # now calculate the latitutde for every row that we have a number for and use those on the y axis:
+        latblocks = []
+        for row in blocks:
+            latblocks.append(rowToLat(row))
 
-# clear this figure, start a new one:
-pyplot.clf()
+        axes = pyplot.gca()
+        axes.set_ylim([-90,90])
+        axes.set_xlim([-100,350])
+        axes.set_axis_bgcolor('white')
+
+        pyplot.plot(sumsPerBlock, latblocks, label="Population difference", linewidth = 1.0)
+
+        pyplot.xlabel('Difference between 2010 and 2100 in mio. people, '+ssp+'/'+ur)
+        pyplot.ylabel('Degrees latitude')
+        pyplot.title('Population difference between 2010 and 2100 per 1 degree latitude band')
+        pyplot.legend(loc='upper right')
+        pyplot.savefig(os.path.expanduser('~') + '/Dropbox/Code/CISC/plotting/PopDiffByLat-'+ur+'-'+ssp+'.pdf', bbox_inches='tight', dpi=300, facecolor='white', transparent=True)
+
+        # clear this figure, start a new one:
+        pyplot.clf()
