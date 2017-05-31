@@ -12,22 +12,25 @@ u = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Ras
 # -1 = NAN, set to 0:
 p[p<0] = 0
 
+# select cells with 1 person or less:
+nopop = p <= 1
+onland = u >= 1
+
+
 print "{:,}".format(p.size)
 print "{:,}".format(u.size)
 
 print "# Cells without population"
-print "{:,}".format(p[p==0].size)
+print "{:,}".format(p[nopop].size)
 
 print "# Cells ON LAND without population"
 
-a = p == 0
-b = u >= 1
-print "{:,}".format(p[np.all((a, b), axis=0)].size)
+print "{:,}".format(p[np.all((nopop, onland), axis=0)].size)
 
 
 noPop = np.zeros(p.shape, dtype = np.int)
-noPop[np.all((a, b), axis=0)] = 1
+noPop[np.all((nopop, onland), axis=0)] = 1
 
-pop.array_to_raster(noPop, os.path.expanduser('~') + '/Desktop/noPop.tiff', os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
+pop.array_to_raster(noPop, os.path.expanduser('~') + '/Desktop/noPop-1.tiff', os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
 
 pync.Notifier.notify('Done', title='Python')
