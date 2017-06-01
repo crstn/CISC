@@ -54,37 +54,26 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
 
                 SSP_parent_pop = pop.getNumberForYear(SSP_pop, year, parent)
                 DESA_missed_pop = pop.getNumberForYear(
-                    DESA_pop, year, missed, 1000)
+                    DESA_pop, year, missed, 1000) # numbers are in thousands
                 updateparentpop = SSP_parent_pop - DESA_missed_pop
 
                 # rinse and repeat for urban:
                 SSP_parent_urban = pop.getNumberForYear(SSP_urban, year, parent)
-                DESA_missed_urban = pop.getNumberForYear(DESA_urban, year, missed)
+                DESA_missed_urban = pop.getNumberForYear(DESA_urban, year, missed) # numbers are NOT in thousands!
 
-                # assume the same urbanization rate for the parent country as in DESA
-                # if we just assume the urban population number from DESA, the country
-                # may end up with more urban population than total population
-                DESA_urb_rate = float(DESA_missed_urban) / float(DESA_missed_pop)
-
-                # some countries in the DESA numbers have slightly more urban
-                # population than total population!?
-                if DESA_urb_rate > 1.0:
-                    DESA_urb_rate = 1.0
-
-                updateparenturbanpop = int(updateparentpop * DESA_urb_rate)
+                updateparenturbanpop = int(SSP_parent_urban - DESA_missed_urban)
 
                 output_missed_pop = output_missed_pop + str(DESA_missed_pop) + ','
                 # subtract this number from the parent country!
                 output_parent_pop = output_parent_pop + str(updateparentpop) + ','
 
-                # assume the DESA numbers for the country missing in the SSP data
+                # add to the output string:
                 output_missed_urban = output_missed_urban + \
                     str(DESA_missed_urban) + ','
                 output_parent_urban = output_parent_urban + \
                     str(updateparenturbanpop) + ','
 
-            # add the country namesoutput_missed_pop   =
-            # missed+","+codes[missed]+","
+            # add the country
             output_missed_pop = output_missed_pop + '"' + \
                 pop.getCountryByID(missed, DESA_pop) + '"\n'
             output_parent_pop = output_parent_pop + '"' + \
