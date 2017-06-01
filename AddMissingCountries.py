@@ -41,20 +41,21 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
 
             # print pop.getCountryByID(missed, DESA_pop) + " is part of " + pop.getCountryByID(parent, DESA_pop) + " in the SSPs"
 
-            output_missed_pop = output_missed_pop + missed + "," + codes[missed] + ", ,"
-            output_parent_pop = output_parent_pop + parent + "," + codes[parent] + ", ,"
-            output_missed_urban = output_missed_urban + missed + "," + codes[missed] + ", ,"
-            output_parent_urban = output_parent_urban + parent + "," + codes[parent] + ", ,"
+            output_missed_pop = output_missed_pop + missed + "," + codes[missed] + ","
+            output_parent_pop = output_parent_pop + parent + "," + codes[parent] + ","
+            output_missed_urban = output_missed_urban + missed + "," + codes[missed] + ","
+            output_parent_urban = output_parent_urban + parent + "," + codes[parent] + ","
 
             # for every year, subtract the DESA number from the missed country from
             # the SSP parent country
-            for year in range(2020, 2101, 10):
-                # print
-                # print year
+            for year in range(2010, 2101, 10):
 
                 SSP_parent_pop = pop.getNumberForYear(SSP_pop, year, parent)
-                DESA_missed_pop = pop.getNumberForYear(
-                    DESA_pop, year, missed, 1000) # numbers are in thousands
+                if year == 2010:
+                    # Table lacks column for 2010, use 2015 instead
+                    DESA_missed_pop = pop.getNumberForYear(DESA_pop, 2015, missed, 1000) # numbers are in thousands
+                else:
+                    DESA_missed_pop = pop.getNumberForYear(DESA_pop, year, missed, 1000) # numbers are in thousands
                 updateparentpop = SSP_parent_pop - DESA_missed_pop
 
                 # rinse and repeat for urban:
