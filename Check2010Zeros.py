@@ -26,7 +26,9 @@ print "{:,}".format(p.size)
 print "{:,}".format(u.size)
 print "{:,}".format(c.size)
 
-print "# Cells without population"
+print
+
+print "# Cells without population (1 person or less per cell)"
 print "{:,}".format(p[nopop].size)
 
 print "# Cells ON LAND without population"
