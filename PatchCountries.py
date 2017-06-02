@@ -13,13 +13,23 @@ import os
 import os.path
 import glob
 
-if len(sys.argv) != 1:
+def printMsg():
     print "The script will find all .npy files for all scenrios / urban/rural combinations"
-    print "in the respective folders and patch "
+    print "in the respective folders and patch, starting from startyear to (incl.) endyear "
+    print "Call e.g. via: python PatchCountries.py 2010 2050 "
     print "them into the corresponding population and urban/rural TIFFs in the same folder."
     print "This was made for fixing Individual countries; for a whole reassably,"
     print "run ReassambleCountries.py."
     sys.exit()
+
+if len(sys.argv) != 3:
+    printMsg()
+
+try:
+    startyear = int(sys.argv[1])
+    endyear = int(sys.argv[2])
+except Exception as e:
+    printMsg()
 
 
 countriesDir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
@@ -69,7 +79,17 @@ def outlineCountries(a):
 
 
 print "Loading countries TIFF and converting to NumPy array"
-countryBoundaries = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff')
+countriesFile = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
+countryBoundaries = pop.openTIFFasNParray(countriesFile)
+
+
+# use this as the reference tiff later:
+
+reffile = gdal.Open(countriesFile)
+geotransform = reffile.GetGeoTransform()
+rasterXSize = reffile.RasterXSize
+rasterYSize = reffile.RasterYSize
+projection = reffile.GetProjection()
 
 
 
@@ -78,8 +98,7 @@ root = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Project
 for m in ["GRUMP", "GlobCover"]:
     for ssp in ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]:
         src = root+m+'/'+ssp+'/'
-        #for year in range (2010, 2101, 10):
-        for year in range (2010, 2021, 10):
+        for year in range (startyear, endyear+1, 10):
             for kind in ["pop", "urbanRural"]:
                 # find all .npy files for that year / kind (pop and urban/rural):
                 files = glob.glob(src+'*-'+str(year)+'-'+kind+'.npy')
@@ -121,10 +140,7 @@ for m in ["GRUMP", "GlobCover"]:
 
                     print "Saving TIFF"
 
-                    # TODO: don't load TIFF every time again
-                    ref = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
-
-                    pop.array_to_raster(globalRaster, filename+'-updated.tiff', ref)
+                    pop.array_to_raster_noref(globalRaster, root+m+'/'+ssp+'/'+kind+'-'+str(year)+'-updated.tiff', geotransform, rasterXSize, rasterYSize, projection)
 
 print time.ctime()
 pync.Notifier.notify('Patching complete ¯\_(ツ)_/¯ ', title='Python')
