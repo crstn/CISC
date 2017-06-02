@@ -442,6 +442,31 @@ def openTIFFasNParray(file):
     band = src.GetRasterBand(1)
     return np.array(band.ReadAsArray())
 
+
+# saves a raster as a geotiff to dst_filename
+# this version allows to pass the geotransform and x/y size directly,
+# so we don't have to open the reference TIFF every time when repeatedly
+# saving TIFFs
+def array_to_raster_noref(array, dst_filename, geotransform, rasterXSize, rasterYSize, projection):
+
+    driver = gdal.GetDriverByName('GTiff')
+
+    dataset = driver.Create(
+        dst_filename,
+        rasterXSize,
+        rasterYSize,
+        1,
+        gdal.GDT_Int32,
+        options = [ 'COMPRESS=LZW' ])
+
+    dataset.SetGeoTransform(geotransform)
+
+    dataset.SetProjection(projection)
+    dataset.GetRasterBand(1).SetNoDataValue(-1)
+    dataset.GetRasterBand(1).WriteArray(array)
+    dataset.FlushCache()  # Write to disk.
+
+
 # saves a raster as a geotiff to dst_filename
 def array_to_raster(array, dst_filename, referencetiff):
 
