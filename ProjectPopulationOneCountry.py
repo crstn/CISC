@@ -6,8 +6,8 @@ from PIL import Image
 
 import PopFunctions as pop
 
-target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/GRUMP/"
-# target = '/Volumes/Solid Guy/Sandbox/GlobCover/'
+target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
+# target = '/Volumes/Solid Guy/Sandbox/'
 
 # Turn saving of TIFFS for debugging on or off:
 savetiffs = False
@@ -38,10 +38,19 @@ def main():
 
     global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, endyear, target
 
-    # we'll read in the first command line arugument as the country ID we'll work on
+    if(len sys.argv != 5):
+        print "This script takes three arguments:"
+        print "1. The country ID (e.g., 156 for China)"
+        print "2. The scenario (SSP1 – SSP5)"
+        print "3. The urban/rural version (GRUMP or GlobCover)"
+        print ""
+        sys.exit();
+
     country = sys.argv[1]
     scenario = sys.argv[2]
     urbanRuralVersion = sys.argv[3]
+
+    target = target + urbanRuralVersion + "/"
 
     logging.info('Starting...')
     logging.info('Reading CSVs')
