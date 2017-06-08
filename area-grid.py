@@ -3,7 +3,9 @@ import gdal
 import os
 import PopFunctions as pop
 
-target = os.path.expanduser('~') + "/Dropbox/CISC Data/Area Grid/area-grid.tif"
+resolution=0.008333333333333 # in decimal degrees!
+makeTIFF = True # The geotiff is really only required to look at it in a GIS
+dst = os.path.expanduser('~') + "/Dropbox/CISC Data/Area Grid/"
 
 """
 Creates a global grid of a particular resolution, where the value of
@@ -12,7 +14,7 @@ each grid cell is the area of that grid cell.
 Borrowed/adapted from https://gis.stackexchange.com/questions/232813/easiest-way-to-create-an-area-raster
 """
 
-def do_grid (resolution=0.008333333333333):
+def do_grid (resolution):
     """Calculate the area of each grid cell for a user-provided
     grid cell resolution. Area is in square meters, but resolution
     is given in decimal degrees."""
@@ -25,18 +27,26 @@ def do_grid (resolution=0.008333333333333):
     return area.T
 
 if __name__ == "__main__":
-    resolution=0.008333333333333
-    # Get the GeoTIFF driver
-    drv = gdal.GetDriverByName("GTiff")
-    # Compressed GeoTIFF file
-    dst_ds = drv.Create(target, int(360./resolution),
-                int(141./resolution),
-                1, gdal.GDT_Float32,
-                options = [ 'COMPRESS=DEFLATE'] )
-    # Projection using EPSG:4326
-    wgs84='GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]'
-    dst_ds.SetProjection(wgs84)
-    geotransform = (-180.,resolution,0,84.,0,-resolution)
-    dst_ds.SetGeoTransform(geotransform)
-    dst_ds.GetRasterBand(1).WriteArray(do_grid(resolution=resolution))
-    dst_ds = None
+
+    areagrid = do_grid(resolution)
+
+    # take just one column (i.e., along a meridian)
+    areavector = areagrid[:, 0]
+    print areavector
+    np.save(dst+'areas.npy', areavector)
+
+    if(makeTIFF == True):
+        # Get the GeoTIFF driver
+        drv = gdal.GetDriverByName("GTiff")
+        # Compressed GeoTIFF file
+        dst_ds = drv.Create(dst+"area-grid.tif", int(360./resolution),
+                    int(141./resolution),
+                    1, gdal.GDT_Float32,
+                    options = [ 'COMPRESS=DEFLATE'] )
+        # Projection using EPSG:4326
+        wgs84='GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]'
+        dst_ds.SetProjection(wgs84)
+        geotransform = (-180.,resolution,0,84.,0,-resolution)
+        dst_ds.SetGeoTransform(geotransform)
+        dst_ds.GetRasterBand(1).WriteArray(areagrid)
+        dst_ds = None
