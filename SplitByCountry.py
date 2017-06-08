@@ -25,6 +25,9 @@ population2000 = pop.openTIFFasNParray(f)
 f = base + 'Population 2010 Raster/Pop_2010_clipped.tiff'
 population2010 = pop.openTIFFasNParray(f)
 
+# load the index arrays:
+rows = np.load(base + 'Index Grids/rows.npy')
+cols = np.load(base + 'Index Grids/cols.npy')
 
 
 # just to check:
@@ -33,6 +36,8 @@ print urbanRural_GlobCover.shape
 print countryBoundaries.shape
 print population2000.shape
 print population2010.shape
+print rows.shape
+print cols.shape
 
 countries = np.unique(countryBoundaries)
 i = 1
