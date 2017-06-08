@@ -9,25 +9,25 @@ base = os.path.expanduser('~') + '/Dropbox/CISC Data/'
 
 # load countries TIFF and convert to NumPy array
 f = base + 'Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
-countryBoundaries = pop.openTIFFasNParray(f)
+countryBoundaries = pop.openTIFFasNParray(f).ravel()
 
 # load urban rural TIFFs (GRUMP and GlobCover) and convert to NumPy arrays
 f = base + 'GLUR Raster/GRUMP_UrbanRural.tiff'
-urbanRural_GRUMP = pop.openTIFFasNParray(f)
+urbanRural_GRUMP = pop.openTIFFasNParray(f).ravel()
 
 f = base + 'GLUR Raster/GlobCover_UrbanRural.tiff'
-urbanRural_GlobCover = pop.openTIFFasNParray(f)
+urbanRural_GlobCover = pop.openTIFFasNParray(f).ravel()
 
 # load population TIFFs and convert to NumPy array
 f = base + 'Population 2000 Raster/Pop_2000_clipped.tiff'
-population2000 = pop.openTIFFasNParray(f)
+population2000 = pop.openTIFFasNParray(f).ravel()
 
 f = base + 'Population 2010 Raster/Pop_2010_clipped.tiff'
-population2010 = pop.openTIFFasNParray(f)
+population2010 = pop.openTIFFasNParray(f).ravel()
 
 # load the index arrays:
-rows = np.load(base + 'Index Grids/rows.npy')
-cols = np.load(base + 'Index Grids/cols.npy')
+rows = np.load(base + 'Index Grids/rows.npy').ravel()
+cols = np.load(base + 'Index Grids/cols.npy').ravel()
 
 
 # just to check:
