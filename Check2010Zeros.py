@@ -18,8 +18,12 @@ p[p<0] = 0
 nopop = p <= 1
 # select cells that are on land
 onland = u >= 1
+# select urban cells
+urban = u == 2
+# select non-urban cells
+nonurban = u <= 1
 # select cells that are in an SDEI city
-outsidecities = c > 0
+insidecities = c > 0
 
 # sanity check:
 print "{:,}".format(p.size)
@@ -40,10 +44,16 @@ noPop[np.all((nopop, onland), axis=0)] = 1
 pop.array_to_raster(noPop, os.path.expanduser('~') + '/Desktop/noPop-1.tiff', os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
 
 print "# Cells ON LAND that are WITHIN an SDEI city, but without population"
-print "{:,}".format(p[np.all((nopop, onland, outsidecities), axis=0)].size)
+print "{:,}".format(p[np.all((nopop, onland, insidecities), axis=0)].size)
+
+print "# Cells in GRUMP urban extents, but without population"
+print "{:,}".format(p[np.all((nopop, urban), axis=0)].size)
+
+print "# that are WITHIN an SDEI city, but not within an GRUMP urban area"
+print "{:,}".format(p[np.all((insidecities, nonurban), axis=0)].size)
 
 noPopInCities = np.zeros(p.shape, dtype = np.int)
-noPopInCities[np.all((nopop, onland, outsidecities), axis=0)] = 1
+noPopInCities[np.all((nopop, onland, insidecities), axis=0)] = 1
 
 pop.array_to_raster(noPopInCities, os.path.expanduser('~') + '/Desktop/noPopInCities.tiff', os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
 
