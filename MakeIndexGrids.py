@@ -11,13 +11,16 @@ rowcount = 16920
 colcount = 43200
 
 def makeGrids(rows, cols):
-    rowgrid = np.empty([rows, cols])
-    colgrid = np.empty([rows, cols])
+    rowgrid = np.empty([rows, cols]).astype(np.int32)
+    colgrid = np.empty([rows, cols]).astype(np.int32)
 
     for row in range(0, rows):
         for col in range(0, cols):
             rowgrid[row, col] = row
             colgrid[row, col] = col
+
+    print np.max(rowgrid)
+    print np.max(colgrid)
 
     return rowgrid, colgrid
 
