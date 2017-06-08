@@ -1,35 +1,26 @@
-import os, numpy as np, tif2num as tn
+import os, numpy as np
+import tif2num as tn
+import PopFunctions as pop
 from PIL import Image
 from osgeo import gdal
 
 # load countries TIFF and convert to NumPy array
 f = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
-src = gdal.Open(f, gdal.GA_Update)
-band = src.GetRasterBand(1)
-countryBoundaries = np.array(band.ReadAsArray())
+countryBoundaries = pop.openTIFFasNParray(f)
 
 # load urban rural TIFFs (GRUMP and GlobCover) and convert to NumPy arrays
 f = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GRUMP_UrbanRural.tiff'
-src = gdal.Open(f, gdal.GA_Update)
-band = src.GetRasterBand(1)
-urbanRural_GRUMP = np.array(band.ReadAsArray())
+urbanRural_GRUMP = pop.openTIFFasNParray(f)
 
 f = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GlobCover_UrbanRural.tiff'
-src = gdal.Open(f, gdal.GA_Update)
-band = src.GetRasterBand(1)
-urbanRural_GlobCover = np.array(band.ReadAsArray())
-
+urbanRural_GlobCover = pop.openTIFFasNParray(f)
 
 # # load population TIFFs and convert to NumPy array
 f = os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2000 Raster/Pop_2000_clipped.tiff'
-src = gdal.Open(f, gdal.GA_Update)
-band = src.GetRasterBand(1)
-population2000 = np.array(band.ReadAsArray())
+population2000 = pop.openTIFFasNParray(f)
 
 f = os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff'
-src = gdal.Open(f, gdal.GA_Update)
-band = src.GetRasterBand(1)
-population2010 = np.array(band.ReadAsArray())
+population2010 = pop.openTIFFasNParray(f)
 
 # just to check:
 print urbanRural_GRUMP.shape
