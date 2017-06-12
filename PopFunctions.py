@@ -27,33 +27,28 @@ thinningFactor = 0.95
 topNcells = 50
 
 
-def logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural):
+def logSubArraySizes(populationProjected, year, country, WTP, urbanRural):
 
     logging.info("  ----   ")
     logging.info("Array sizes for " + WTP[str(country)][MAJ])
 
     logging.info("Population: " +
-                 str(populationProjected[countryBoundaries == int(country)].size))
-    logging.info("Urban: " + str(urbanRural[np.logical_and(
-        countryBoundaries == int(country), urbanRural == urbanCell)].size))
-    logging.info("Rural: " + str(urbanRural[np.logical_and(
-        countryBoundaries == int(country), urbanRural == ruralCell)].size))
+                 str(populationProjected.size))
+    logging.info("Urban: " + str(urbanRural[urbanRural == urbanCell].size))
+    logging.info("Rural: " + str(urbanRural[urbanRural == ruralCell].size))
     logging.info("  ----   ")
 
 
 # logs the difference for urban and rural population
 # between whats in the populationProjected and the
 # DESA population projection CSV
-def logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural):
-    incountry = countryBoundaries == int(country)
-    u         = urbanRural == urbanCell
-    r         = urbanRural == ruralCell
+def logDifference(populationProjected, year, country, WTP, WUP, urbanRural):
+    u  = urbanRural == urbanCell
+    r = urbanRural == ruralCell
 
-    popraster = np.nansum(populationProjected[incountry])
-    urbraster = np.nansum(populationProjected[
-        np.logical_and(incountry, u)])
-    rurraster = np.nansum(populationProjected[
-        np.logical_and(incountry, r)])
+    popraster = np.nansum(populationProjected)
+    urbraster = np.nansum(populationProjected[u])
+    rurraster = np.nansum(populationProjected[r])
 
     popcsv = getNumberForYear(WTP, year, country, multiply)
     urbcsv = getNumberForYear(WUP, year, country)
@@ -90,12 +85,11 @@ def getCountryByID(country, WTP):
 # Calculates the population thresholds for turning a cell from rural to urban.
 # Current approach: Urban threshold is the mean between the mean pop for urban cells
 # and the mean pop for rural cells.
-def getUrbanThreshold(country, population, countryBoundaries, urbanRural, WTP):
-    a = countryBoundaries == int(country)
+def getUrbanThreshold(country, population, urbanRural, WTP):
     b = urbanRural == urbanCell
 
     # some countries don't have urban cells, they need special treatment:
-    urban = population[np.all((a, b), axis=0)]
+    urban = population[b]
     if urban.size == 0:
         # set threshold to 1000 TODO: change?
         urbanMedian = 1000
@@ -106,15 +100,14 @@ def getUrbanThreshold(country, population, countryBoundaries, urbanRural, WTP):
 
 
 # turns rural into urban cells if national thresholds (see getUrbanThreshold) are exceeded
-def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape, urbanthreshold):
+def urbanize(populationProjected, year, country, WTP, WUP, urbanRural, allIndexes, shape, urbanthreshold):
 
     # check rural cells in this country for population threshold:
-    a = countryBoundaries == int(country)
     b = urbanRural == ruralCell
     c = populationProjected > urbanthreshold
 
     # turn these cells urban
-    urbanRural[np.all((a, b, c), axis = 0)] = urbanCell
+    urbanRural[np.all((b, c), axis = 0)] = urbanCell
 
     return urbanRural
 
@@ -122,17 +115,16 @@ def urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, ur
 
 # this one just compares the numbers from the raster to the CSV
 # and then calls the corresponding functions to add or remove people.
-def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
+def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, allIndexes, shape):
 
     # figure out the difference between the populationProjected
     # input raster and what's in the table:
 
-    urbraster=np.nansum(populationProjected[
-        np.logical_and(countryBoundaries == int(country),
-                       urbanRural == urbanCell)])
-    rurraster=np.nansum(populationProjected[
-        np.logical_and(countryBoundaries == int(country),
-                       urbanRural == ruralCell)])
+    u = urbanRural == urbanCell
+    r = urbanRural == ruralCell
+
+    urbraster=np.nansum(populationProjected[u])
+    rurraster=np.nansum(populationProjected[r])
 
     popcsv=getNumberForYear(WTP, year, country, multiply)
     urbcsv=getNumberForYear(WUP, year, country)
@@ -143,14 +135,14 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
     rurDiff=rurcsv - rurraster
 
     logging.info("Numbers before adjustment:")
-    logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
+    logDifference(populationProjected, year, country, WTP, WUP, urbanRural)
 
     # urban:
     if (urbDiff > 0):  # add people
         logging.info("adding urban population")
         try:
             populationProjected=addPopulation(populationProjected, urbDiff,
-                                                country, urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
+                                                country, urbanCell, WTP, WUP, urbanRural, allIndexes, shape)
         except ValueError as e:
             # TODO need a way to create new urban cells in countries that don't have any
             logging.error("ValueError while adding urban population -- no urban cells present")
@@ -160,20 +152,20 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, countryBounda
         logging.info("removing urban population")
         populationProjected=removePopulation(populationProjected,
                                                np.abs(urbDiff), country,
-                                               urbanCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
+                                               urbanCell, WTP, WUP, urbanRural, allIndexes)
 
     # and rural:
     if (rurDiff > 0):  # add people
         logging.info("adding rural population")
         populationProjected=addPopulation(populationProjected, rurDiff,
-                                            country, ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape)
+                                            country, ruralCell, WTP, WUP, urbanRural, allIndexes, shape)
     else:   # remove people
         logging.info("removing rural population")
         populationProjected=removePopulation(populationProjected,
                                                np.abs(rurDiff), country,
-                                               ruralCell, WTP, WUP, countryBoundaries, urbanRural, allIndexes)
+                                               ruralCell, WTP, WUP, urbanRural, allIndexes)
     logging.info("Numbers after adjustment:")
-    logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
+    logDifference(populationProjected, year, country, WTP, WUP, urbanRural)
 
     return populationProjected
 
@@ -188,13 +180,9 @@ def getTopNCells(N, populationProjected):
 
 
 
-def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, countryBoundaries, urbanRural, allIndexes, shape):
+def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRural, allIndexes, shape):
 
-    # try:
-    a= countryBoundaries == int(country)
-    b = urbanRural == cellType
-
-    randoms = np.all((a, b), axis =0)
+    randoms = urbanRural == cellType
     if np.nansum(randoms) < 0:
         logging.error("Can't add population to "
                       + getCountryByID(country, WTP)
@@ -221,11 +209,8 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
             # before we start, we'll assume that a certain share of the current max is the
             # limit after which we spill over into neighboring cells:
 
-            a = countryBoundaries == int(country)
             b = urbanRural == urbanCell
-
-            urbCountry = populationProjected[np.all((a, b), axis=0)]
-
+            urbCountry = populationProjected[b]
 
             if urbCountry.size > 0:
                 if urbCountry.size >= topNcells: # this is the common case
@@ -272,7 +257,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
                 logging.info("Cells over limit: " + str(populationProjected[np.all((a, b, c), axis=0)]))
                 logging.info("Indexes: " + str(allIndexes[np.all((a, b, c), axis=0)]))
 
-                populationProjected = spillover(populationProjected, country, limit, countryBoundaries, urbanRural, allIndexes, shape)
+                populationProjected = spillover(populationProjected, country, limit, urbanRural, allIndexes, shape)
 
             # Print some stats after the spillover:
 
@@ -284,17 +269,16 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, country
 
 
 
-def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, countryBoundaries, urbanRural, allIndexes):
+def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRural, allIndexes):
 
     # Added the condition that the cell has to have more than 0 population
     # Since we're doing subtract at with 1, this means we should create
     # fewer 'negative' cells...
 
-    a = countryBoundaries == float(country)
     b = populationProjected >= 1.0
     c = urbanRural == cellType
 
-    randoms = np.all((a, b, c), axis=0)
+    randoms = np.all((b, c), axis=0)
 
     if (allIndexes[randoms].size > 0):
         randomIndexes = np.random.choice(allIndexes[randoms], int(pop))
@@ -355,10 +339,8 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, coun
 # Spillover: remove population above limit and "push" them to the neighboring cells
 # (I was thinking about calling this function "gentrify"...)
 # Function allows spill over into other cell types, i.e. from urban to rural, to simulate urban growth
-def spillover(populationProjected, country, limit, countryBoundaries, urbanRural, allIndexes, shape):
+def spillover(populationProjected, country, limit, urbanRural, allIndexes, shape):
 
-
-    a = countryBoundaries == int(country)
     b = populationProjected > limit
     c = urbanRural == urbanCell
 

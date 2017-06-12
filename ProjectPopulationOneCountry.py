@@ -9,14 +9,13 @@ import PopFunctions as pop
 target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
 # target = '/Volumes/Solid Guy/Sandbox/'
 
-# Turn saving of TIFFS for debugging on or off:
-savetiffs = False
+src = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
 
 # Turn logging of urban / rural / total population at every step on of off:
 checkNumbers = False
 
 # overwrite existing projections for the same country?
-overwrite = True
+overwrite = False
 
 endyear = 2100
 
@@ -38,19 +37,14 @@ def main():
 
     global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, endyear, target
 
-    if(len sys.argv != 5):
-        print "This script takes three arguments:"
-        print "1. The country ID (e.g., 156 for China)"
-        print "2. The scenario (SSP1 – SSP5)"
-        print "3. The urban/rural version (GRUMP or GlobCover)"
-        print ""
-        sys.exit();
-
     country = sys.argv[1]
     scenario = sys.argv[2]
     urbanRuralVersion = sys.argv[3]
 
-    target = target + urbanRuralVersion + "/"
+    # create output dir if it doesn't exist yet:
+    target = target + urbanRuralVersion + "/" + scenario + "/"
+    if not os.path.exists(target):
+        os.makedirs(target)
 
     logging.info('Starting...')
     logging.info('Reading CSVs')
@@ -90,39 +84,19 @@ def main():
 
     logging.info('Reading Numpy arrays')
 
-    urbanRural = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-UrbanRural-'+urbanRuralVersion+'.npy')
-
-    # save the shape of these arrays for later, so that we
-    # can properly reshape them after flattening:
-    matrix = urbanRural.shape
-
-
-
-    # we flatten all arrays to 1D, so we don't have to deal with 2D arrays:
-    urbanRural = urbanRural.ravel()
-
-    countryBoundaries = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-boundary.npy').ravel()
+    urbanRural = np.load(src+country+'.0-UrbanRural-'+urbanRuralVersion+'.npy')
 
     # load population raster datasets for 2000 and 2010
-    populationOld = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-pop2000.npy').ravel()
+    populationOld = np.load(src+country+'.0-pop2000.npy')
+    populationNew = np.load(src+country+'.0-pop2010.npy')
 
-    populationNew = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-pop2010.npy').ravel()
-
-    if savetiffs:
-        # also save copies of the input for visualization
-        img = Image.fromarray(urbanRural.reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-2010-urbanRural.tiff")
-
-        img = Image.fromarray(populationOld.astype(float).reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-2000-pop.tiff")
-
-        img = Image.fromarray(populationNew.astype(float).reshape(matrix))
-        img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-2010-pop.tiff")
-
+    #load the row and column indexes
+    rows  = np.load(src+country+'.0-rows.npy')
+    cols  = np.load(src+country+'.0-cols.npy')
 
     # calculate thresholds for urbanization before we start the simulation:
 
-    urbanthreshold = pop.getUrbanThreshold(country, populationOld, countryBoundaries, urbanRural, WTP)
+    urbanthreshold = pop.getUrbanThreshold(country, populationOld, urbanRural, WTP)
 
 
     # these arrays use very small negative numbers as NULL,
@@ -153,7 +127,7 @@ def main():
         # pop.logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural)
 
         # adjust for the difference between raster and csv projection data:
-        pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
+        pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, allIndexes, matrix)
 
         # Skip the urbanization for 2010, because we know the urban extents;
         # the purpose of running the population adjstment for 2010 was just to make
@@ -161,28 +135,19 @@ def main():
         # match the maps.
         if(year > 2010):
             # run the urbanization
-            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix, urbanthreshold)
+            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, urbanRural, allIndexes, matrix, urbanthreshold)
             # after the urbanization, we have to re-adjust the population, because # otherwise the numbers for urban and rural will be off from the DESA numbers
-            pop.adjustPopulation(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural, allIndexes, matrix)
+            pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, allIndexes, matrix)
 
 
         # save the numpy arrays
-        np.save(target + country + "-"+str(year)+"-urbanRural.npy", urbanRural.reshape(matrix))
-        np.save(target + country + "-"+str(year)+"-pop.npy", populationNew.reshape(matrix))
+        np.save(target + country + "-"+str(year)+"-urbanRural.npy", urbanRural)
+        np.save(target + country + "-"+str(year)+"-pop.npy", populationNew)
 
 
         if checkNumbers:
             pop.logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
-
-        if savetiffs:
-            # also save as a tiff (not georeferenced, just to look at the data in QGIS)
-            # Turn this off when in production!
-            img = Image.fromarray(urbanRural.reshape(matrix))
-            img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-urbanRural.tiff")
-
-            img = Image.fromarray(populationNew.astype(float).reshape(matrix))
-            img.save(os.path.expanduser('~') + "/Desktop/Projections/"+country+"-"+str(year)+"-pop.tiff")
 
         # pop.logDifference(populationProjected, year, country, WTP, WUP, countryBoundaries, urbanRural)
 
@@ -201,17 +166,12 @@ def main():
 if __name__ == '__main__':
 
     if len(sys.argv) != 4:
-        print "This script expects a country ID, a scenario (SSP1...SSP5), and the urban/rural version (GlobCover or GRUMP) as parameter, e.g."
-        print "python ProjectPopulationOneCountry.py 156 SSP1 GlobCover"
-        print "to project the population according to SSP1 and GlobCover for China. Check the WUP/WTP csv files for the country IDs."
-        sys.exit()
-
-
-    # create output dir if it doesn't exist yet:
-    target = target + sys.argv[2]+"/"
-    if not os.path.exists(target):
-        os.makedirs(target)
-
+        print "This script takes three arguments:"
+        print "1. The country ID (e.g., 156 for China)"
+        print "2. The scenario (SSP1 – SSP5)"
+        print "3. The urban/rural version (GRUMP or GlobCover)"
+        print ""
+        sys.exit();
 
     logging.basicConfig(level=logging.ERROR,  # toggle this between INFO for debugging and ERROR for "production"
                         filename='logs/output-'+datetime.utcnow().strftime("%Y%m%d")+ '-'+sys.argv[1]+'-'+sys.argv[2]+'-'+sys.argv[3]+'.log',
