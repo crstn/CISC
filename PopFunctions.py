@@ -363,16 +363,12 @@ def spillover(populationProjected, country, limit, urbanRural, allIndexes, shape
 
 
 # Returns an array of indexes that correspond to the n x n neighborhood of the index cell
-# in a raveled (1D) matrix based on the # shape of the original (2D) matrix.
-# Returns only neighbors within shape, exlcuding the input cell
+# at row/colum, while making sure that the return neighbors are listed in the rows/columns indexes.
 # If n is an even number, will generate the neighborhood for n+1, so that the cell at
-# index is always at the center
-def getNeighbours(index, shape, n):
-    twoDIndex = oneDtoTwoD(index, shape)
-    row = twoDIndex[0]
-    col = twoDIndex[1]
-
-    neighbors = []
+# row/col is always at the center
+def getNeighbours(rows, cols, row, col, n):
+    nbrows = []
+    nbcols = []
 
     start = (n/2) * -1
     end = (n/2) + 1
@@ -382,10 +378,17 @@ def getNeighbours(index, shape, n):
             rn = row + r
             cn = col + c
             if r != 0 or c !=0: # don't add the original cell
-                if 0 <= rn < shape[0] and 0 <= cn < shape[1]: # don't add neighbors that are outside of the shape!
-                    neighbors.append(twoDtoOneD(rn, cn, shape))
+                # check if the calculated row and column for this neighboring cells is actually
+                # listed in the rows/colums. To do this, get the indices where the current row/column
+                # appears
+                a = np.where(rows == rn)
+                b = np.where(cols == cn)
+                # ... and make sure they are at the some position in the corresponding arrays.
+                if(len(np.intersect1d(a,b)) == 1):
+                    nbrows.append(rn)
+                    nbcols.append(cn)
 
-    return neighbors
+    return nbrows, nbcols
 
 
 # Computes the "raveled" index from a 2D index. Shape is a tuple (rows, columns).
