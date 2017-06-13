@@ -1,3 +1,6 @@
+# coding: utf-8
+#!/usr/bin/env python
+
 from osgeo import gdal, osr
 import os, datetime, sys, operator, logging, math, csv
 import numpy as np
@@ -6,7 +9,7 @@ from PIL import Image
 
 import PopFunctions as pop
 
-target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/"
+target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/Test"
 # target = '/Volumes/Solid Guy/Sandbox/'
 
 src = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
@@ -25,7 +28,6 @@ endyear = 2100
 # some global variables that most functions need access to:
 populationOld = []
 populationNew = []
-allIndexes = []
 countryBoundaries = []
 urbanRural = []
 WTP = 0
@@ -35,7 +37,7 @@ WUP = 0
 
 def main():
 
-    global populationOld, populationNew, allIndexes, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, endyear, target
+    global populationOld, populationNew, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, endyear, target
 
     country = sys.argv[1]
     scenario = sys.argv[2]
@@ -108,9 +110,6 @@ def main():
     populationOld = populationOld.astype(np.int64)
     populationNew = populationNew.astype(np.int64)
 
-    # make an array of all indexes; we'll use this later:
-    allIndexes = np.arange(countryBoundaries.size)
-
     logging.info("Starting simulation...")
 
     year = 2010
@@ -127,7 +126,7 @@ def main():
         # pop.logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural)
 
         # adjust for the difference between raster and csv projection data:
-        pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, allIndexes, matrix)
+        pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols)
 
         # Skip the urbanization for 2010, because we know the urban extents;
         # the purpose of running the population adjstment for 2010 was just to make
@@ -135,9 +134,9 @@ def main():
         # match the maps.
         if(year > 2010):
             # run the urbanization
-            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, urbanRural, allIndexes, matrix, urbanthreshold)
+            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, urbanRural, urbanthreshold)
             # after the urbanization, we have to re-adjust the population, because # otherwise the numbers for urban and rural will be off from the DESA numbers
-            pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, allIndexes, matrix)
+            pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols)
 
 
         # save the numpy arrays
@@ -168,7 +167,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 4:
         print "This script takes three arguments:"
         print "1. The country ID (e.g., 156 for China)"
-        print "2. The scenario (SSP1 – SSP5)"
+        print "2. The scenario (SSP1 to SSP5)"
         print "3. The urban/rural version (GRUMP or GlobCover)"
         print ""
         sys.exit();
