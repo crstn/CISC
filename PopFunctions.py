@@ -330,31 +330,39 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, urba
         logging.error( "Cell type: " + str(cellType) )
         logging.error( " " )
 
-
-
-
     return populationProjected
 
 
 # Spillover: remove population above limit and "push" them to the neighboring cells
 # (I was thinking about calling this function "gentrify"...)
 # Function allows spill over into other cell types, i.e. from urban to rural, to simulate urban growth
-def spillover(populationProjected, country, limit, urbanRural, allIndexes, shape):
 
-    b = populationProjected > limit
-    c = urbanRural == urbanCell
+def spillover(populationProjected, limit, urbanRural, rows, cols):
 
-    overcrowded = np.all((a, b, c), axis = 0)
+    u = urbanRural == urbanCell
+    l = populationProjected > limit
+
+    overcrowded = np.all((u, l), axis = 0)
     # for every overcrowded cell, distribute the surplus population randomly among its neighbors
-    for fullCell in allIndexes[overcrowded]:
+    for fullCell in np.where(overcrowded)[0]:
 
         logging.info("Spilling over "+str(fullCell))
 
         surplus = populationProjected[fullCell] - limit # by how much are we over the limit?
         # reset those cells to the limit value:
         populationProjected[fullCell] = limit
-        # and move the extra people to the neighbors:
-        wilsons = getNeighbours(fullCell, shape, 3)
+        # find the row/column indexes for the neighbors:
+        rownbs, colnbs = getNeighbours(rws, cls, rws[fullCell], cls[fullCell], 3)
+
+        # add them all to an array TODO: find a way to do this without a loop!
+        wilsons = np.array([], dtype=int)
+        for i in range(0,len(rownbs)):
+            # get their respective places in the arrays:
+            ris = rows == rownbs[i]
+            cis = cols == colnbs[i]
+            wilsons = np.append(wilsons, np.where(np.all((ris, cis), axis=0))[0])
+            print wilsons
+
         rI = np.random.choice(wilsons, int(surplus))
         np.add.at(populationProjected, rI, 1)
 
