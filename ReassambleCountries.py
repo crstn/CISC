@@ -1,156 +1,129 @@
 # coding: utf-8
 #!/usr/bin/env python
 
-import os, time, numpy as np, tif2num as tn, PopFunctions as pop, sys
-from PIL import Image
-from osgeo import gdal
+import os
+import time
+import sys
 import pync
 import os.path
+import glob
+import numpy as np
+import tif2num as tn
+import PopFunctions as pop
+from PIL import Image
+from osgeo import gdal
 
-if len(sys.argv) != 4:
-    print "Call this script with the year, the scenario, and the urban/rural layer e.g.:"
-    print "python ReassambleCountries.py 2020 SSP4 GlobCover"
-    sys.exit()
+ssps = ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]
+urbanRuralVersions = ["GlobCover", "GRUMP"]
 
-# src = '/Volumes/Solid Guy/Sandbox/'+sys.argv[3]+'/'+sys.argv[2]+'/'
-src = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/'+sys.argv[3]+'/'+sys.argv[2]+'/'
+root = os.path.expanduser('~') + '/Dropbox/CISC Data/'
+originalsDir = root + 'IndividualCountries'
+simulationsDir = root + 'IndividualCountries/Projections/Test'
+outputDir = os.path.expanduser('~') + '/Desktop/Test'
 
-# wait until the files for USA (840) are there; this is the last large country,
-# when its simulations for the current year are there, the simulation is complete.
-while not os.path.exists(src+"840-"+sys.argv[1]+"-pop.npy"):
-    print "Waiting for "+src+"840-"+sys.argv[1]+"-pop.npy"+" to finish..."
-    time.sleep(10)
-while not os.path.exists(src+"840-"+sys.argv[1]+"-urbanRural.npy"):
-    print "Waiting for "+src+"840-"+sys.argv[1]+"-urbanRural.npy"+" to finish..."
-    time.sleep(10)
+if not os.path.exists(outputDir):
+    os.makedirs(outputDir)
 
-print time.ctime()
-
-print "Loading countries TIFF and converting to NumPy array"
-countryBoundaries = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff')
-
-print "Loading urban-rural TIFF and converting to NumPy array"
-urbanRural2010 = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/'+sys.argv[3]+'_UrbanRural.tiff')
-
-print "Loading population 2010 TIFF and convert to NumPy array"
-population2010 = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
-
-print "Making copies of the last two for every year that we have projections for"
-urbanRuralDict = {'2010': urbanRural2010}
-popDict = {'2010': population2010}
-
-countriesDir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
-os.chdir(src)
-
-# some functions we'll need:
-
-# Look up address in memmory, useful to make sure two arrays are
-# actually different, and don't point to the same array
-def wo(arr):
-    pointer, read_only_flag = arr.__array_interface__['data']
-    print pointer
-
-# Returns a copy of a subblock from a 2D array.
-# Size of the subblock is determined by
-# startrow,endrow (included!), startcol,endcol (included!)
-# Does NOT throw an error message if part of the block is
-# outside of a
-def copySubBlock(a,startrow,endrow,startcol,endcol):
-    return np.copy(a[startrow:endrow+1,startcol:endcol+1])
-
-# Replaces a rectangular block at positions x, y
-# in array A with the content of array B.
-# Does NOT check if going out of bounds of the array!
-# Returns the updated array A. This works DIRECTLY on array a,
-#, i.e., not returning a copy.
-def replaceBlockInArray(a, b, startrow, startcol):
-    x, y = b.shape
-    endrow = x+startrow
-    endcol = y+startcol
-    a[startrow:endrow, startcol:endcol] = b
-    return a
-
-# Replaces cells in a with the values from the same cells in b. Cell indicies
-# are specified in "where", which contains the indicies for the cells to be replaced.
-# a and b need to be of equal size!
-# Returns the updated array a. This works DIRECTLY on array a,
-#, i.e., not returning a copy.
-def replaceCellsInArray(a, b, where):
-    a[where] = b [where]
-    return a
-
-# Replaces cells in a that are outside of all country boundaries with -1
-# (which will then be set as NAN when saving as TIFF).
-# Returns the updated array a. This works DIRECTLY on array a,
-#, i.e., not returning a copy.
-def outlineCountries(a):
-    a[countryBoundaries == 0] = -1
-    return a
-
-years = []
-years.append(sys.argv[1])
-
-# make empty versions of the global raster for every year to fill in later:
-for year in years:
-    urbanRuralDict[year] = np.copy(urbanRural2010)
-    popDict[year] = np.zeros(population2010.shape, dtype=np.int)
-
-print "Reassembling global map for the following years:"
-print years
-# for year in years:
-#     wo(popDict[year])
-
-# iterate through folder with projections for each country:
-for filename in os.listdir('.'):
-    if filename.endswith(".npy"):
-        if os.stat(filename).st_size == 0:
-            print filename + " is empty - skipping"
-        else:
-
-            firstDash = filename.find('-')
-            secondDash = filename.rfind('-')
-
-            country = filename[:firstDash]
-            year    = filename[firstDash+1:secondDash]
-            maptype = filename[secondDash+1:]
-
-            if year in years:
-                print "Processing " + filename
-                # replace the country in the global raster with the projected values
-                f = countriesDir + country + ".0-boundary.npy"
-                justCountryBoundary = np.load(f).astype(int)
-                try:
-                    projected = np.load(filename)
-
-                    x, y = np.where(countryBoundaries==int(country))
-
-                    if maptype == "pop.npy":
-                        # cut this block from the global population projections raster:
-                        subblock = copySubBlock(popDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
-                    elif maptype == "urbanRural.npy":
-                        subblock = copySubBlock(urbanRuralDict[year], np.min(x), np.max(x), np.min(y), np.max(y))
-
-                    # replace the population numbers in this subblock, but ONLY within the borders of the country:
-                    where = np.where(justCountryBoundary == int(country))
-                    replaceCellsInArray(subblock, projected, where)
-
-                    #  put the subblock back into its place in the original raster:
-                    if maptype == "pop.npy":
-                        replaceBlockInArray(popDict[year], subblock, np.min(x), np.min(y))
-                    elif maptype == "urbanRural.npy":
-                        replaceBlockInArray(urbanRuralDict[year], subblock, np.min(x), np.min(y))
-                except ValueError as e:
-                    print filename + " contains an error - skipped."
+# keep track of the years we have data for
+years = range(2010, 2101, 10)
 
 
-for year in years:
-    print "Saving TIFFs for " + str(year)
+# this dictionary will hold all the cell indexes (rows/cols) per country,
+# so that we don't need to load them over and over again (they don't change over time)
+rowcols = {}
 
-    ref = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
+print 'Loading reference GeoTiff'
 
-    pop.array_to_raster(outlineCountries(popDict[year]), src+'/pop-'+str(year)+'.tiff', ref)
+# we'll just load the reference tiff once:
+reffile = gdal.Open(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
+geotransform = reffile.GetGeoTransform()
+rasterXSize = reffile.RasterXSize
+rasterYSize = reffile.RasterYSize
+projection = reffile.GetProjection()
 
-    pop.array_to_raster(urbanRuralDict[year], src+'/urbanRural-'+str(year)+'.tiff', ref)
 
-print time.ctime()
-pync.Notifier.notify('Reassembling '+sys.argv[1]+' complete ¯\_(ツ)_/¯ ', title='Python')
+def disassembleFileName(filename):
+    firstDash = filename.find('-')
+    secondDash = filename.rfind('-')
+    country = filename[:firstDash]
+    year    = int(filename[firstDash+1:secondDash])
+    maptype = filename[secondDash+1:-4]
+
+    return country, year, maptype
+
+
+# adds the rows/cols array for the given country to the rowcols dict
+# if it is not there yet
+def loadRowsCols(country):
+    if country not in rowcols:
+        rowcols[country] = {}
+        rowcols[country]['rows'] = np.load(originalsDir+'/'+country+'.0-rows.npy')
+        rowcols[country]['cols'] = np.load(originalsDir+'/'+country+'.0-cols.npy')
+
+
+
+
+for urbanRuralVersion in urbanRuralVersions:
+
+    print 'Starting ' + urbanRuralVersion
+
+    if os.path.isdir(simulationsDir + '/' + urbanRuralVersion):
+
+        # create folder for the output:
+        if not os.path.exists(outputDir + '/' + urbanRuralVersion):
+            os.makedirs(outputDir + '/' + urbanRuralVersion)
+
+        for ssp in ssps:
+
+            print 'Starting ' + ssp
+
+            if os.path.isdir(simulationsDir + '/' + urbanRuralVersion + "/" + ssp):
+
+                # create folder for the output:
+                if not os.path.exists(outputDir + '/' + urbanRuralVersion + "/" + ssp):
+                    os.makedirs(outputDir + '/' + urbanRuralVersion + "/" + ssp)
+
+                # load the global population and urban rural tiffs
+                print "Loading urban-rural TIFF and converting to NumPy array"
+                urbanRural = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/'+urbanRuralVersion+'_UrbanRural.tiff')
+
+                print "Loading population 2010 TIFF and convert to NumPy array"
+                population = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
+
+
+                #  find all years we have simulations for:
+                d = simulationsDir + '/' + urbanRuralVersion + "/" + ssp
+
+                # make sure we have the rows/cols for all countries simulated in this year:
+                for y in years:
+                    # here we go: find all pop simulation files for this year:
+                    for filename in glob.glob(d+'/*-'+str(y)+'-pop.npy'):
+                        filename = filename.split('/')[-1]
+
+                        if os.stat(d+'/'+filename).st_size > 0: # skip empty files
+                            country, year, maptype = disassembleFileName(filename)
+                            # load their extents, only required once
+                            loadRowsCols(country)
+                            # replace the values in the global pop raster:
+                            population[rowcols[country]['rows'], rowcols[country]['cols']] = np.load(d+'/'+filename)
+
+                    # save the global tiff to the output folder:
+                    pop.array_to_raster_noref(population, outputDir + '/' + urbanRuralVersion + '/' + ssp + '/pop-'+str(year)+'.tiff', geotransform, rasterXSize, rasterYSize, projection)
+
+                    # repeat for urban/rural:
+                    for filename in glob.glob(d+'/*-'+str(y)+'-urbanRural.npy'):
+                        filename = filename.split('/')[-1]
+
+                        if os.stat(d+'/'+filename).st_size > 0: # skip empty files
+                            country, year, maptype = disassembleFileName(filename)
+                            # replace the values in the global pop raster:
+                            urbanRural[rowcols[country]['rows'], rowcols[country]['cols']] = np.load(d+'/'+filename)
+
+                    # save the global tiff to the output folder:
+                    pop.array_to_raster_noref(urbanRural, outputDir + '/' + urbanRuralVersion + '/' + ssp + '/urbanRural-'+str(year)+'.tiff', geotransform, rasterXSize, rasterYSize, projection)
+
+
+            else:
+                print "No simulations found for " + ssp + " found in " + urbanRuralVersion + ", skipping."
+    else:
+        print "No simulations found for " + urbanRuralVersion + ", skipping."
