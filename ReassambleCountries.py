@@ -34,7 +34,7 @@ rowcols = {}
 
 print 'Loading reference GeoTiff'
 
-# we'll just load the reference tiff once:
+# load the reference tiff:
 reffile = gdal.Open(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
 geotransform = reffile.GetGeoTransform()
 rasterXSize = reffile.RasterXSize
