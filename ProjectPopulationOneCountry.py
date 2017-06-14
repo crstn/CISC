@@ -9,7 +9,7 @@ from PIL import Image
 
 import PopFunctions as pop
 
-target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/Test/"
+target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/Test2/"
 # target = '/Volumes/Solid Guy/Sandbox/'
 
 src = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
@@ -96,9 +96,11 @@ def main():
     rows  = np.load(src+country+'.0-rows.npy')
     cols  = np.load(src+country+'.0-cols.npy')
 
-    # calculate thresholds for urbanization before we start the simulation:
+    #load the cell areas:
+    areas = np.load(src+country+'.0-areas.npy')
 
-    urbanthreshold = pop.getUrbanThreshold(country, populationOld, urbanRural, WTP)
+    # calculate population density threshold for urbanization before we start the simulation:
+    urbanthreshold = pop.getUrbanThreshold(populationOld, urbanRural, areas)
 
 
     # these arrays use very small negative numbers as NULL,
@@ -134,8 +136,9 @@ def main():
         # match the maps.
         if(year > 2010):
             # run the urbanization
-            urbanRural = pop.urbanize(populationProjected, year, country, WTP, WUP, urbanRural, urbanthreshold)
-            # after the urbanization, we have to re-adjust the population, because # otherwise the numbers for urban and rural will be off from the DESA numbers
+            urbanRural = pop.urbanize(populationProjected, urbanRural, areas, urbanthreshold)
+            # after the urbanization, we have to re-adjust the population, because
+            # otherwise the numbers for urban and rural will be off from the IIASA numbers
             pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols)
 
 

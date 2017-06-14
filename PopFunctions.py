@@ -106,35 +106,42 @@ def getCountryByID(country, WTP):
         logging.error("No country found for ID " + str(country))
         return 0
 
-# @dump_args
-def getUrbanThreshold(country, population, urbanRural, WTP):
+@dump_args
+def getUrbanThreshold(population, urbanRural, areas):
 
     """Calculates the population thresholds for turning a cell from rural to urban.
     Current approach: Urban threshold is the mean between the mean pop for urban cells
     and the mean pop for rural cells."""
 
+    # calculate population densities first:
+    densities = np.divide(population, areas)
+    print densities
 
     b = urbanRural == urbanCell
 
     # some countries don't have urban cells, they need special treatment:
-    urban = population[b]
+    urban = densities[b]
     if urban.size == 0:
-        # set threshold to 1000 TODO: change?
-        urbanMean = 1000
+        # set threshold to 1000 people per sqkm TODO: change?
+        urbanMean = 0.001
     else:
-        urbanMean = np.nanmean(urban)
+        urbanMean = np.nanmean(densities)
 
+    print urbanMean
     return urbanMean
 
 
-# @dump_args
-def urbanize(populationProjected, year, country, WTP, WUP, urbanRural, urbanthreshold):
+@dump_args
+def urbanize(populationProjected, urbanRural, areas, urbanthreshold):
 
     """Turns rural into urban cells if national thresholds (see getUrbanThreshold) are exceeded."""
 
-    # check rural cells in this country for population threshold:
+    # calculate population densities
+    densities = np.divide(populationProjected, areas)
+
+    # check rural cells in this country for density threshold:
     b = urbanRural == ruralCell
-    c = populationProjected > urbanthreshold
+    c = densities > urbanthreshold
 
     # turn these cells urban
     urbanRural[np.all((b, c), axis=0)] = urbanCell
@@ -430,7 +437,7 @@ def cartesian(arrays, out=None):
     return out
 
 
-# @dump_args
+@dump_args
 def spillover(populationProjected, limit, urbanRural, rows, cols):
 
     """Removes population above limit and "push" them to the neighboring cells
@@ -467,7 +474,7 @@ def spillover(populationProjected, limit, urbanRural, rows, cols):
     return populationProjected
 
 
-# # @dump_args
+@dump_args
 def getNeighbours(rows, cols, row, col, n, populationProjected, limit):
     """Returns an array of indexes that correspond to the n x n neighborhood of the index cell
     at row/colum, while making sure that the return neighbors are listed in the rows/columns indexes.
@@ -506,7 +513,7 @@ def getNeighbours(rows, cols, row, col, n, populationProjected, limit):
 
 
 
-# @dump_args
+@dump_args
 def transposeDict(listOfDicts, pk):
 
     """Turns a list of dictionaries into a single one."""
@@ -518,7 +525,7 @@ def transposeDict(listOfDicts, pk):
 
 
 
-# @dump_args
+@dump_args
 def projectLinear(first, second):
 
     """Calculates the change for each cell between first and second,
@@ -530,7 +537,7 @@ def projectLinear(first, second):
     out[out < 0] = 0
     return out
 
-# @dump_args
+@dump_args
 
 
 def openTIFFasNParray(file):
@@ -539,7 +546,7 @@ def openTIFFasNParray(file):
     return np.array(band.ReadAsArray())
 
 
-# @dump_args
+@dump_args
 def array_to_raster_noref(array, dst_filename, geotransform, rasterXSize, rasterYSize, projection):
 
     """Saves a raster as a geotiff to dst_filename.
@@ -564,7 +571,7 @@ def array_to_raster_noref(array, dst_filename, geotransform, rasterXSize, raster
     dataset.GetRasterBand(1).WriteArray(array)
     dataset.FlushCache()  # Write to disk.
 
-# @dump_args
+@dump_args
 def array_to_raster(array, dst_filename, referencetiff):
 
     """Saves a raster as a geotiff to dst_filename.

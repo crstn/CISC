@@ -18,7 +18,7 @@ urbanRuralVersions = ["GlobCover", "GRUMP"]
 
 root = os.path.expanduser('~') + '/Dropbox/CISC Data/'
 originalsDir = root + 'IndividualCountries'
-simulationsDir = root + 'IndividualCountries/Projections/Test'
+simulationsDir = root + 'IndividualCountries/Projections/Test2'
 outputDir = os.path.expanduser('~') + '/Desktop/Test'
 
 if not os.path.exists(outputDir):
