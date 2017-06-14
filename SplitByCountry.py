@@ -35,6 +35,11 @@ population2010 = pop.openTIFFasNParray(f).ravel()
 f = base + 'SDEI-Global-UHI/sdei-global-uhi-2013.tiff'
 cities = pop.openTIFFasNParray(f).ravel()
 
+# load area grid
+f = base + 'Area Grid/area-grid.tif'
+areas = pop.openTIFFasNParray(f).ravel()
+
+
 # load the index arrays:
 rows = np.load(base + 'Index Grids/rows.npy').ravel()
 cols = np.load(base + 'Index Grids/cols.npy').ravel()
@@ -47,12 +52,12 @@ print countryBoundaries.shape
 print population2000.shape
 print population2010.shape
 print cities.shape
+print areas.shape
 print rows.shape
 print cols.shape
 
-countries = np.unique(countryBoundaries)
-i = 1
 
+countries = np.unique(countryBoundaries)
 
 # find GRUMP/GlobCover urban cells
 urbanGRUMP = urbanRural_GRUMP == 2
@@ -64,14 +69,8 @@ incities = cities > 0
 # find cells that have more than one person in 2010:
 withpop = population2010 > 1
 
-
-
-    ### TODO THIS BLOCK NEEDS TO GO INTO THE REASSABLE SCRIPT
-    # put the cells back based on row/colum
-    #population2010 = population2010.reshape(xyshape)
-    #population2010[r,c] = m
-
-
+# just to keep track of how many contries we have completed
+i = 1
 
 # Iterate through countries:
 for country in countries:
@@ -100,6 +99,9 @@ for country in countries:
         # and for the index layers (rows and columns)
         np.save(base + 'IndividualCountries/'+str(country)+'-rows.npy', rows[matches])
         np.save(base + 'IndividualCountries/'+str(country)+'-cols.npy', cols[matches])
+
+        # and for the area layer
+        np.save(base + 'IndividualCountries/'+str(country)+'-areas.npy', areas[matches])
 
 
     print "Processed " + str(i) + " out of " + str(len(countries)) + " countries"
