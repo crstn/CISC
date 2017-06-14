@@ -27,6 +27,18 @@ thinningFactor = 0.95
 topNcells = 50
 
 
+def dump_args(func):
+    "This decorator dumps out the arguments passed to a function before calling it"
+    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
+    fname = func.func_name
+    def echo_func(*args,**kwargs):
+        print fname, ":", ', '.join(
+            '%s=%r' % entry
+            for entry in zip(argnames,args) + kwargs.items())
+        return func(*args, **kwargs)
+    return echo_func
+
+
 def logSubArraySizes(populationProjected, year, country, WTP, urbanRural):
 
     logging.info("  ----   ")
@@ -68,12 +80,14 @@ def logDifference(populationProjected, year, country, WTP, WUP, urbanRural):
 # Looks up the population number for a country in a given year from a table.
 # Multiplication factor can be used on tables that count in thousands, like the
 # world total population (WTP). Defaults to 1 (no multiplication).
+# @dump_args
 def getNumberForYear(table, year, country, multiply=1):
     # CSVs have weird number formatting with blanks (thanks for nothing, Excel),
     # that's why we need the "replace" bit
     return int(table[country][str(year)].replace(" ", "")) * multiply
 
 # Looks up the country name by UN ID
+# @dump_args
 def getCountryByID(country, WTP):
     try:
         return WTP[str(country)][MAJ]
@@ -85,6 +99,7 @@ def getCountryByID(country, WTP):
 # Calculates the population thresholds for turning a cell from rural to urban.
 # Current approach: Urban threshold is the mean between the mean pop for urban cells
 # and the mean pop for rural cells.
+# @dump_args
 def getUrbanThreshold(country, population, urbanRural, WTP):
     b = urbanRural == urbanCell
 
@@ -92,14 +107,15 @@ def getUrbanThreshold(country, population, urbanRural, WTP):
     urban = population[b]
     if urban.size == 0:
         # set threshold to 1000 TODO: change?
-        urbanMedian = 1000
+        urbanMean = 1000
     else:
-        urbanMedian = np.nanmedian(urban)
+        urbanMean = np.nanmean(urban)
 
-    return urbanMedian
+    return urbanMean
 
 
 # turns rural into urban cells if national thresholds (see getUrbanThreshold) are exceeded
+# @dump_args
 def urbanize(populationProjected, year, country, WTP, WUP, urbanRural, urbanthreshold):
 
     # check rural cells in this country for population threshold:
@@ -115,6 +131,7 @@ def urbanize(populationProjected, year, country, WTP, WUP, urbanRural, urbanthre
 
 # this one just compares the numbers from the raster to the CSV
 # and then calls the corresponding functions to add or remove people.
+# @dump_args
 def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols):
 
     # figure out the difference between the populationProjected
@@ -171,6 +188,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, r
 
 
 # returns the values of the top N cells
+# @dump_args
 def getTopNCells(N, populationProjected):
     p = np.partition(-populationProjected, N)
     pp = -p[:N]
@@ -179,7 +197,7 @@ def getTopNCells(N, populationProjected):
 
 
 
-
+# @dump_args
 def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRural, rows, cols):
 
     randoms = urbanRural == cellType
@@ -226,48 +244,48 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRu
             # ... considering the thinning factor
             limit = mx * thinningFactor
 
-            logging.info("Limit for population per cell after thinning:")
-            logging.info(limit)
+            # logging.info("Limit for population per cell after thinning:")
+            # logging.info(limit)
 
             # Print some stats after the spillover:
 
-            urb = urbanRural == urbanCell
-            rur = urbanRural == ruralCell
+            # urb = urbanRural == urbanCell
+            # rur = urbanRural == ruralCell
 
-            logging.info("Rural max:" + str(np.nanmax(populationProjected[rur])))
-            logging.info("Urban min:"  + str(np.nanmin(populationProjected[urb])))
-            logging.info("Urban max:"  + str(np.nanmax(populationProjected[urb])))
+            # logging.info("Rural max:" + str(np.nanmax(populationProjected[rur])))
+            # logging.info("Urban min:"  + str(np.nanmin(populationProjected[urb])))
+            # logging.info("Urban max:"  + str(np.nanmax(populationProjected[urb])))
 
 
             # Repeat the spillover function as long as there are cells above the limit
             # TODO: this may run into an infinite loop!
             while (int(np.nanmax(populationProjected[b])) > int(limit)):
 
-                currentMax = np.nanmax(populationProjected[b])
-
-                logging.info("Limit: " + str(limit))
-
-                logging.info("Current max:" + str(currentMax))
+                # currentMax = np.nanmax(populationProjected[b])
+                #
+                # logging.info("Limit: " + str(limit))
+                #
+                # logging.info("Current max:" + str(currentMax))
 
                 # logging.info("Are we over the limit? " + str(int(currentMax) > int(limit)))
 
-                c = populationProjected > limit
-
-                logging.info("Cells over limit: " + str(populationProjected[np.all((b, c), axis=0)]))
-                logging.info("Indexes: " + str(np.where(np.all((b, c), axis=0))))
+                # c = populationProjected > limit
+                #
+                # logging.info("Cells over limit: " + str(populationProjected[np.all((b, c), axis=0)]))
+                # logging.info("Indexes: " + str(np.where(np.all((b, c), axis=0))))
 
                 populationProjected = spillover(populationProjected, limit, urbanRural, rows, cols)
 
             # Print some stats after the spillover:
 
-            logging.info("Rural max:" + str(np.nanmax(populationProjected[rur])))
-            logging.info("Urban min:"  + str(np.nanmin(populationProjected[urb])))
-            logging.info("Urban max:"  + str(np.nanmax(populationProjected[urb])))
+            # logging.info("Rural max:" + str(np.nanmax(populationProjected[rur])))
+            # logging.info("Urban min:"  + str(np.nanmin(populationProjected[urb])))
+            # logging.info("Urban max:"  + str(np.nanmax(populationProjected[urb])))
 
     return populationProjected
 
 
-
+# @dump_args
 def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRural, rows, cols):
 
     # Added the condition that the cell has to have more than 0 population
@@ -332,10 +350,65 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, urba
     return populationProjected
 
 
+
+# borrowed from https://stackoverflow.com/questions/1208118/using-numpy-to-build-an-array-of-all-combinations-of-two-arrays
+def cartesian(arrays, out=None):
+    """
+    Generate a cartesian product of input arrays.
+
+    Parameters
+    ----------
+    arrays : list of array-like
+        1-D arrays to form the cartesian product of.
+    out : ndarray
+        Array to place the cartesian product in.
+
+    Returns
+    -------
+    out : ndarray
+        2-D array of shape (M, len(arrays)) containing cartesian products
+        formed of input arrays.
+
+    Examples
+    --------
+    >>> cartesian(([1, 2, 3], [4, 5], [6, 7]))
+    array([[1, 4, 6],
+           [1, 4, 7],
+           [1, 5, 6],
+           [1, 5, 7],
+           [2, 4, 6],
+           [2, 4, 7],
+           [2, 5, 6],
+           [2, 5, 7],
+           [3, 4, 6],
+           [3, 4, 7],
+           [3, 5, 6],
+           [3, 5, 7]])
+
+    """
+
+    arrays = [np.asarray(x) for x in arrays]
+    dtype = arrays[0].dtype
+
+    n = np.prod([x.size for x in arrays])
+    if out is None:
+        out = np.zeros([n, len(arrays)], dtype=dtype)
+
+    m = n / arrays[0].size
+    out[:,0] = np.repeat(arrays[0], m)
+    if arrays[1:]:
+        cartesian(arrays[1:], out=out[0:m,1:])
+        for j in xrange(1, arrays[0].size):
+            out[j*m:(j+1)*m,1:] = out[0:m,1:]
+    return out
+
+
+
+
 # Spillover: remove population above limit and "push" them to the neighboring cells
 # (I was thinking about calling this function "gentrify"...)
 # Function allows spill over into other cell types, i.e. from urban to rural, to simulate urban growth
-
+# @dump_args
 def spillover(populationProjected, limit, urbanRural, rows, cols):
 
     u = urbanRural == urbanCell
@@ -343,6 +416,12 @@ def spillover(populationProjected, limit, urbanRural, rows, cols):
 
     overcrowded = np.all((u, l), axis = 0)
     # for every overcrowded cell, distribute the surplus population randomly among its neighbors
+
+    cellsoverlimit = len(np.where(overcrowded)[0])
+    total = np.nansum(populationProjected[overcrowded])
+    totalLimit = limit * cellsoverlimit
+    totalSurplus = total - totalLimit
+
     for fullCell in np.where(overcrowded)[0]:
 
         logging.info("Spilling over "+str(fullCell))
@@ -350,55 +429,73 @@ def spillover(populationProjected, limit, urbanRural, rows, cols):
         surplus = populationProjected[fullCell] - limit # by how much are we over the limit?
         # reset those cells to the limit value:
         populationProjected[fullCell] = limit
-        # find the row/column indexes for the neighbors:
-        rownbs, colnbs = getNeighbours(rows, cols, rows[fullCell], cols[fullCell], 3)
+        # find the indexes for the neighbors:
+        neighborIndexes = getNeighbours(rows, cols, rows[fullCell], cols[fullCell], 3, populationProjected, limit)
 
-        # add them all to an array TODO: find a way to do this without a loop!
-        wilsons = np.array([], dtype=int)
-        for i in range(0,len(rownbs)):
-            # get their respective places in the arrays:
-            ris = rows == rownbs[i]
-            cis = cols == colnbs[i]
-            wilsons = np.append(wilsons, np.where(np.all((ris, cis), axis=0))[0])            
-
-        rI = np.random.choice(wilsons, int(surplus))
-        np.add.at(populationProjected, rI, 1)
+        randomIndexes = np.random.choice(neighborIndexes, int(surplus))
+        np.add.at(populationProjected, randomIndexes, 1)
 
     return populationProjected
 
 
 
-# Returns an array of indexes that correspond to the n x n neighborhood of the index cell
-# at row/colum, while making sure that the return neighbors are listed in the rows/columns indexes.
-# If n is an even number, will generate the neighborhood for n+1, so that the cell at
-# row/col is always at the center
-def getNeighbours(rows, cols, row, col, n):
+
+
+# # @dump_args
+def getNeighbours(rows, cols, row, col, n, populationProjected, limit):
+    """Returns an array of indexes that correspond to the n x n neighborhood of the index cell
+    at row/colum, while making sure that the return neighbors are listed in the rows/columns indexes.
+    If n is an even number, will generate the neighborhood for n+1, so that the cell at
+    row/col is always at the center.
+    The indexes will also be only of cells that are below the population limit, so that we don't push
+    people into neighboring cells that are already overcrowded themselves.
+    If no matching neighbors are found, the function recursively calls itself with an enlarged neighborhood (n+2)
+    until neighbors are found."""
+
     nbrows = []
     nbcols = []
 
     start = (n/2) * -1
     end = (n/2) + 1
 
-    for r in range(start, end):
-        for c in range(start, end):
-            rn = row + r
-            cn = col + c
-            if r != 0 or c !=0: # don't add the original cell
-                # check if the calculated row and column for this neighboring cells is actually
-                # listed in the rows/colums. To do this, get the indices where the current row/column
-                # appears
-                a = np.where(rows == rn)
-                b = np.where(cols == cn)
-                # ... and make sure they are at the some position in the corresponding arrays.
-                if(len(np.intersect1d(a,b)) == 1):
-                    nbrows.append(rn)
-                    nbcols.append(cn)
 
-    return nbrows, nbcols
+    cart = cartesian((range(row+start, row+end), range(col+start,col+end)))
+    crows = cart[:,0]
+    ccols = cart[:,1]
+
+    # selecting all cells that are neighbors and below limit:
+    isNBrow      = np.in1d(rows, crows)
+    isNBcol      = np.in1d(cols, ccols)
+    isUnderLimit = populationProjected < limit
+
+    # for r in range(start, end):
+    #     for c in range(start, end):
+    #         rn = row + r
+    #         cn = col + c
+    #         if r != 0 or c !=0: # don't add the original cell
+    #             # check if the calculated row and column for this neighboring cells is actually
+    #             # listed in the rows/colums. To do this, get the indices where the current row/column
+    #             # appears
+    #             a = np.where(rows == rn)
+    #             b = np.where(cols == cn)
+    #             # ... and make sure they are at the some position in the corresponding arrays.
+    #             if(len(np.intersect1d(a,b)) == 1):
+    #                 nbrows.append(rn)
+    #                 nbcols.append(cn)
+
+    matches = np.where(np.all((isNBrow, isNBcol, isUnderLimit), axis=0))
+
+    # if no matching cells found, enlarge neighborhood
+    if(len(matches) == 0):
+        print "No matching cells found for neighbors, extending neiborhood to " + str(n+2)
+        return getNeighbours(rows, cols, row, col, n+2, populationProjected, limit)
+    else:
+        return matches
 
 
 # Computes the "raveled" index from a 2D index. Shape is a tuple (rows, columns).
 # WARNING: does NOT check whether row and col are outside of shape!
+# @dump_args
 def twoDtoOneD(row, col, shape):
     return (row * shape[1]) + col
 
@@ -406,12 +503,14 @@ def twoDtoOneD(row, col, shape):
 
 # Computes the 2D index as a tuple (row, column) from its "raveled" index.
 # Shape is a tuple (rows, columns).
+# @dump_args
 def oneDtoTwoD(index, shape):
     return int(index/shape[1]), int(index%shape[1])
 
 
 
 # Turns a list of dictionaries into a single one:
+# @dump_args
 def transposeDict(listOfDicts, pk):
     output = {}
     for dic in listOfDicts:
@@ -422,12 +521,14 @@ def transposeDict(listOfDicts, pk):
 # calculates the change for each cell between first and second,
 # and applies that change to second. Generates an array that is
 # essentially a linear continuation of the trend between first and second.
+# @dump_args
 def projectLinear(first, second):
     out = np.add(second, np.subtract(second, first))
     # replace all values below 0 with 0
     out[out<0] = 0
     return out
 
+# @dump_args
 def openTIFFasNParray(file):
     src = gdal.Open(file, gdal.GA_Update)
     band = src.GetRasterBand(1)
@@ -438,6 +539,7 @@ def openTIFFasNParray(file):
 # this version allows to pass the geotransform and x/y size directly,
 # so we don't have to open the reference TIFF every time when repeatedly
 # saving TIFFs
+# @dump_args
 def array_to_raster_noref(array, dst_filename, geotransform, rasterXSize, rasterYSize, projection):
 
     driver = gdal.GetDriverByName('GTiff')
@@ -459,6 +561,7 @@ def array_to_raster_noref(array, dst_filename, geotransform, rasterXSize, raster
 
 
 # saves a raster as a geotiff to dst_filename
+# @dump_args
 def array_to_raster(array, dst_filename, referencetiff):
 
     reffile = gdal.Open(referencetiff)

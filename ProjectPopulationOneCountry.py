@@ -9,7 +9,7 @@ from PIL import Image
 
 import PopFunctions as pop
 
-target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/Test"
+target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/Test/"
 # target = '/Volumes/Solid Guy/Sandbox/'
 
 src = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
