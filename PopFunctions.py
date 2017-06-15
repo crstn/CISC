@@ -195,7 +195,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, r
         logging.info("removing urban population")
         populationProjected = removePopulation(populationProjected,
                                                np.abs(urbDiff), country,
-                                               urbanCell, WTP, WUP, urbanRural, rows, cols)
+                                               urbanCell, WTP, WUP, urbanRural, rows, cols, areas)
 
     # and rural:
     if (rurDiff > 0):  # add people
@@ -206,7 +206,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, r
         logging.info("removing rural population")
         populationProjected = removePopulation(populationProjected,
                                                np.abs(rurDiff), country,
-                                               ruralCell, WTP, WUP, urbanRural, rows, cols)
+                                               ruralCell, WTP, WUP, urbanRural, rows, cols, areas)
     logging.info("Numbers after adjustment:")
     logDifference(populationProjected, year, country, WTP, WUP, urbanRural)
 
@@ -256,7 +256,8 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRu
     if True in randoms:
 
         # add the missing number of population to the corresponding cell type (urban or rural):
-        randomIndexes = np.random.choice(np.where(randoms)[0], int(pop))
+        probabilities = areas[np.where(randoms)[0]]/(np.nansum(areas[np.where(randoms)[0]]))
+        randomIndexes = np.random.choice(np.where(randoms)[0], int(pop), p=probabilities)
         np.add.at(populationProjected, randomIndexes, 1)
 
         # run the spillover routine if we are dealing with urban cells:
@@ -300,7 +301,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRu
 
 
 # @dump_args
-def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRural, rows, cols):
+def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRural, rows, cols, areas):
 
     """Removes population from a country where the population is declining."""
 
@@ -314,7 +315,8 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, urba
     randoms = np.all((b, c), axis=0)
 
     if (np.where(randoms)[0].size > 0):
-        randomIndexes = np.random.choice(np.where(randoms)[0], int(pop))
+        probabilities = areas[np.where(randoms)[0]]/(np.nansum(areas[np.where(randoms)[0]]))
+        randomIndexes = np.random.choice(np.where(randoms)[0], int(pop), p=probabilities)
 
         logging.info("Removing 1 person from " +
                      str(len(randomIndexes)) + " cells.")
@@ -336,7 +338,8 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, urba
             count = np.abs(np.nansum(populationProjected[belowZero]))
 
             try:
-                randomIndexes = np.random.choice(np.where(randoms), int(count))
+                probabilities = areas[np.where(randoms)]/(np.nansum(areas[np.where(randoms)]))
+                randomIndexes = np.random.choice(np.where(randoms), int(count), p=probabilities)
                 # set cells < 0 to 0
                 populationProjected[belowZero] = 0.0
                 # and then remove the people we have just added somewhere else:
@@ -451,7 +454,8 @@ def spillover(populationProjected, areas, limit, urbanRural, rows, cols):
         neighborIndexes = getNeighbours(rows, cols, rows[fullCell], cols[
                                         fullCell], 3, densities, limit)
 
-        randomIndexes = np.random.choice(neighborIndexes, int(surplus))
+        probabilities = areas[neighborIndexes]/(np.nansum(areas[neighborIndexes]))
+        randomIndexes = np.random.choice(neighborIndexes, int(surplus), p=probabilities)
         np.add.at(populationProjected, randomIndexes, 1)
 
     return populationProjected
