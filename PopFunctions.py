@@ -127,8 +127,16 @@ def urbanize(densities, urbanRural, country, year, WUP):
     else:
         # get the number of urban cells
         numberurbancells = np.where(urbanRural == urbanCell)[0].size
+
         newurbancells = int(numberurbancells * increase)
         toadd = newurbancells - numberurbancells
+
+        # if "toadd" is 0 at this point, it means that this country has no urban
+        # cells at all. We'll give it one, since there is urban population
+        # (otherwise there would be no increase):
+
+        if toadd == 0:
+            toadd = 1
 
         # Check the code in "Sandbox/Urbanization demo.ipynb" for an explanation of what's happening here:
         # make copy of the densities array
@@ -208,7 +216,8 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, r
 # @dump_args
 def getTopNCells(N, arrrray):
 
-    """Returns the highest N values from an array"""
+    """Returns the highest N values from an array.
+       Returns empty array if N=0."""
 
     p = np.partition(-arrrray, N)
     pp = -p[:N]
@@ -219,9 +228,13 @@ def getTopNCells(N, arrrray):
 
 def getIndicesOfTopNCells(N, arrrray):
 
-    """Gets the indices of the highest N values in an array."""
+    """Gets the indices of the highest N values in an array.
+    Returns empty array if N=0."""
 
-    return np.argpartition(arrrray, -N)[-N:]
+    if N == 0:
+        return []
+    else:
+        return np.argpartition(arrrray, -N)[-N:]
 
 
 # @dump_args

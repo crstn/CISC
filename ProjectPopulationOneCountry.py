@@ -9,7 +9,7 @@ from PIL import Image
 
 import PopFunctions as pop
 
-target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/Test2/"
+target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/Test3/"
 # target = '/Volumes/Solid Guy/Sandbox/'
 
 src = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
@@ -20,7 +20,7 @@ checkNumbers = False
 # overwrite existing projections for the same country?
 overwrite = False
 
-endyear = 2050 # TODO CHANGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+endyear = 2100
 
 # This will get rid of some floating point issues (well, reporting of them!)
 # old_settings = np.seterr(invalid="ignore")

@@ -4,7 +4,8 @@ import numpy as np
 import PopFunctions as pop
 import pync
 
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/');
+# os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/');
+os.chdir(os.path.expanduser('~') + '/Desktop/Test/')
 
 print "urbExt;SSP;Year;TotalTIFF;UrbanTIFF;TotalIIASA;UrbanIIASA;TotalDiff;UrbanDiff;TotalDiffPercent;UrbanDiffPercent"
 
@@ -14,8 +15,10 @@ def getIIASA(csvfile, year):
         return total
 
 
-for m in ["GRUMP", "GlobCover"]:
-    for ssp in ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]:
+# for m in ["GRUMP", "GlobCover"]:
+    # for ssp in ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]:
+for m in ["GlobCover"]:
+    for ssp in ["SSP4"]:
         pync.Notifier.notify('Checking ' + m + ' / ' + ssp , title='Python')
         for y in range (2010, 2101, 10):
             year = str(y)

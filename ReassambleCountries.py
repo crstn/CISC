@@ -13,12 +13,14 @@ import PopFunctions as pop
 from PIL import Image
 from osgeo import gdal
 
-ssps = ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]
-urbanRuralVersions = ["GlobCover", "GRUMP"]
+#ssps = ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]
+ssps = ["SSP4"]
+# urbanRuralVersions = ["GlobCover", "GRUMP"]
+urbanRuralVersions = ["GlobCover"]
 
 root = os.path.expanduser('~') + '/Dropbox/CISC Data/'
 originalsDir = root + 'IndividualCountries'
-simulationsDir = root + 'IndividualCountries/Projections/Test2'
+simulationsDir = root + 'IndividualCountries/Projections/Test3'
 outputDir = os.path.expanduser('~') + '/Desktop/Test'
 
 if not os.path.exists(outputDir):
