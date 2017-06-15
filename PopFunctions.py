@@ -106,36 +106,15 @@ def getCountryByID(country, WTP):
         logging.error("No country found for ID " + str(country))
         return 0
 
-# @dump_args
-def getUrbanThreshold(population, urbanRural, areas):
-
-    """Calculates the population thresholds for turning a cell from rural to urban.
-    Current approach: Urban threshold is the mean between the mean pop for urban cells
-    and the mean pop for rural cells."""
-
-    # calculate population densities first:
-    densities = np.divide(population, areas)
-
-    b = urbanRural == urbanCell
-
-    # some countries don't have urban cells, they need special treatment:
-    urban = densities[b]
-    if urban.size == 0:
-        # set threshold to 1000 people per sqkm TODO: change?
-        urbanMean = 0.001
-    else:
-        urbanMean = np.nanmean(densities)
-
-    return urbanMean
 
 
 # @dump_args
-def urbanize(populationProjected, urbanRural, country, year, WUP):
+def urbanize(densities, urbanRural, country, year, WUP):
 
     """Turns rural into urban cells based on increase in urban population;
        e.g., if urban population inreases from 2010 to 2020 by 5%, the
        number of urban cells will also increase by 5%. In this case, the
-       corresponding number of rural cells with the highest population numbers
+       corresponding number of rural cells with the highest population density
        will turn urban."""
 
     oldurbanpop = float(getNumberForYear(WUP, year-10, country))
@@ -160,13 +139,13 @@ def urbanize(populationProjected, urbanRural, country, year, WUP):
         toadd = newurbancells - numberurbancells
 
         # Check the code in "Sandbox/Urbanization demo.ipynb" for an explanation of what's happening here:
-        # make copy of the population array
-        popCopy = np.copy(populationProjected)
-        # in that copy, set the population number in all urban cells to zero:
-        popCopy[urbanRural == urbanCell] = 0
-        # this means they will get ignored when we pick the cells with the highest population numbers,
-        # i.e., we will automatically get the RURAL cells with the highest population numbers:
-        convert = getIndicesOfTopNCells(toadd, popCopy)
+        # make copy of the densities array
+        densCopy = np.copy(densities)
+        # in that copy, set the density in all urban cells to zero:
+        densCopy[urbanRural == urbanCell] = 0
+        # this means they will get ignored when we pick the cells with the highest densities,
+        # i.e., we will automatically get the RURAL cells with the highest densities:
+        convert = getIndicesOfTopNCells(toadd, densCopy)
         # then we just turn those urban:
         urbanRural[convert] = urbanCell
 

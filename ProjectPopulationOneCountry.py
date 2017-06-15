@@ -20,7 +20,7 @@ checkNumbers = False
 # overwrite existing projections for the same country?
 overwrite = False
 
-endyear = 2100
+endyear = 2050
 
 # This will get rid of some floating point issues (well, reporting of them!)
 # old_settings = np.seterr(invalid="ignore")
@@ -99,10 +99,6 @@ def main():
     #load the cell areas:
     areas = np.load(src+country+'.0-areas.npy')
 
-    # calculate population density threshold for urbanization before we start the simulation:
-    urbanthreshold = pop.getUrbanThreshold(populationOld, urbanRural, areas)
-
-
     # these arrays use very small negative numbers as NULL,
     # let's just set these to 0:
     populationOld[populationOld < 0] = 0
@@ -136,7 +132,9 @@ def main():
         # match the maps.
         if(year > 2010):
             # run the urbanization
-            urbanRural = pop.urbanize(populationProjected, urbanRural, country, year, WUP)
+            # calculate densities:
+            densities = np.divide(populationProjected, areas)
+            urbanRural = pop.urbanize(densities, urbanRural, country, year, WUP)
             # after the urbanization, we have to re-adjust the population, because
             # otherwise the numbers for urban and rural will be off from the IIASA numbers
             pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols)
