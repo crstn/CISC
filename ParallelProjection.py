@@ -4,8 +4,9 @@
 import sys, multiprocessing, subprocess, os, time, os.path
 
 # target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/GRUMP/"
-target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/Test3/GlobCover/"
 # target = '/Volumes/Solid Guy/Sandbox/GlobCover/'
+
+target = '/Volumes/Solid Guy/SSPs 2017-06-16/'
 
 # if this script is called without arguments, throw an error:
 if len(sys.argv) <= 2:
@@ -26,6 +27,12 @@ elif len(sys.argv) == 3: # specifying just the scenario, run the whole world:
 
 else:
     tasks = sys.argv[3:]
+
+
+target = target + sys.argv[2] + '/'
+
+if not os.path.exists(target):
+    os.makedirs(target)
 
 print "running the following countries:"
 print tasks
