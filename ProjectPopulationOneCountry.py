@@ -136,7 +136,7 @@ def main():
         # match the maps.
         if(year > 2010):
             # run the urbanization
-            urbanRural = pop.urbanize(populationProjected, urbanRural, areas, urbanthreshold)
+            urbanRural = pop.urbanize(populationProjected, urbanRural, country, year, WUP)
             # after the urbanization, we have to re-adjust the population, because
             # otherwise the numbers for urban and rural will be off from the IIASA numbers
             pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols)
