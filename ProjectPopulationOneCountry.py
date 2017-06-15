@@ -20,7 +20,7 @@ checkNumbers = False
 # overwrite existing projections for the same country?
 overwrite = False
 
-endyear = 2050
+endyear = 2050 # TODO CHANGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # This will get rid of some floating point issues (well, reporting of them!)
 # old_settings = np.seterr(invalid="ignore")
@@ -124,7 +124,7 @@ def main():
         # pop.logSubArraySizes(populationProjected, year, country, WTP, countryBoundaries, urbanRural)
 
         # adjust for the difference between raster and csv projection data:
-        pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols)
+        pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols, areas)
 
         # Skip the urbanization for 2010, because we know the urban extents;
         # the purpose of running the population adjstment for 2010 was just to make
@@ -137,7 +137,7 @@ def main():
             urbanRural = pop.urbanize(densities, urbanRural, country, year, WUP)
             # after the urbanization, we have to re-adjust the population, because
             # otherwise the numbers for urban and rural will be off from the IIASA numbers
-            pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols)
+            pop.adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols, areas)
 
 
         # save the numpy arrays

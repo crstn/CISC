@@ -118,19 +118,11 @@ def urbanize(densities, urbanRural, country, year, WUP):
        will turn urban."""
 
     oldurbanpop = float(getNumberForYear(WUP, year-10, country))
-    # print "old urban pop"
-    # print oldurbanpop
     newurbanpop = float(getNumberForYear(WUP, year, country))
-    # print "new urban pop"
-    # print newurbanpop
-
     increase = newurbanpop/oldurbanpop
-    # print "increase rate:"
-    # print increase
 
     # if there is no increase in urban population, we won't add new urban cells:
     if increase <= 1.0:
-        # print "no increase in urban cells"
         return urbanRural
     else:
         # get the number of urban cells
@@ -153,7 +145,7 @@ def urbanize(densities, urbanRural, country, year, WUP):
 
 
 # @dump_args
-def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols):
+def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, rows, cols, areas):
 
     """This one just compares the numbers from the raster to the CSV
     and then calls the corresponding functions to add or remove people."""
@@ -183,7 +175,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, r
         logging.info("adding urban population")
         try:
             populationProjected = addPopulation(populationProjected, urbDiff,
-                                                country, urbanCell, WTP, WUP, urbanRural, rows, cols)
+                                                country, urbanCell, WTP, WUP, urbanRural, rows, cols, areas)
         except ValueError as e:
             # TODO need a way to create new urban cells in countries that don't
             # have any
@@ -201,7 +193,7 @@ def adjustPopulation(populationProjected, year, country, WTP, WUP, urbanRural, r
     if (rurDiff > 0):  # add people
         logging.info("adding rural population")
         populationProjected = addPopulation(populationProjected, rurDiff,
-                                            country, ruralCell, WTP, WUP, urbanRural, rows, cols)
+                                            country, ruralCell, WTP, WUP, urbanRural, rows, cols, areas)
     else:   # remove people
         logging.info("removing rural population")
         populationProjected = removePopulation(populationProjected,
@@ -233,7 +225,7 @@ def getIndicesOfTopNCells(N, arrrray):
 
 
 # @dump_args
-def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRural, rows, cols):
+def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRural, rows, cols, areas):
 
     """Randomly adds population to cells in a country with increasing population."""
 
@@ -243,81 +235,53 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRu
                       + getCountryByID(country, WTP)
                       + ", country and " + str(cellType) + "conditions not"
                       + "satisfied?")
-        logging.error(a)
-        logging.error(b)
         return populationProjected
 
     # This just makes sure we actually have cells for the current country.
     # There are some regions in the dataset (e.g. South Asia) that don't
     # have corresponding cells in the raster dataset.
     if True in randoms:
-        randomIndexes = np.random.choice(np.where(randoms)[0], int(pop))
 
+        # add the missing number of population to the corresponding cell type (urban or rural):
+        randomIndexes = np.random.choice(np.where(randoms)[0], int(pop))
         np.add.at(populationProjected, randomIndexes, 1)
 
+        # run the spillover routine if we are dealing with urban cells:
         if(cellType == urbanCell):
-
-            logging.info("Checking if we need to spill over...")
 
             # before we start, we'll assume that a certain share of the current max is the
             # limit after which we spill over into neighboring cells:
 
-            b = urbanRural == urbanCell
-            urbCountry = populationProjected[b]
+            densities = np.divide(populationProjected, areas)
 
-            if urbCountry.size > 0:
-                if urbCountry.size >= topNcells:  # this is the common case
-                    topN = getTopNCells(topNcells, urbCountry)
+            urbanDensities = densities[urbanRural == urbanCell]
+
+            # Let's get the N densest cells (covering cases with few or no urban calls in a country):
+            if urbanDensities.size > 0:
+                if urbanDensities.size >= topNcells:  # this is the common case
+                    topN = getTopNCells(topNcells, urbanDensities)
                 # this catches countries which have urban cells, b ut very few
                 # (not sure this is actually an issue, just in case)
                 else:
-                    topN = urbCountry
-            else:  # if there are no urban cells, take any cells in country:
-                urbCountry = populationProjected[a]
+                    topN = urbanDensities
+            else:  # if there are no urban cells,
+                # take any cells in the densities raster:
+                topN = densities
 
-            # we'll use the mean of the top n cells of each country as the
-            # maximum
+
+            # we'll use the mean of the top n cells of each country as the limit
             mx = np.nansum(topN) / topN.size
+
             # ... considering the thinning factor
             limit = mx * thinningFactor
 
-            # logging.info("Limit for population per cell after thinning:")
-            # logging.info(limit)
-
-            # Print some stats after the spillover:
-
-            # urb = urbanRural == urbanCell
-            # rur = urbanRural == ruralCell
-
-            # logging.info("Rural max:" + str(np.nanmax(populationProjected[rur])))
-            # logging.info("Urban min:"  + str(np.nanmin(populationProjected[urb])))
-            # logging.info("Urban max:"  + str(np.nanmax(populationProjected[urb])))
-
             # Repeat the spillover function as long as there are cells above the limit
             # TODO: this may run into an infinite loop!
-            while (int(np.nanmax(populationProjected[b])) > int(limit)):
-
-                # currentMax = np.nanmax(populationProjected[b])
-                #
-                # logging.info("Limit: " + str(limit))
-                #
-                # logging.info("Current max:" + str(currentMax))
-
-                # logging.info("Are we over the limit? " + str(int(currentMax) > int(limit)))
-
-                # c = populationProjected > limit
-                #
-                # logging.info("Cells over limit: " + str(populationProjected[np.all((b, c), axis=0)]))
-                # logging.info("Indexes: " + str(np.where(np.all((b, c), axis=0))))
+            while (np.nanmax(np.divide(populationProjected, areas)) > limit):
 
                 populationProjected = spillover(
-                    populationProjected, limit, urbanRural, rows, cols)
+                    populationProjected, areas, limit, urbanRural, rows, cols)
 
-            # Print some stats after the spillover:
-
-            # logging.info("Rural max:" + str(np.nanmax(populationProjected[rur])))
-            # logging.info("Urban min:"  + str(np.nanmin(populationProjected[urb])))
-            # logging.info("Urban max:"  + str(np.nanmax(populationProjected[urb])))
 
     return populationProjected
 
@@ -357,13 +321,6 @@ def removePopulation(populationProjected, pop, country, cellType, WTP, WUP, urba
 
             belowZero = populationProjected < 0
             count = np.abs(np.nansum(populationProjected[belowZero]))
-
-            # print " --- "
-            # print populationProjected[np.all((a, c, belowZero), axis=0)]
-            # print populationProjected[np.all((a, c, belowZero), axis=0)].size
-            # print np.unique(randoms)
-            # print count
-            # print " "
 
             try:
                 randomIndexes = np.random.choice(np.where(randoms), int(count))
@@ -449,35 +406,37 @@ def cartesian(arrays, out=None):
 
 
 # @dump_args
-def spillover(populationProjected, limit, urbanRural, rows, cols):
+def spillover(populationProjected, areas, limit, urbanRural, rows, cols):
 
     """Removes population above limit and "push" them to the neighboring cells
     (I was thinking about calling this function "gentrify"...)
     Function allows spill over into other cell types, i.e. from urban to rural, to simulate urban growth."""
 
+    densities = np.divide(populationProjected, areas)
+
     u = urbanRural == urbanCell
-    l = populationProjected > limit
+    l = densities > limit
 
     overcrowded = np.all((u, l), axis=0)
+
     # for every overcrowded cell, distribute the surplus population randomly
     # among its neighbors
-
-    cellsoverlimit = len(np.where(overcrowded)[0])
-    total = np.nansum(populationProjected[overcrowded])
-    totalLimit = limit * cellsoverlimit
-    totalSurplus = total - totalLimit
-
     for fullCell in np.where(overcrowded)[0]:
 
         logging.info("Spilling over " + str(fullCell))
 
+        # calculate the maximum population this specific cell can hold
+        # without going over the density limit:
+
+        thisPopLimit = np.floor(areas[fullCell] * limit)
+
         # by how much are we over the limit?
-        surplus = populationProjected[fullCell] - limit
+        surplus = populationProjected[fullCell] - thisPopLimit
         # reset those cells to the limit value:
-        populationProjected[fullCell] = limit
+        populationProjected[fullCell] = thisPopLimit
         # find the indexes for the neighbors:
         neighborIndexes = getNeighbours(rows, cols, rows[fullCell], cols[
-                                        fullCell], 3, populationProjected, limit)
+                                        fullCell], 3, densities, limit)
 
         randomIndexes = np.random.choice(neighborIndexes, int(surplus))
         np.add.at(populationProjected, randomIndexes, 1)
@@ -486,15 +445,15 @@ def spillover(populationProjected, limit, urbanRural, rows, cols):
 
 
 # @dump_args
-def getNeighbours(rows, cols, row, col, n, populationProjected, limit):
+def getNeighbours(rows, cols, row, col, n, densities, limit):
     """Returns an array of indexes that correspond to the n x n neighborhood of the index cell
     at row/colum, while making sure that the return neighbors are listed in the rows/columns indexes.
     If n is an even number, will generate the neighborhood for n+1, so that the cell at
     row/col is always at the center.
-    The indexes will also be only of cells that are below the population limit, so that we don't push
-    people into neighboring cells that are already overcrowded themselves.
-    If no matching neighbors are found, the function recursively calls itself with an enlarged neighborhood (n+2)
-    until neighbors are found."""
+    The indexes will also be only of cells that are below the population density limit, so that we
+    don't push people into neighboring cells that are already overcrowded themselves.
+    If no matching neighbors are found, the function recursively calls itself with an enlarged
+    neighborhood (n+2) until neighbors are found."""
 
     nbrows = []
     nbcols = []
@@ -510,14 +469,14 @@ def getNeighbours(rows, cols, row, col, n, populationProjected, limit):
     # selecting all cells that are neighbors and below limit:
     isNBrow = np.in1d(rows, crows)
     isNBcol = np.in1d(cols, ccols)
-    isUnderLimit = populationProjected < limit
+    isUnderLimit = densities < limit
 
     matches = np.where(np.all((isNBrow, isNBcol, isUnderLimit), axis=0))
 
     # if no matching cells found, enlarge neighborhood
     if(len(matches) == 0):
-        print "No matching cells found for neighbors, extending neiborhood to " + str(n + 2)
-        return getNeighbours(rows, cols, row, col, n + 2, populationProjected, limit)
+        logging.info("No matching cells found for neighbors, extending neiborhood to " + str(n + 2))
+        return getNeighbours(rows, cols, row, col, n + 2, densities, limit)
     else:
         return matches
 
