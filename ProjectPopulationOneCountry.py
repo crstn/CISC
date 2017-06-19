@@ -9,21 +9,15 @@ from PIL import Image
 
 import PopFunctions as pop
 
-# target = os.path.expanduser('~') + "/Dropbox/CISC Data/IndividualCountries/Projections/Test3/"
-target = '/Volumes/Solid Guy/Sandbox/SSPs 2017-06-16/'
-
 src = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
 
-# Turn logging of urban / rural / total population at every step on of off:
+# Turn logging of urban / rural / total population at every step on or off:
 checkNumbers = False
 
 # overwrite existing projections for the same country?
 overwrite = False
 
 endyear = 2100
-
-# This will get rid of some floating point issues (well, reporting of them!)
-# old_settings = np.seterr(invalid="ignore")
 
 # some global variables that most functions need access to:
 populationOld = []
@@ -33,15 +27,23 @@ urbanRural = []
 WTP = 0
 WUP = 0
 
+target = ''
 
 
 def main():
 
-    global populationOld, populationNew, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, endyear, target
+    global populationOld, populationNew, countryBoundaries, urbanRural, referencetiff, WTP, WUP, runCountries, endyear
 
     country = sys.argv[1]
     scenario = sys.argv[2]
     urbanRuralVersion = sys.argv[3]
+    target = sys.argv[4]
+
+    # add a trailing slash to the target folder name, if not there:
+    if target.strip()[-1] != '/':
+        target = target + '/'
+
+
 
     # create output dir if it doesn't exist yet:
     target = target + urbanRuralVersion + "/" + scenario + "/"
@@ -165,11 +167,12 @@ def main():
 
 if __name__ == '__main__':
 
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         print "This script takes three arguments:"
         print "1. The country ID (e.g., 156 for China)"
         print "2. The scenario (SSP1 to SSP5)"
         print "3. The urban/rural version (GRUMP or GlobCover)"
+        print "4. The destination folder for the simulation."
         print ""
         sys.exit();
 
@@ -178,7 +181,4 @@ if __name__ == '__main__':
                         filemode='w',
                         format='%(asctime)s, line %(lineno)d %(levelname)-8s %(message)s')
 
-    if os.path.isfile(target + sys.argv[1]+"-"+str(endyear)+"-pop.npy") and not overwrite :
-        print "Simulations for " +sys.argv[1]+ " already done; overwriting is turned off."
-    else:
-        main()
+    main()
