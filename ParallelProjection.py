@@ -7,6 +7,9 @@ import sys, multiprocessing, subprocess, os, time, os.path
 # we'll load the country IDs to run into this one in a bit
 runCountries = []
 
+# overwrite existing simulation data?
+overwrite = False
+
 def loadTasks():
     for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries'):
         if filename.endswith(".npy"):
@@ -106,11 +109,24 @@ while (len(tasks) > 0):
                 del(started[i])
 
     # check if we have a free CPU to start a new process
-    if(len(started) < cpus):
+    while((len(started) < cpus) and (len(tasks) > 0)):
         t = tasks[0]
-        subprocess.Popen(["python", "ProjectPopulationOneCountry.py", t['country'], t['ssp'], t['urbanmodel'], target + str(t['run'])])
-        # move to "started" list
-        started.append(tasks[0])
+        # only start the task IF:
+        # 1. the destination file does not exist overwrite is set to False
+        # OR
+        # 2. the file exists, but overwrite is set tu True:
+        feil = target + str(t['run']) +"/" + t['urbanmodel'] + "/" + t['ssp'] + "/" + t['country'] +"-2100-pop.npy"
+
+        if (not (os.path.isfile(feil))) or (os.path.isfile(feil) and overwrite):
+            if os.path.isfile(feil):
+                print "Overwriting " + feil
+            subprocess.Popen(["python", "ProjectPopulationOneCountry.py", t['country'], t['ssp'], t['urbanmodel'], target + str(t['run'])])
+            # # move to "started" list
+            started.append(tasks[0])
+        else:
+            print "Overwriting is turned off, skipping " + feil
+
+        # either way, this task can be removed from the task list
         del(tasks[0])
 
     # wait a sec before we try again
