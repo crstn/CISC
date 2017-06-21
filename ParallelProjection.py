@@ -10,6 +10,9 @@ runCountries = []
 # overwrite existing simulation data?
 overwrite = False
 
+# also reassemble the individual files to GeoTIFFs and delete the original .npy arrays?
+reassemble = True
+
 def loadTasks():
     for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries'):
         if filename.endswith(".npy"):
@@ -85,10 +88,19 @@ for run in range(runs):
         for ssp in ssps:
             for c in runCountries:
                 # append the dictionary for this specific task:
-                tasks.append({'run': run,
-                              'urbanmodel': urbanmodel,
-                              'ssp': ssp,
-                              'country': c})
+                tasks.append({'script': 'ProjectPopulationOneCountry.py',
+                              'outputfile': target + str(run) +"/" + urbanmodel + "/" + ssp + "/" + c +"-2100-pop.npy", # done when this file is there
+                              'parameters': [c, ssp, urbanmodel, target + str(run)]})
+                            #   'run': run,
+                            #   'urbanmodel': urbanmodel,
+                            #   'ssp': ssp,
+                            #   'country': c})
+    #append a task for this run that will reassemble the simulations for this run into GeoTIFFs:
+    if reassemble:
+        tasks.append({'script': 'ReassambleCountries.py',
+                      'outputfile': target + str(run) +"/GRUMP/SSP5/urbanRural-2100.tiff", # done when this file is there
+                      'parameters': [target + str(run)] + runCountries})
+
 
 
 # keep track of the tasks that have been started
@@ -97,34 +109,32 @@ started = []
 while (len(tasks) > 0):
     # check if any of the started processes is done yet:
     for i in range(len(started)):
-        # there was a weird error where i would sometimes be out of bounds of the
-        # list ...which should not be possible when running the code below,
-        # but it still came up. Anyway, this solves it. ¯\_(ツ)_/¯
-        if i < len(started):
-            s = started[i]
-            feil = target + str(s['run']) +"/" + s['urbanmodel'] + "/" + s['ssp'] + "/" + s['country'] +"-2100-pop.npy"
-            if(os.path.isfile(feil)):
-                print feil + " is complete"
-                # complete, remove from started
-                del(started[i])
+        # # there was a weird error where i would sometimes be out of bounds of the
+        # # list ...which should not be possible when running the code below,
+        # # but it still came up. Anyway, this solves it. ¯\_(ツ)_/¯
+        # if i < len(started):
+        s = started[i]
+        if(os.path.isfile(s['outputfile'])):
+            print s['outputfile'] + " is complete"
+            # complete, remove from started
+            del(started[i])
+
 
     # check if we have a free CPU to start a new process
     while((len(started) < cpus) and (len(tasks) > 0)):
         t = tasks[0]
         # only start the task IF:
-        # 1. the destination file does not exist overwrite is set to False
+        # 1. the destination file does not exist
         # OR
         # 2. the file exists, but overwrite is set tu True:
-        feil = target + str(t['run']) +"/" + t['urbanmodel'] + "/" + t['ssp'] + "/" + t['country'] +"-2100-pop.npy"
-
-        if (not (os.path.isfile(feil))) or (os.path.isfile(feil) and overwrite):
-            if os.path.isfile(feil):
-                print "Overwriting " + feil
-            subprocess.Popen(["python", "ProjectPopulationOneCountry.py", t['country'], t['ssp'], t['urbanmodel'], target + str(t['run'])])
+        if (not (os.path.isfile(t['outputfile']))) or (os.path.isfile(t['outputfile']) and overwrite):
+            if os.path.isfile(t['outputfile']):
+                print "Overwriting " + t['outputfile']
+            subprocess.Popen(["python", t['script']] + t['parameters'])
             # # move to "started" list
             started.append(tasks[0])
         else:
-            print "Overwriting is turned off, skipping " + feil
+            print "Overwriting is turned off, skipping " + t['outputfile']
 
         # either way, this task can be removed from the task list
         del(tasks[0])

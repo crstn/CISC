@@ -13,13 +13,31 @@ import PopFunctions as pop
 from PIL import Image
 from osgeo import gdal
 
-ssps = ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]
-urbanRuralVersions = ["GlobCover", "GRUMP"]
+# throw away the numpoy files after reassembling the GeoTIFF?
+deleteNPY = True
+
+if(len(sys.argv) < 3):
+    print """Call this script with the folder for a series of simulations,
+    as well as the IDs of the countries to reassemble:
+    python ReassembleCountries.py /Users/Donald/simulations/output/0 123 156 276"""
+    sys.exit()
+
+#check that folder exists:
+if not os.path.exists(sys.argv[1]):
+    print sys.argv[1] + " doesn't exist."
+    sys.exit()
+
 
 root = os.path.expanduser('~') + '/Dropbox/CISC Data/'
 originalsDir = root + 'IndividualCountries'
-simulationsDir = '/Volumes/Solid Guy/SSPs 2017-06-16'
-outputDir = simulationsDir + '/Global'
+simulationsDir = sys.argv[1]
+outputDir = sys.argv[1]
+countries = sys.argv[2:]
+
+
+ssps = ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]
+urbanRuralVersions = ["GlobCover", "GRUMP"]
+
 
 if not os.path.exists(outputDir):
     os.makedirs(outputDir)
@@ -61,6 +79,25 @@ def loadRowsCols(country):
         rowcols[country]['cols'] = np.load(originalsDir+'/'+country+'.0-cols.npy')
 
 
+# checks if all files for the given pattern are completed
+# by comparing it to the countries. Returns True if the simulation is complete,
+# False otherwise.
+def simulationComplete(pattern):
+    donefiles = glob.glob(pattern)
+    # extract the country IDs:
+    for i in range(len(donefiles)):
+        fn = donefiles[i].split('/')[-1]
+        # just the country ID:
+        donefiles[i] = disassembleFileName(fn)[0]
+
+    # now check if donefiles is a subset of the list of countries we need to process:
+    if set(countries).issubset(set(donefiles)):
+        return True
+    else:
+        return False
+
+
+
 
 
 for urbanRuralVersion in urbanRuralVersions:
@@ -96,28 +133,42 @@ for urbanRuralVersion in urbanRuralVersions:
 
                 # make sure we have the rows/cols for all countries simulated in this year:
                 for y in years:
+
+                    # before we start, make sure that all the simulations for this year are actually done
+                    # by checking if all the output files are there. If not, wait:
+                    while not simulationComplete(d+'/*-'+str(y)+'-pop.npy'):
+                        print "waiting for population simulation to complete..."
+                        time.sleep(1)
+
+
                     # here we go: find all pop simulation files for this year:
                     for filename in glob.glob(d+'/*-'+str(y)+'-pop.npy'):
-                        filename = filename.split('/')[-1]
+                        f = filename.split('/')[-1]
 
-                        if os.stat(d+'/'+filename).st_size > 0: # skip empty files
-                            country, year, maptype = disassembleFileName(filename)
+                        if os.stat(d+'/'+f).st_size > 0: # skip empty files
+                            country, year, maptype = disassembleFileName(f)
                             # load their extents, only required once
                             loadRowsCols(country)
                             # replace the values in the global pop raster:
-                            population[rowcols[country]['rows'], rowcols[country]['cols']] = np.load(d+'/'+filename)
+                            population[rowcols[country]['rows'], rowcols[country]['cols']] = np.load(d+'/'+f)
+
+                        if deleteNPY:
+                            os.remove(filename)
 
                     # save the global tiff to the output folder:
                     pop.array_to_raster_noref(population, outputDir + '/' + urbanRuralVersion + '/' + ssp + '/pop-'+str(year)+'.tiff', geotransform, rasterXSize, rasterYSize, projection)
 
                     # repeat for urban/rural:
                     for filename in glob.glob(d+'/*-'+str(y)+'-urbanRural.npy'):
-                        filename = filename.split('/')[-1]
+                        f = filename.split('/')[-1]
 
-                        if os.stat(d+'/'+filename).st_size > 0: # skip empty files
-                            country, year, maptype = disassembleFileName(filename)
+                        if os.stat(d+'/'+f).st_size > 0: # skip empty files
+                            country, year, maptype = disassembleFileName(f)
                             # replace the values in the global pop raster:
-                            urbanRural[rowcols[country]['rows'], rowcols[country]['cols']] = np.load(d+'/'+filename)
+                            urbanRural[rowcols[country]['rows'], rowcols[country]['cols']] = np.load(d+'/'+f)
+
+                        if deleteNPY:
+                            os.remove(filename)
 
                     # save the global tiff to the output folder:
                     pop.array_to_raster_noref(urbanRural, outputDir + '/' + urbanRuralVersion + '/' + ssp + '/urbanRural-'+str(year)+'.tiff', geotransform, rasterXSize, rasterYSize, projection)
