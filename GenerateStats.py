@@ -34,7 +34,7 @@ urbanCell = 2
 plt.style.use('fivethirtyeight')
 
 scale_x = 1e-6 # we'll scale the x-axis to millions of people
-
+scale_x = 1
 
 for c in countries:
 
@@ -72,25 +72,40 @@ for c in countries:
 
                     print country + " " + str(y) + " (run " + str(r) + "): " + str(popsum)
 
-                    pops.append(popsum * scale_x)
-                    urbs.append(np.sum(pop[urbanRural == urbanCell]) * scale_x)
+                    pops.append(popsum)
+                    urbs.append(np.sum(pop[urbanRural == urbanCell]))
 
 
                 # Now we'll caculate the mean population number for each individual cell
                 # in the array, and get the sum of those means:
                 vmean_array = np.mean(stack, axis=0)
+
+
+
+                # next up: generate some stats and histograms
                 vmean = np.sum(vmean_array)
+
+                meanFromSimulations = np.mean(pops)
+                sspNumber = p.getNumberForYear(WTP, y, c)
+
+                print
+                print "Mean:    " + '{0:,}'.format(meanFromSimulations)
+                print "SSP:     " + '{0:,}'.format(sspNumber)
+                print "V. Mean: " + '{0:,}'.format(vmean)
+                print "V. Mean - SSP: "  + '{0:,}'.format(vmean-sspNumber)
+                print
+
 
                 # plot a histogram across runs:
 
-                plt.hist(pops, bins=20, color='#008fd5')
+                plt.hist(pops, color='#008fd5')
                 # plt.vline(np.mean(pops))
                 plt.title(country + ' population histogram for '+str(runs)+' runs ('+str(y)+')')
                 plt.ylabel('Frequency')
-                plt.xlabel('Total population (in millions)')
-                plt.axvline(np.mean(pops), linewidth=2, color='#fc4f30', label='Mean across runs')
-                plt.axvline(p.getNumberForYear(WTP, y, c) * scale_x, linestyle='dashed', linewidth=1, color='#e5ae38', label='Population SSP')
-                plt.axvline(vmean * scale_x, linestyle='dashed', linewidth=1, color='#6d904f', label='"Vertical" mean')
+                plt.xlabel('Total population')
+                plt.axvline(meanFromSimulations * scale_x, linewidth=2, color='#fc4f30', label="Mean across runs (" + '{0:,}'.format(int(meanFromSimulations)) + ")")
+                plt.axvline(sspNumber * scale_x, linestyle='dashed', linewidth=1, color='#e5ae38', label="Population SSP (" + '{0:,}'.format(sspNumber) + ")")
+                # plt.axvline(vmean * scale_x, linestyle='dashed', linewidth=1, color='#6d904f', label='"Vertical" mean')
                 plt.legend(loc='upper left')
 
                 plt.savefig(folder+'/'+country+'-'+str(y)+'-pop.pdf', bbox_inches='tight')

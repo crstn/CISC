@@ -56,7 +56,7 @@ def logSubArraySizes(populationProjected, year, country, WTP, urbanRural):
 def logDifference(populationProjected, year, country, WTP, WUP, urbanRural):
 
     """Logs the difference for urban and rural population
-    between whats in the populationProjected and the."""
+    between whats in the populationProjected and the WTP/WUP."""
 
     u = urbanRural == urbanCell
     r = urbanRural == ruralCell
