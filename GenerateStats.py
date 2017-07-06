@@ -54,35 +54,77 @@ for c in countries:
                 pops = []
                 urbs = []
 
-                # make a stack of all runs to calculate the sum of means per cell ("vertical mean"):
-                stack = np.array([])
-
+                # make a stack of all runs to calculate the sum of means per
+                # cell ("vertical mean") as well as min, max etc
+                # Also chance of urbanization
+                popstack = np.array([])
+                urbstack = np.array([])
                 for r in range(runs):
 
                     pop = np.load(folder+'/'+str(r)+'/'+u+'/'+ssp+'/'+c+'-'+str(y)+'-pop.npy')
                     urbanRural = np.load(folder+'/'+str(r)+'/'+u+'/'+ssp+'/'+c+'-'+str(y)+'-urbanRural.npy')
 
-                    if(len(stack) == 0):
+
+                    if(len(popstack) == 0):
                         # initiate:
-                        stack = np.append(stack, pop)
+                        popstack = np.append(popstack, pop)
                     else:
-                        stack = np.vstack((stack, pop))
+                        popstack = np.vstack((popstack, pop))
+
+
+
+                    # before we stack up the urban cells, set all rural cells to 0,
+                    # and urban cells to 1. That way, we can just calculate the mean
+                    # later, and that will give us the chance of urbanization.
+
+                    urbanRural[urbanRural == 1] = 0
+                    urbanRural[urbanRural == 2] = 1
+                    
+                    if(len(urbstack) == 0):
+                        # initiate:
+                        urbstack = np.append(urbstack, urbanRural)
+                    else:
+                        urbstack = np.vstack((urbstack, urbanRural))
+
+
 
                     popsum = np.sum(pop)
 
                     print country + " " + str(y) + " (run " + str(r) + "): " + str(popsum)
 
                     pops.append(popsum)
-                    urbs.append(np.sum(pop[urbanRural == urbanCell]))
+                    urbs.append(np.sum(pop[urbanRural == 1])) # urban is 1 now!
 
 
-                # Now we'll caculate the mean population number for each individual cell
-                # in the array, and get the sum of those means:
-                vmean_array = np.mean(stack, axis=0)
 
+                # Now we'll caculate the mean, median, min and max population number for each individual cell
+                # and spit them out as numpy arrays:
+
+                # Check if we already have the output folder:
+                target = folder+'/summaries/'+u+'/'+ssp
+
+                if not os.path.exists(target):
+                    os.makedirs(target)
+
+                vmean_array = np.mean(popstack, axis=0)
+                np.save(target + '/'+c+'-'+str(y)+'-pop-mean.npy', vmean_array)
+
+                vmedian_array = np.median(popstack, axis=0)
+                np.save(target + '/'+c+'-'+str(y)+'-pop-median.npy', vmedian_array)
+
+                vmin_array = np.min(popstack, axis=0)
+                np.save(target + '/'+c+'-'+str(y)+'-pop-min.npy', vmin_array)
+
+                vmax_array = np.max(popstack, axis=0)
+                np.save(target + '/'+c+'-'+str(y)+'-pop-max.npy', vmax_array)
+
+                # and finally calculate the chance of urbanization per cell:
+                urbmean_array = np.mean(urbstack, axis=0)
+                np.save(target + '/'+c+'-'+str(y)+'-urbanization.npy', vmean_array)
 
 
                 # next up: generate some stats and histograms
+                # get the sum of thoe vertical means:
                 vmean = np.sum(vmean_array)
 
                 meanFromSimulations = np.mean(pops)
