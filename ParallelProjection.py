@@ -8,10 +8,10 @@ import sys, multiprocessing, subprocess, os, time, os.path
 runCountries = []
 
 # overwrite existing simulation data?
-overwrite = False
+overwrite = True
 
 # also reassemble the individual files to GeoTIFFs and delete the original .npy arrays?
-reassemble = True
+reassemble = False
 
 def loadTasks():
     for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries'):
@@ -109,15 +109,12 @@ started = []
 while (len(tasks) > 0):
     # check if any of the started processes is done yet:
     for i in range(len(started)):
-        # # there was a weird error where i would sometimes be out of bounds of the
-        # # list ...which should not be possible when running the code below,
-        # # but it still came up. Anyway, this solves it. ¯\_(ツ)_/¯
-        # if i < len(started):
-        s = started[i]
-        if(os.path.isfile(s['outputfile'])):
-            print s['outputfile'] + " is complete"
-            # complete, remove from started
-            del(started[i])
+        if i < len(started):
+            s = started[i]
+            if(os.path.isfile(s['outputfile'])):
+                print s['outputfile'] + " is complete"
+                # complete, remove from started
+                del(started[i])
 
 
     # check if we have a free CPU to start a new process

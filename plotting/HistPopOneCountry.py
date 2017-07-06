@@ -3,6 +3,9 @@ import numpy as np
 from matplotlib import pyplot
 from matplotlib.backends.backend_pdf import PdfPages
 
+"""Prints a histogram of the population in individual calls in a given country."""
+
+
 country = "124"
 limit = 2100
 
