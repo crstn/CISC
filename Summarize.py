@@ -109,14 +109,14 @@ for c in countries:
                 vmean_array = np.mean(popstack, axis=0)
                 np.save(target + '/'+c+'-'+str(y)+'-popmean.npy', vmean_array)
 
-                vmedian_array = np.median(popstack, axis=0)
-                np.save(target + '/'+c+'-'+str(y)+'-popmedian.npy', vmedian_array)
-
-                vmin_array = np.min(popstack, axis=0)
-                np.save(target + '/'+c+'-'+str(y)+'-popmin.npy', vmin_array)
-
-                vmax_array = np.max(popstack, axis=0)
-                np.save(target + '/'+c+'-'+str(y)+'-popmax.npy', vmax_array)
+                # vmedian_array = np.median(popstack, axis=0)
+                # np.save(target + '/'+c+'-'+str(y)+'-popmedian.npy', vmedian_array)
+                #
+                # vmin_array = np.min(popstack, axis=0)
+                # np.save(target + '/'+c+'-'+str(y)+'-popmin.npy', vmin_array)
+                #
+                # vmax_array = np.max(popstack, axis=0)
+                # np.save(target + '/'+c+'-'+str(y)+'-popmax.npy', vmax_array)
 
                 # and finally calculate the chance of urbanization per cell:
                 urbmean_array = np.mean(urbstack, axis=0)
