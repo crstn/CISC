@@ -534,7 +534,7 @@ def openTIFFasNParray(file):
 
 
 # @dump_args
-def array_to_raster_noref(array, dst_filename, geotransform, rasterXSize, rasterYSize, projection):
+def array_to_raster_noref(array, dst_filename, geotransform, rasterXSize, rasterYSize, projection, datatype=gdal.GDT_Int32):
 
     """Saves a raster as a geotiff to dst_filename.
     This version allows to pass the geotransform and x/y size directly,
@@ -548,7 +548,7 @@ def array_to_raster_noref(array, dst_filename, geotransform, rasterXSize, raster
         rasterXSize,
         rasterYSize,
         1,
-        gdal.GDT_Int32,
+        datatype,
         options=['COMPRESS=LZW'])
 
     dataset.SetGeoTransform(geotransform)
