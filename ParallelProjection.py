@@ -10,8 +10,13 @@ runCountries = []
 # overwrite existing simulation data?
 overwrite = True
 
+# Generate summaries (mean pop and chance of urbanization) for each country based on simulations?
+summarize = True
+
 # also reassemble the individual files to GeoTIFFs and delete the original .npy arrays?
-reassemble = False
+reassemble = True
+
+
 
 def loadTasks():
     for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries'):
@@ -83,10 +88,10 @@ print runCountries
 tasks = []
 
 # add all tasks to one big array:
-for run in range(runs):
-    for urbanmodel in urbanmodels:
-        for ssp in ssps:
-            for c in runCountries:
+for urbanmodel in urbanmodels:
+    for ssp in ssps:
+        for c in runCountries:
+            for run in range(runs):
                 # append the dictionary for this specific task:
                 tasks.append({'script': 'ProjectPopulationOneCountry.py',
                               'outputfile': target + str(run) +"/" + urbanmodel + "/" + ssp + "/" + c +"-2100-pop.npy", # done when this file is there
@@ -95,13 +100,17 @@ for run in range(runs):
                             #   'urbanmodel': urbanmodel,
                             #   'ssp': ssp,
                             #   'country': c})
+
+            if summarize:
+                tasks.append({'script': 'Summarize.py',
+                              'outputfile': target + "summaries/" + urbanmodel + "/" + ssp + "/" + c +"-2100-urbanization.npy", # done when this file is there
+                              'parameters': [c, runs, ssp, urbanmodel, target + str(run)]})
+
     #append a task for this run that will reassemble the simulations for this run into GeoTIFFs:
     if reassemble:
         tasks.append({'script': 'ReassambleCountries.py',
-                      'outputfile': target + str(run) +"/GRUMP/SSP5/urbanRural-2100.tiff", # done when this file is there
-                      'parameters': [target + str(run)] + runCountries})
-
-
+                      'outputfile': target + "summaries/" + urbanmodel + "/" + ssp + "/urbanRural-2100.tiff", # done when this file is there
+                      'parameters': [target + "summaries/", ssp, urbanmodel] + runCountries})
 
 # keep track of the tasks that have been started
 started = []
