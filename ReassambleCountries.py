@@ -23,7 +23,7 @@ if(len(sys.argv) < 3):
         3. Urban/rural model
         4. the IDs of the countries to reassemble
 
-    python ReassembleCountries.py /Users/Donald/simulations/summaries SSP3 GRUMP 392 528"""
+    python ReassembleCountries.py /Users/Donald/simulations/summaries SSP3 GRUMP 123 156 276"""
     sys.exit()
 
 #check that folder exists:
@@ -105,8 +105,9 @@ def simulationComplete(pattern):
 
 
 # load the global population and urban rural tiffs
+# it will hold urbanization prospects [0..1] later, so we need to cast it to float:
 print "Loading urban-rural TIFF and converting to NumPy array"
-urbanRural = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/'+urbanRuralVersion+'_UrbanRural.tiff')
+urbanRural = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/'+urbanRuralVersion+'_UrbanRural.tiff').astype(float)
 
 print "Loading population 2010 TIFF and convert to NumPy array"
 population = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
@@ -155,4 +156,4 @@ for y in years:
             os.remove(filename)
 
     # save the global tiff to the output folder:
-    pop.array_to_raster_noref(urbanRural, outputDir + '/' + urbanRuralVersion + '/' + ssp + '/urbanization-'+str(year)+'.tiff', geotransform, rasterXSize, rasterYSize, projection)
+    pop.array_to_raster_noref(urbanRural, outputDir + '/' + urbanRuralVersion + '/' + ssp + '/urbanization-'+str(year)+'.tiff', geotransform, rasterXSize, rasterYSize, projection, datatype=gdal.GDT_Float32)
