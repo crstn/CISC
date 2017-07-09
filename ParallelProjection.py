@@ -104,7 +104,7 @@ for urbanmodel in urbanmodels:
             if summarize:
                 tasks.append({'script': 'Summarize.py',
                               'outputfile': target + "summaries/" + urbanmodel + "/" + ssp + "/" + c +"-2100-urbanization.npy", # done when this file is there
-                              'parameters': [c, runs, ssp, urbanmodel, target + str(run)]})
+                              'parameters': [c, str(runs), ssp, urbanmodel, target]})
 
     #append a task for this run that will reassemble the simulations for this run into GeoTIFFs:
     if reassemble:

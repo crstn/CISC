@@ -1,4 +1,6 @@
 import os
+import os.path
+import time
 import datetime
 import sys
 import math
@@ -70,13 +72,26 @@ for y in range(2010,2101,10):
     urbstack = np.array([])
     for r in range(runs):
 
-        pop = np.load(folder+'/'+str(r)+'/'+u+'/'+ssp+'/'+c+'-'+str(y)+'-pop.npy')
-        urbanRural = np.load(folder+'/'+str(r)+'/'+u+'/'+ssp+'/'+c+'-'+str(y)+'-urbanRural.npy')
+        # In case simulation is not done for this country, we'll
+        # just wait..
+        pfile = folder+'/'+str(r)+'/'+u+'/'+ssp+'/'+c+'-'+str(y)+'-pop.npy'
+        ufile = folder+'/'+str(r)+'/'+u+'/'+ssp+'/'+c+'-'+str(y)+'-urbanRural.npy'
+
+        while not os.path.isfile(pfile):
+            print "idling summaries..."
+            time.sleep(1)
+
+        while not os.path.isfile(ufile):
+            print "idling summaries..."
+            time.sleep(1)
+
+        pop = np.load(pfile)
+        urbanRural = np.load(ufile)
 
         if deleteData:
             # delete the original .npy files from the runs:
-            os.remove(folder+'/'+str(r)+'/'+u+'/'+ssp+'/'+c+'-'+str(y)+'-pop.npy')
-            os.remove(folder+'/'+str(r)+'/'+u+'/'+ssp+'/'+c+'-'+str(y)+'-urbanRural.npy')
+            os.remove(pfile)
+            os.remove(ufile)
 
         if(len(popstack) == 0):
             # initiate:
