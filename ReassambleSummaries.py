@@ -16,7 +16,7 @@ import glob
    output of a simulation summary exists, puts a combined GeoTIFF for
    each year/maptype into the same folder. """
 
-f = os.path.expanduser('~') + '/Desktop/statstest/summaries'
+f = os.path.expanduser('~') + '/Desktop/chad/summaries'
 years = range(2010, 2101, 10)
 
 
