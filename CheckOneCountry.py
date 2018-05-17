@@ -1,7 +1,7 @@
 # coding: utf-8
 #!/usr/bin/env python
 
-# calcuates the global total from the individual countries .npy files
+# calcuates the total and urban for a country in a given year
 
 import os, sys
 import time
