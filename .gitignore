@@ -37,3 +37,4 @@ PYTHON/test.py
 .dropbox
 
 Icon
+azure/credentials.py

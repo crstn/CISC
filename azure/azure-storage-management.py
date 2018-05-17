@@ -1,30 +1,11 @@
-# ----------------------------------------------------------------------------------
-# MIT License
-#
-# Copyright(c) Microsoft Corporation. All rights reserved.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# ----------------------------------------------------------------------------------
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-
-
 import os, uuid, sys
 from azure.storage.blob import BlockBlobService, PublicAccess
+# create a file credentials.py with the following content:
+# account_name='your account name'
+# account_key='your account key'
+# find the account name and key in azure portal under
+# storage account -> access keys
+import credentials as cred
 
 # ---------------------------------------------------------------------------------------------------------
 # Method that creates a test file in the 'Documents' folder.
@@ -43,7 +24,7 @@ from azure.storage.blob import BlockBlobService, PublicAccess
 def run_sample():
     try:
         # Create the BlockBlockService that is used to call the Blob service for the storage account
-        block_blob_service = BlockBlobService(account_name='accountname', account_key='accountkey')
+        block_blob_service = BlockBlobService(account_name=cred.account_name, account_key=cred.account_key)
 
         # Create a container called 'quickstartblobs'.
         container_name ='quickstartblobs'
@@ -80,15 +61,10 @@ def run_sample():
         print("\nDownloading blob to " + full_path_to_file2)
         block_blob_service.get_blob_to_path(container_name, local_file_name, full_path_to_file2)
 
-        sys.stdout.write("Sample finished running. When you hit <any key>, the sample will be deleted and the sample "
-                         "application will exit.")
-        sys.stdout.flush()
-        input()
-
         # Clean up resources. This includes the container and the temp files
-        block_blob_service.delete_container(container_name)
-        os.remove(full_path_to_file)
-        os.remove(full_path_to_file2)
+        #block_blob_service.delete_container(container_name)
+        #os.remove(full_path_to_file)
+        #os.remove(full_path_to_file2)
     except Exception as e:
         print(e)
 
@@ -96,6 +72,3 @@ def run_sample():
 # Main method.
 if __name__ == '__main__':
     run_sample()
-
-
-
