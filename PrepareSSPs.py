@@ -88,7 +88,7 @@ def saveOutput():
 
 # here we go 🚀
 
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/SSPs')
+os.chdir(os.path.expanduser('~') + '/Dropbox/CISCdata/SSPs')
 
 readCountryCodes()
 

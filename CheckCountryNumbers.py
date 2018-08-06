@@ -12,7 +12,7 @@ notify = True
 limit = 2100  # we'll look for countries that have projections up to this year
 
 os.chdir(os.path.expanduser('~') +
-         '/Dropbox/CISC Data/IndividualCountries/Projections')
+         '/Dropbox/CISCdata/IndividualCountries/Projections')
 
 
 # if this script is called with arguments, use them as the countries.
@@ -38,10 +38,10 @@ else:  # otherwise, do all countries
 # load the population projection numbers:
 # world URBAN population
 WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-    '~') + '/Dropbox/CISC Data/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
+    '~') + '/Dropbox/CISCdata/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
 # world TOTAL population
 WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-    '~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+    '~') + '/Dropbox/CISCdata/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
 
 matplotlib.style.use('fivethirtyeight')
 # make the font smaller, so that the legends don't take up too much space
@@ -55,7 +55,7 @@ for country in countries:
 
         # the boundary will stay the same, so only load it once
         boundary = np.load(os.path.expanduser(
-            '~') + '/Dropbox/CISC Data/IndividualCountries/' + country + '.0-boundary.npy').ravel()
+            '~') + '/Dropbox/CISCdata/IndividualCountries/' + country + '.0-boundary.npy').ravel()
 
         years = []
 
@@ -87,9 +87,9 @@ for country in countries:
 
             # load numpy arrays for country/year
             urbanRural = np.load(os.path.expanduser(
-                '~') + '/Dropbox/CISC Data/IndividualCountries/Projections/' + country + '-' + str(year) + '-urbanRural.npy').ravel()
+                '~') + '/Dropbox/CISCdata/IndividualCountries/Projections/' + country + '-' + str(year) + '-urbanRural.npy').ravel()
             population = np.load(os.path.expanduser(
-                '~') + '/Dropbox/CISC Data/IndividualCountries/Projections/' + country + '-' + str(year) + '-pop.npy').ravel()
+                '~') + '/Dropbox/CISCdata/IndividualCountries/Projections/' + country + '-' + str(year) + '-pop.npy').ravel()
 
             popraster.append(np.nansum(population[boundary == int(country)]))
             urbraster.append(np.nansum(population[

@@ -11,7 +11,7 @@ models = ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]
 years =  [2030, 2050, 2070, 2100]
 
 def getNumberFromCSV(model, year, rastertype):
-    csvdir = os.path.expanduser('~') + '/Dropbox/CISC Data/SSPs/'
+    csvdir = os.path.expanduser('~') + '/Dropbox/CISCdata/SSPs/'
     data = pd.read_csv(csvdir+rastertype+'-'+model+'.csv')
     sums = data.sum()
     return sums[str(year)]
@@ -25,7 +25,7 @@ for m in models:
     print m
     print
 
-    datadir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/2017-03-30/'+m
+    datadir = os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/Projections/Global/2017-03-30/'+m
 
     for y in years:
 

@@ -50,7 +50,7 @@ if int(year) not in years:
     sys.exit()
 
 
-datadir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/'+model
+datadir = os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/Projections/Global/'+model
 filename = 'citiesPop-'+year+'.csv'
 
 # Make sure we don't overwrite an existing citiesPop.csv, this one takes
@@ -60,7 +60,7 @@ if (len(sys.argv) == 0) and (os.path.exists(datadir+'/'+filename)):
     sys.exit()
 
 #open cities CSV file for names
-with open(os.path.expanduser('~') + '/Dropbox/CISC Data/SDEI-Global-UHI/CitiesAttributes.csv', 'rb') as citiesFile:
+with open(os.path.expanduser('~') + '/Dropbox/CISCdata/SDEI-Global-UHI/CitiesAttributes.csv', 'rb') as citiesFile:
     cityNames = csv.DictReader(citiesFile)
 
     citiesToCalculate = []
@@ -90,7 +90,7 @@ with open(os.path.expanduser('~') + '/Dropbox/CISC Data/SDEI-Global-UHI/CitiesAt
     print
 
     print "loading cities numpy array"
-    cities = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/SDEI-Global-UHI/sdei-global-uhi-2013.npy')
+    cities = np.load(os.path.expanduser('~') + '/Dropbox/CISCdata/SDEI-Global-UHI/sdei-global-uhi-2013.npy')
     #either calculate data for all cities or just ones passed
     if (len(citiesToCalculate) == 0):
         citiesToCalculate = np.unique(cities)  #get a SORTED list of all city ID's

@@ -6,10 +6,10 @@ import PopFunctions as pop
 import sys
 import pync
 
-base = os.path.expanduser('~') + '/Dropbox/CISC Data/'
+base = os.path.expanduser('~') + '/Dropbox/CISCdata/'
 
 # load countries TIFF and convert to NumPy array
-f = base + 'Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
+f = base + 'NationsRaster/ne_10m_admin_0_countries_updated_nibbled.tiff'
 countryBoundaries = pop.openTIFFasNParray(f)
 
 # save the oringal 2D size in case we need it later
@@ -18,17 +18,17 @@ xyshape = countryBoundaries.shape
 countryBoundaries = countryBoundaries.ravel()
 
 # load urban rural TIFFs (GRUMP and GlobCover) and convert to NumPy arrays
-f = base + 'GLUR Raster/GRUMP_UrbanRural.tiff'
+f = base + 'GLURRaster/GRUMP_UrbanRural.tiff'
 urbanRural_GRUMP = pop.openTIFFasNParray(f).ravel()
 
-f = base + 'GLUR Raster/GlobCover_UrbanRural.tiff'
+f = base + 'GLURRaster/GlobCover_UrbanRural.tiff'
 urbanRural_GlobCover = pop.openTIFFasNParray(f).ravel()
 
 # load population TIFFs and convert to NumPy array
-f = base + 'Population 2000 Raster/Pop_2000_clipped.tiff'
+f = base + 'Population2000Raster/Pop_2000_clipped.tiff'
 population2000 = pop.openTIFFasNParray(f).ravel()
 
-f = base + 'Population 2010 Raster/Pop_2010_clipped.tiff'
+f = base + 'Population2010Raster/Pop_2010_clipped.tiff'
 population2010 = pop.openTIFFasNParray(f).ravel()
 
 # load SDEI cities TIFF and convert to NumPy array
@@ -36,13 +36,13 @@ f = base + 'SDEI-Global-UHI/sdei-global-uhi-2013.tiff'
 cities = pop.openTIFFasNParray(f).ravel()
 
 # load area grid
-f = base + 'Area Grid/area-grid.tif'
+f = base + 'AreaGrid/area-grid.tif'
 areas = pop.openTIFFasNParray(f).ravel()
 
 
 # load the index arrays:
-rows = np.load(base + 'Index Grids/rows.npy').ravel()
-cols = np.load(base + 'Index Grids/cols.npy').ravel()
+rows = np.load(base + 'IndexGrids/rows.npy').ravel()
+cols = np.load(base + 'IndexGrids/cols.npy').ravel()
 
 
 # just to check:

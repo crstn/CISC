@@ -29,6 +29,6 @@ if __name__ == "__main__":
     rowgrid, colgrid = makeGrids(rowcount, colcount)
 
     np.save(os.path.expanduser('~') +
-            '/Dropbox/CISC Data/Index Grids/rows.npy', rowgrid)
+            '/Dropbox/CISCdata/IndexGrids/rows.npy', rowgrid)
     np.save(os.path.expanduser('~') +
-            '/Dropbox/CISC Data/Index Grids/cols.npy', colgrid)
+            '/Dropbox/CISCdata/IndexGrids/cols.npy', colgrid)

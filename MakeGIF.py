@@ -23,13 +23,13 @@ def arrays2GIF(arrays, gif):
 
 def projections2GIF(country, endyear):
     arrays = []
-    arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'.0-pop2000.npy'))
+    arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/'+str(country)+'.0-pop2000.npy'))
 
-    arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+str(country)+'.0-pop2010.npy'))
+    arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/'+str(country)+'.0-pop2010.npy'))
 
     year = 2020
     while year <= endyear:
-        arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/'+str(country)+'-'+str(year)+'-pop.npy'))
+        arrays.append(np.load(os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/Projections/'+str(country)+'-'+str(year)+'-pop.npy'))
         year = year + 10
 
     # make GIF from the NORMALIZED arrays

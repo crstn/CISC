@@ -17,14 +17,14 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
         print scenario
 
         DESA_pop = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-            '~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+            '~') + '/Dropbox/CISCdata/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
         SSP_pop = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-            '~') + '/Dropbox/CISC Data/SSPs/pop-' + scenario + '.csv')), "Country code")
+            '~') + '/Dropbox/CISCdata/SSPs/pop-' + scenario + '.csv')), "Country code")
 
         DESA_urban = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-            '~') + '/Dropbox/CISC Data/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
+            '~') + '/Dropbox/CISCdata/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
         SSP_urban = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-            '~') + '/Dropbox/CISC Data/SSPs/urbpop-' + scenario + '.csv')), "Country code")
+            '~') + '/Dropbox/CISCdata/SSPs/urbpop-' + scenario + '.csv')), "Country code")
 
         # we need a list of all parent countries later to remove their old entries
         # from the CSV
@@ -88,13 +88,13 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
         # then add the output lines from above
 
         f = open(os.path.expanduser('~') +
-                 '/Dropbox/CISC Data/SSPs/pop-' + scenario + '.csv', 'r')
+                 '/Dropbox/CISCdata/SSPs/pop-' + scenario + '.csv', 'r')
         lines = f.readlines()
         f.close()
 
         # overwrite the same file
         f = open(os.path.expanduser('~') +
-                 '/Dropbox/CISC Data/SSPs/pop-' + scenario + '.csv', 'w')
+                 '/Dropbox/CISCdata/SSPs/pop-' + scenario + '.csv', 'w')
         for l in lines:
             # don't copy over the old data from the parent countries, otherwise
             # we would have two entries for those!
@@ -120,13 +120,13 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
         # repeat for urban:
 
         f = open(os.path.expanduser('~') +
-                 '/Dropbox/CISC Data/SSPs/urbpop-' + scenario + '.csv', 'r')
+                 '/Dropbox/CISCdata/SSPs/urbpop-' + scenario + '.csv', 'r')
         lines = f.readlines()
         f.close()
 
         # overwrite the same file
         f = open(os.path.expanduser('~') +
-                 '/Dropbox/CISC Data/SSPs/urbpop-' + scenario + '.csv', 'w')
+                 '/Dropbox/CISCdata/SSPs/urbpop-' + scenario + '.csv', 'w')
         for l in lines:
             # don't copy over the old data from the parent countries, otherwise
             # we would have two entries for those!

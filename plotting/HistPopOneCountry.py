@@ -11,10 +11,10 @@ limit = 2100
 
 matplotlib.style.use('fivethirtyeight')
 
-boundary = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'+country+'.0-boundary.npy').ravel()
+boundary = np.load(os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/'+country+'.0-boundary.npy').ravel()
 
 for year in range(2020, limit+1, 10):
-    population = np.load(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/'+country+'-'+str(year)+'-pop.npy').ravel()
+    population = np.load(os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/Projections/'+country+'-'+str(year)+'-pop.npy').ravel()
     incountry = boundary == int(country)
     p = population[incountry]
 

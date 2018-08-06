@@ -9,7 +9,7 @@ from PIL import Image
 
 import PopFunctions as pop
 
-src = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
+src = os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/'
 
 # Turn logging of urban / rural / total population at every step on or off:
 checkNumbers = False
@@ -54,11 +54,11 @@ def main():
     logging.info('Reading CSVs')
 
     # TOTAL population per country
-    # WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
-    WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/SSPs/pop-'+scenario+'.csv')), "Country code")
+    # WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISCdata/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+    WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISCdata/SSPs/pop-'+scenario+'.csv')), "Country code")
     # URBAN population per country
-    # WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
-    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/SSPs/urbpop-'+scenario+'.csv')), "Country code")
+    # WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISCdata/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
+    WUP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISCdata/SSPs/urbpop-'+scenario+'.csv')), "Country code")
 
 
     try:

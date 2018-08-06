@@ -4,10 +4,10 @@
 import os, csv, numpy as np, PopFunctions as pop
 
 
-countryBoundaries = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_nibbled.tiff')
+countryBoundaries = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISCdata/NationsRaster/ne_10m_admin_0_countries_nibbled.tiff')
 countriesInRaster = np.unique(countryBoundaries)
 
-WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WTP2014.csv')), "Country Code")
+WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISCdata/DESA/WTP2014.csv')), "Country Code")
 
 print "Checking for countries that are in raster, but not in CSV. This should only spit out countries that are actually small island (carribean Netherlands etc.):"
 for c in countriesInRaster:

@@ -34,10 +34,10 @@ ssp     = sys.argv[2]
 urb      = sys.argv[3]
 year    = sys.argv[4]
 
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data')
+os.chdir(os.path.expanduser('~') + '/Dropbox/CISCdata')
 
 print "Loading countries grid"
-countries = pop.openTIFFasNParray('Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff')
+countries = pop.openTIFFasNParray('NationsRaster/ne_10m_admin_0_countries_updated_nibbled.tiff')
 print countries.size
 
 print "Loading population grid"

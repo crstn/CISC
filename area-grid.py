@@ -4,7 +4,7 @@ import os
 import PopFunctions as pop
 
 resolution=0.008333333333333 # in decimal degrees!
-dst = os.path.expanduser('~') + "/Dropbox/CISC Data/Area Grid/"
+dst = os.path.expanduser('~') + "/Dropbox/CISCdata/AreaGrid/"
 
 """
 Creates a global grid of a particular resolution, where the value of

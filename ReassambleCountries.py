@@ -32,7 +32,7 @@ if not os.path.exists(sys.argv[1]):
     sys.exit()
 
 
-root = os.path.expanduser('~') + '/Dropbox/CISC Data/'
+root = os.path.expanduser('~') + '/Dropbox/CISCdata/'
 originalsDir = root + 'IndividualCountries'
 simulationsDir = sys.argv[1]
 outputDir = sys.argv[1]
@@ -60,7 +60,7 @@ rowcols = {}
 print 'Loading reference GeoTiff'
 
 # load the reference tiff:
-reffile = gdal.Open(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
+reffile = gdal.Open(os.path.expanduser('~') + '/Dropbox/CISCdata/Population2010Raster/Pop_2010_clipped.tiff')
 geotransform = reffile.GetGeoTransform()
 rasterXSize = reffile.RasterXSize
 rasterYSize = reffile.RasterYSize
@@ -108,7 +108,7 @@ def simulationComplete(pattern):
 # load the global population and urban rural tiffs
 # it will hold urbanization prospects [0..1] later, so we need to cast it to float:
 # print "Loading urban-rural TIFF and converting to NumPy array"
-# urbanRural = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/'+urbanRuralVersion+'_UrbanRural.tiff').astype(float)
+# urbanRural = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISCdata/GLURRaster/'+urbanRuralVersion+'_UrbanRural.tiff').astype(float)
 
 
 
@@ -122,10 +122,10 @@ for urbanRuralVersion in urbanRuralVersions:
     for ssp in  ssps:
 
         print "Loading population 2010 TIFF and convert to NumPy array"
-        population = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
+        population = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISCdata/Population2010Raster/Pop_2010_clipped.tiff')
 
         print "Loading urban/rural 2010 TIFF and convert to NumPy array"
-        urbanRural = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/'+urbanRuralVersion+'_UrbanRural.tiff')
+        urbanRural = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISCdata/GLURRaster/'+urbanRuralVersion+'_UrbanRural.tiff')
 
 
         #  find all years we have simulations for:

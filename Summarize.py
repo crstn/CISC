@@ -53,8 +53,8 @@ folder = sys.argv[5]
 
 urbanCell = 2
 
-WTP = p.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/SSPs/pop-'+ssp+'.csv')), "Country code")
-WUP = p.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/SSPs/urbpop-'+ssp+'.csv')), "Country code")
+WTP = p.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISCdata/SSPs/pop-'+ssp+'.csv')), "Country code")
+WUP = p.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISCdata/SSPs/urbpop-'+ssp+'.csv')), "Country code")
 
 country = p.getCountryByID(c, WTP)
 

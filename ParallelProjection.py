@@ -19,7 +19,7 @@ reassemble = True
 
 
 def loadTasks():
-    for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries'):
+    for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries'):
         if filename.endswith(".npy"):
             # the year is between the dashes
             end = filename.find('.0-')

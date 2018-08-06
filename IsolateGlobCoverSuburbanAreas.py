@@ -6,8 +6,8 @@ from PIL import Image
 from osgeo import gdal
 import pync
 
-globcoverfile = os.path.expanduser('~') + '/Dropbox/CISC Data/Globcover2009_V2/GLOBCOVER_L4_200901_200912_V2.3_clipped_resampled.tif'
-dest = os.path.expanduser('~') + '/Dropbox/CISC Data/GLUR Raster/GlobCover_UrbanAras.tiff'
+globcoverfile = os.path.expanduser('~') + '/Dropbox/CISCdata/Globcover2009_V2/GLOBCOVER_L4_200901_200912_V2.3_clipped_resampled.tif'
+dest = os.path.expanduser('~') + '/Dropbox/CISCdata/GLURRaster/GlobCover_UrbanAras.tiff'
 
 print "Loading GlobCover TIFF and converting to NumPy array"
 globcover = pop.openTIFFasNParray(globcoverfile)

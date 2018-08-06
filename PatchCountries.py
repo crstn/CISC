@@ -32,7 +32,7 @@ except Exception as e:
     printMsg()
 
 
-countriesDir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
+countriesDir = os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/'
 
 # Look up address in memmory, useful to make sure two arrays are
 # actually different, and don't point to the same array
@@ -79,7 +79,7 @@ def outlineCountries(a):
 
 
 print "Loading countries TIFF and converting to NumPy array"
-countriesFile = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
+countriesFile = os.path.expanduser('~') + '/Dropbox/CISCdata/NationsRaster/ne_10m_admin_0_countries_updated_nibbled.tiff'
 countryBoundaries = pop.openTIFFasNParray(countriesFile)
 
 
@@ -93,7 +93,7 @@ projection = reffile.GetProjection()
 
 
 
-root = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/'
+root = os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/Projections/'
 
 for m in ["GRUMP", "GlobCover"]:
     for ssp in ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"]:

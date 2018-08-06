@@ -20,7 +20,7 @@ f = os.path.expanduser('~') + '/Desktop/chad/summaries'
 years = range(2010, 2101, 10)
 
 
-originalsDir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries'
+originalsDir = os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries'
 
 
 # this dictionary will hold all the cell indexes (rows/cols) per country,
@@ -52,7 +52,7 @@ def loadRowsCols(country):
 print 'Loading reference GeoTiff'
 
 # load the reference tiff:
-reffile = gdal.Open(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
+reffile = gdal.Open(os.path.expanduser('~') + '/Dropbox/CISCdata/Population2010Raster/Pop_2010_clipped.tiff')
 geotransform = reffile.GetGeoTransform()
 rasterXSize = reffile.RasterXSize
 rasterYSize = reffile.RasterYSize

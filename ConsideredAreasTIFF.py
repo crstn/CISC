@@ -15,21 +15,21 @@ from osgeo import gdal
 
 # makes a geotiff showing all pixels that have been considered in the simulation
 
-inputDir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/'
+inputDir = os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/'
 outputDir = os.path.expanduser('~') + '/Desktop/Test/'
 
 if not os.path.exists(outputDir):
     os.makedirs(outputDir)
 
 # load the reference tiff:
-reffile = gdal.Open(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
+reffile = gdal.Open(os.path.expanduser('~') + '/Dropbox/CISCdata/Population2010Raster/Pop_2010_clipped.tiff')
 geotransform = reffile.GetGeoTransform()
 rasterXSize = reffile.RasterXSize
 rasterYSize = reffile.RasterYSize
 projection = reffile.GetProjection()
 #
 # load the same file as a numpy array:
-tiff = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2010 Raster/Pop_2010_clipped.tiff')
+tiff = pop.openTIFFasNParray(os.path.expanduser('~') + '/Dropbox/CISCdata/Population2010Raster/Pop_2010_clipped.tiff')
 tiff.fill(0)
 
 # find all row/col files:
