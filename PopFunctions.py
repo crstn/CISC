@@ -270,7 +270,7 @@ def addPopulation(populationProjected, pop, country, cellType, WTP, WUP, urbanRu
 
             urbanDensities = densities[urbanRural == urbanCell]
 
-            # Let's get the N densest cells (covering cases with few or no urban calls in a country):
+            # Let's get the N densest cells (covering cases with few or no urban cells in a country):
             if urbanDensities.size > 0:
                 if urbanDensities.size >= topNcells:  # this is the common case
                     topN = getTopNCells(topNcells, urbanDensities)

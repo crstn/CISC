@@ -38,3 +38,5 @@ PYTHON/test.py
 
 Icon
 azure/credentials.py
+Sandbox/plots/*
+Sandbox/.ipynb_checkpoints/*
