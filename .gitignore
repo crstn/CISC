@@ -41,3 +41,4 @@ azure/credentials.py
 Sandbox/plots/*
 Sandbox/.ipynb_checkpoints/*
 Data analysis/R_Scripts/.Rhistory
+UHI-NOAA/1975.csv.gz
