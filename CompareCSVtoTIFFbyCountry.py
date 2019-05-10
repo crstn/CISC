@@ -14,10 +14,10 @@ from PIL import Image
 from osgeo import gdal
 
 countriesDir = os.path.expanduser(
-    '~') + '/Dropbox/CISC Data/IndividualCountries/'
+    '~') + '/Dropbox/CISCdata/IndividualCountries/'
 os.chdir(countriesDir)
 
-WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISCdata/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
 
 
 def getPopNoIndividual(country, year):

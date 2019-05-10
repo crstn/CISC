@@ -11,11 +11,11 @@ from osgeo import gdal
 import PopFunctions as pop
 
 # input:
-countriesTIFF = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/Natural Earth Data/ne_10m_admin_0_countries_updated.tiff'
-popTIFF = os.path.expanduser('~') + '/Dropbox/CISC Data/Population 2000 Raster/Pop_2000_clipped.tiff'
+countriesTIFF = os.path.expanduser('~') + '/Dropbox/CISCdata/NationsRaster/Natural Earth Data/ne_10m_admin_0_countries_updated.tiff'
+popTIFF = os.path.expanduser('~') + '/Dropbox/CISCdata/Population2000Raster/Pop_2000_clipped.tiff'
 
 # output will be written to:
-nibbledTIFF = os.path.expanduser('~') + '/Dropbox/CISC Data/Nations Raster/ne_10m_admin_0_countries_updated_nibbled.tiff'
+nibbledTIFF = os.path.expanduser('~') + '/Dropbox/CISCdata/NationsRaster/ne_10m_admin_0_countries_updated_nibbled.tiff'
 
 print "Loading countries TIFF and converting to NumPy array"
 countryBoundaries = pop.openTIFFasNParray(countriesTIFF)

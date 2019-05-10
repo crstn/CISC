@@ -4,12 +4,13 @@ import numpy as np
 import PopFunctions as pop
 import pync
 
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/');
+# os.chdir(os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/Projections/');
+os.chdir('/Volumes/Solid Guy/SSPs 2017-06-16/Global/')
 
 print "urbExt;SSP;Year;TotalTIFF;UrbanTIFF;TotalIIASA;UrbanIIASA;TotalDiff;UrbanDiff;TotalDiffPercent;UrbanDiffPercent"
 
 def getIIASA(csvfile, year):
-    with open("/Users/carsten/Dropbox/CISC Data/SSPs/"+csvfile) as fin:
+    with open("/Users/carsten/Dropbox/CISCdata/SSPs/"+csvfile) as fin:
         total = sum(int(r[year]) for r in csv.DictReader(fin))
         return total
 

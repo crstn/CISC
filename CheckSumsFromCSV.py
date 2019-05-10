@@ -7,7 +7,7 @@ import sys, multiprocessing, subprocess, os, time, os.path, csv
 import PopFunctions as pop
 
 tasks = []
-for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries'):
+for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries'):
     if filename.endswith(".npy"):
         # the year is between the dashes
         end = filename.find('.0-')
@@ -17,7 +17,7 @@ for filename in os.listdir(os.path.expanduser('~') + '/Dropbox/CISC Data/Individ
 print "running the following countries:"
 print tasks
 
-WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+WTP = pop.transposeDict(csv.DictReader(open(os.path.expanduser('~') + '/Dropbox/CISCdata/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
 
 endyear = 2100
 year = 2020

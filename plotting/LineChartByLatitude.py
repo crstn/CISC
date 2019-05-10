@@ -7,7 +7,7 @@ blocksize = 120 # 12 = 1 degree
 maxLat = 84.0 # northern boundary of the TIFFs
 resolution = 0.00833333 # size of a cell in the TIFF, in degrees
 
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global');
+os.chdir(os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/Projections/Global');
 
 def openTIFFasNParray(file):
     src = gdal.Open(file, gdal.GA_Update)

@@ -18,14 +18,14 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
         print scenario
 
         DESA_pop = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-            '~') + '/Dropbox/CISC Data/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
+            '~') + '/Dropbox/CISCdata/DESA/WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.csv')), "Country code")
         SSP_pop = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-            '~') + '/Dropbox/CISC Data/SSPs/pop-' + scenario + '.csv')), "Country code")
+            '~') + '/Dropbox/CISCdata/SSPs/pop-' + scenario + '.csv')), "Country code")
 
         DESA_urban = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-            '~') + '/Dropbox/CISC Data/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
+            '~') + '/Dropbox/CISCdata/DESA/WUPto2100_Peter_MEAN.csv')), "Country Code")
         SSP_urban = pop.transposeDict(csv.DictReader(open(os.path.expanduser(
-            '~') + '/Dropbox/CISC Data/SSPs/urbpop-' + scenario + '.csv')), "Country code")
+            '~') + '/Dropbox/CISCdata/SSPs/urbpop-' + scenario + '.csv')), "Country code")
 
         # we need a list of all parent countries later to remove their old entries
         # from the CSV
@@ -42,50 +42,40 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
 
             # print pop.getCountryByID(missed, DESA_pop) + " is part of " + pop.getCountryByID(parent, DESA_pop) + " in the SSPs"
 
-            output_missed_pop = output_missed_pop + missed + "," + codes[missed] + ", ,"
-            output_parent_pop = output_parent_pop + parent + "," + codes[parent] + ", ,"
-            output_missed_urban = output_missed_urban + missed + "," + codes[missed] + ", ,"
-            output_parent_urban = output_parent_urban + parent + "," + codes[parent] + ", ,"
+            output_missed_pop = output_missed_pop + missed + "," + codes[missed] + ","
+            output_parent_pop = output_parent_pop + parent + "," + codes[parent] + ","
+            output_missed_urban = output_missed_urban + missed + "," + codes[missed] + ","
+            output_parent_urban = output_parent_urban + parent + "," + codes[parent] + ","
 
             # for every year, subtract the DESA number from the missed country from
             # the SSP parent country
-            for year in range(2020, 2101, 10):
-                # print
-                # print year
+            for year in range(2010, 2101, 10):
 
                 SSP_parent_pop = pop.getNumberForYear(SSP_pop, year, parent)
-                DESA_missed_pop = pop.getNumberForYear(
-                    DESA_pop, year, missed, 1000)
+                if year == 2010:
+                    # Table lacks column for 2010, use 2015 instead
+                    DESA_missed_pop = pop.getNumberForYear(DESA_pop, 2015, missed, 1000) # numbers are in thousands
+                else:
+                    DESA_missed_pop = pop.getNumberForYear(DESA_pop, year, missed, 1000) # numbers are in thousands
                 updateparentpop = SSP_parent_pop - DESA_missed_pop
 
                 # rinse and repeat for urban:
                 SSP_parent_urban = pop.getNumberForYear(SSP_urban, year, parent)
-                DESA_missed_urban = pop.getNumberForYear(DESA_urban, year, missed)
+                DESA_missed_urban = pop.getNumberForYear(DESA_urban, year, missed) # numbers are NOT in thousands!
 
-                # assume the same urbanization rate for the parent country as in DESA
-                # if we just assume the urban population number from DESA, the country
-                # may end up with more urban population than total population
-                DESA_urb_rate = float(DESA_missed_urban) / float(DESA_missed_pop)
-
-                # some countries in the DESA numbers have slightly more urban
-                # population than total population!?
-                if DESA_urb_rate > 1.0:
-                    DESA_urb_rate = 1.0
-
-                updateparenturbanpop = int(updateparentpop * DESA_urb_rate)
+                updateparenturbanpop = int(SSP_parent_urban - DESA_missed_urban)
 
                 output_missed_pop = output_missed_pop + str(DESA_missed_pop) + ','
                 # subtract this number from the parent country!
                 output_parent_pop = output_parent_pop + str(updateparentpop) + ','
 
-                # assume the DESA numbers for the country missing in the SSP data
+                # add to the output string:
                 output_missed_urban = output_missed_urban + \
                     str(DESA_missed_urban) + ','
                 output_parent_urban = output_parent_urban + \
                     str(updateparenturbanpop) + ','
 
-            # add the country namesoutput_missed_pop   =
-            # missed+","+codes[missed]+","
+            # add the country
             output_missed_pop = output_missed_pop + '"' + \
                 pop.getCountryByID(missed, DESA_pop) + '"\n'
             output_parent_pop = output_parent_pop + '"' + \
@@ -99,13 +89,13 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
         # then add the output lines from above
 
         f = open(os.path.expanduser('~') +
-                 '/Dropbox/CISC Data/SSPs/pop-' + scenario + '.csv', 'r')
+                 '/Dropbox/CISCdata/SSPs/pop-' + scenario + '.csv', 'r')
         lines = f.readlines()
         f.close()
 
         # overwrite the same file
         f = open(os.path.expanduser('~') +
-                 '/Dropbox/CISC Data/SSPs/pop-' + scenario + '.csv', 'w')
+                 '/Dropbox/CISCdata/SSPs/pop-' + scenario + '.csv', 'w')
         for l in lines:
             # don't copy over the old data from the parent countries, otherwise
             # we would have two entries for those!
@@ -131,13 +121,13 @@ def addMissingCountries(scenarios = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']):
         # repeat for urban:
 
         f = open(os.path.expanduser('~') +
-                 '/Dropbox/CISC Data/SSPs/urbpop-' + scenario + '.csv', 'r')
+                 '/Dropbox/CISCdata/SSPs/urbpop-' + scenario + '.csv', 'r')
         lines = f.readlines()
         f.close()
 
         # overwrite the same file
         f = open(os.path.expanduser('~') +
-                 '/Dropbox/CISC Data/SSPs/urbpop-' + scenario + '.csv', 'w')
+                 '/Dropbox/CISCdata/SSPs/urbpop-' + scenario + '.csv', 'w')
         for l in lines:
             # don't copy over the old data from the parent countries, otherwise
             # we would have two entries for those!

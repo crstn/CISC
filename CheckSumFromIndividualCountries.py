@@ -12,7 +12,7 @@ from PIL import Image
 from osgeo import gdal
 
 countriesDir = os.path.expanduser(
-    '~') + '/Dropbox/CISC Data/IndividualCountries/'
+    '~') + '/Dropbox/CISCdata/IndividualCountries/'
 os.chdir(countriesDir)
 
 

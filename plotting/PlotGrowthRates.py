@@ -17,7 +17,7 @@ def transposeDict(listOfDicts, pk):
     return output
 
 
-os.chdir(os.path.expanduser('~') + '/Dropbox/CISC Data/DESA');
+os.chdir(os.path.expanduser('~') + '/Dropbox/CISCdata/DESA');
 
 WTP = transposeDict(csv.DictReader(open('WPP2015_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES - countries only.csv')), "Country code")
 

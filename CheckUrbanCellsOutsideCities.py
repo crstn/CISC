@@ -20,7 +20,7 @@ def loadTIFF(f):
 
 
 
-cities = loadTIFF(os.path.expanduser('~') + '/Dropbox/CISC Data/SDEI-Global-UHI/sdei-global-uhi-2013.tiff')
+cities = loadTIFF(os.path.expanduser('~') + '/Dropbox/CISCdata/SDEI-Global-UHI/sdei-global-uhi-2013.tiff')
 
 # we can do this once here because the cities layer doesn't change
 print "Checking cells outside of cities"
@@ -35,7 +35,7 @@ for m in models:
     print
     print m
 
-    datadir = os.path.expanduser('~') + '/Dropbox/CISC Data/IndividualCountries/Projections/Global/2017-03-30/'+m
+    datadir = os.path.expanduser('~') + '/Dropbox/CISCdata/IndividualCountries/Projections/Global/2017-03-30/'+m
 
     for y in years:
 
