@@ -31,6 +31,8 @@ for model in ['GRUMP', 'GlobCover']:
             interfile = outputdir+'/'+model+'/SSP' + str(ssp) +'/inter-'+ str(year) +'.tiff'
             outfile = outputdir+'/'+model+'/SSP' + str(ssp) +'/pop-'+ str(year) +'.tiff'
 
+
+            # we can't do SUM in gdalwarp, so we'll use the average and then multiply with the number of input cells in a separate step
             os.system("gdalwarp -te -180.0000000 -55.8750000 180.0000000 83.7500000 -ts 2880 1117 -wo NUM_THREADS=ALL_CPUS -co NUM_THREADS=ALL_CPUS -co COMPRESS=LZW -r average -srcnodata -2147483648 "+infile+" "+interfile)
 
             # multiply

@@ -42,3 +42,8 @@ Sandbox/plots/*
 Sandbox/.ipynb_checkpoints/*
 Data analysis/R_Scripts/.Rhistory
 UHI-NOAA/1975.csv.gz
+UHI-NOAA/GHS_SMOD_POP1975_GLOBE_R2016A_54009_1k_v1_0.geojson
+UHI-NOAA/GHS_SMOD_POP1975_GLOBE_R2016A_54009_1k_v1_0/*
+UHI-NOAA/GHS_SMOD_POP1975_GLOBE_R2016A_54009_1k_v1_0.zip
+*-checkpoint.ipynb
+UHI-NOAA/stations.csv
