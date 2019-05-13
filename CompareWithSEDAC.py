@@ -4,7 +4,7 @@ import os
 
 # Takes ca. 20 min for *one* SSP on my laptop.
 
-SSPs = ['SSP1'] #['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']
+SSPs = ['SSP2'] #['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']
 models = ['GlobCover', 'GRUMP']
 
 sedac_data = os.path.expanduser('~') + '/Downloads/'
@@ -18,14 +18,13 @@ def makeSafe(dir):
 
 makeSafe(outputdir)
 
-# loop through all population and urbanization layers and downsample them
 for model in models:
 
     makeSafe(outputdir+'/'+model)
 
     for ssp in SSPs:
 
-        makeSafe(outputdir+'/'+model+'/SSP' + str(ssp))
+        makeSafe(outputdir+'/'+model+'/' + ssp)
 
         for year in range(2010,2101,10):
 
