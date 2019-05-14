@@ -33,9 +33,9 @@ def dump_args(func):
     fname = func.func_name
 
     def echo_func(*args, **kwargs):
-        print fname, ":", ', '.join(
+        print (fname, ":", ', '.join(
             '%s=%r' % entry
-            for entry in zip(argnames, args) + kwargs.items())
+            for entry in zip(argnames, args) + kwargs.items()))
         return func(*args, **kwargs)
     return echo_func
 
@@ -102,7 +102,7 @@ def getCountryByID(country, WTP):
     try:
         return WTP[str(country)][MAJ]
     except KeyError:
-        print "No country found for ID " + str(country)
+        print ("No country found for ID " + str(country))
         logging.error("No country found for ID " + str(country))
         return 0
 
