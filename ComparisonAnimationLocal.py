@@ -15,12 +15,12 @@ import gdal
 # Pick the SSP(s) and urbanization model(s) you want the GIF for
 # ---------------------------
 
-places = ['Manila', 'Tokyo', 'Bejing', 'Cairo', 'Paris', 'Qatar']
-size = 0.75 # in degrees, i.e. the GIF will cover an area of size x size center on the place chosen above
-SSPs = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']
-models = ['GlobCover', 'GRUMP']
+places = ['Calcutta']
+size = 0.4 # in degrees; i.e. the GIF will cover an area of 2xsize x 2xsize centered on the place chosen above. In other words, it will expand by size in four directions away from the chosen place's lat/lon position
 
 datadir = os.path.expanduser('~') + '/Dropbox/CISCdata/Comparison with SEDAC/'
+SSPs = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']
+models = ['GlobCover', 'GRUMP']
 
 for place in places:
 
@@ -30,7 +30,6 @@ for place in places:
     print(location.address.encode('utf-8'))
 
     # extent to clip to
-    size = size/2.0
     extent = str(location.longitude-size) + ' ' + str(location.latitude-size) + ' ' + str(location.longitude+size) + ' ' + str(location.latitude+size)
 
     # creates a directoy if it doesn't exist yet
@@ -130,7 +129,7 @@ for place in places:
     os.system("rm color.txt")
 
     # make a website that shows them side by side
-    cmd = """touch '"""+datadir+place+""".html'
+    os.system("""touch '"""+datadir+place+""".html'
     echo "<html>
 
     <head>
@@ -227,7 +226,7 @@ for place in places:
             </body>
 
             </html>
-    " >> '"""+datadir+place+""".html'; open '"""+datadir+place+""".html'"""
+    " >> '"""+datadir+place+""".html'; open '"""+datadir+place+""".html'""")
 
 
 print('Done.')
