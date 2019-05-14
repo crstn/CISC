@@ -4,7 +4,7 @@ import os
 
 # Takes ca. 20 min for *one* SSP on my laptop.
 
-SSPs = ['SSP2'] #['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']
+SSPs = ['SSP4','SSP5'] #['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']
 models = ['GlobCover', 'GRUMP']
 
 sedac_data = os.path.expanduser('~') + '/Downloads/'
