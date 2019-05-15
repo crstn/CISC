@@ -3,9 +3,11 @@ from geopy.geocoders import Nominatim
 import numpy as np
 import gdal
 
-# This script takes the output from CompareWithSEDAC.py and turns the generated series of GeoTIFFs into a colorized aninmated GIF using a bivariate color scale (centered around 0) from ColorBrewer: http://colorbrewer2.org/#type=diverging&scheme=PiYG&n=11
-
+# This script takes our own population projections as well as the output from CompareWithSEDAC.py and turns the generated series of GeoTIFFs into a colorized aninmated GIF using a bivariate color scale (centered around 0) from ColorBrewer: http://colorbrewer2.org/#type=diverging&scheme=PiYG&n=11
 # The different steps are explained here: https://github.com/crstn/CISC/wiki/Turning-population-grids-into-colored-animated-GIFs
+
+# Then it puts all of that stuff on a website for comparison ...
+
 
 # ---------------------------
 # CONFIGURATION:
