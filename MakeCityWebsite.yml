@@ -1,0 +1,9 @@
+name: MakeCityWebsite
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.6
+  - gdal=3.0
+  - geopy=1.19
+  - matplotlib=3.0
