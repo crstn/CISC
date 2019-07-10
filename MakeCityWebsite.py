@@ -2,9 +2,17 @@ import os
 from geopy.geocoders import Nominatim
 import numpy as np
 import gdal
+import pandas as pd
+
+import matplotlib
+matplotlib.use('TkAgg')  # fixes weird matplotlib bug on Mac OS
+
+
+import matplotlib.pyplot as plt
+
 
 # This script takes our own population projections as well as the output from CompareWithSEDAC.py and turns the generated series of GeoTIFFs into a colorized aninmated GIF using a bivariate color scale (centered around 0) from ColorBrewer: http://colorbrewer2.org/#type=diverging&scheme=PiYG&n=11
-# The different steps are explained here: https://github.com/crstn/CISC/wiki/Turning-population-grids-into-colored-animated-GIFs
+# The different steps are explained here: https://github.com/crstn/CISC/wiki/Turning-population-grids-into-colored-animated-figures
 
 # Then it puts all of that stuff on a website for comparison ...
 
@@ -17,7 +25,7 @@ import gdal
 # Pick the SSP(s) and urbanization model(s) you want the GIF for
 # ---------------------------
 
-places = ['Lagos Nigeria']
+places = [u'Hamburg']
 size = 0.4 # in degrees; i.e. the GIF will cover an area of
            # 2 x size by  2 x size centered on the place chosen above. In other
            # words, it will expand by size in four directions away from the
@@ -25,8 +33,8 @@ size = 0.4 # in degrees; i.e. the GIF will cover an area of
 
 # don't change these for this script; would screw up the generated website
 # if any of them were missing
-SSPs = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']
-models = ['GlobCover', 'GRUMP']
+SSPs = ['SSP1'] #['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']
+models = ['GlobCover'] #['GlobCover', 'GRUMP']
 outputdir = os.path.expanduser('~') + '/Dropbox/CISCdata/CityWebsites/'
 
 
@@ -68,30 +76,73 @@ for place in places:
 
     for model in models:
         for ssp in SSPs:
+
             for year in range(2010,2101,10):
 
+                # clip population file
                 infile = '"' + datadir + model + '/' + ssp + '/popmean-' + str(year) + '.tiff"'
 
                 clipped = '"' + datadir + model + '/' + ssp + '/popmean-' + str(year) + '-clipped.tiff"'
 
-                os.system('gdalwarp -te '+ extent +' -wo NUM_THREADS=ALL_CPUS -co NUM_THREADS=ALL_CPUS -co COMPRESS=LZW -srcnodata -2147483648 '+infile+' '+clipped)
+                os.system('gdalwarp -te '+ extent +' -wo NUM_THREADS=ALL_CPUS -co NUM_THREADS=ALL_CPUS -co COMPRESS=LZW -srcnodata -2147483648 '+infile+' '+clipped+' >> log.txt')
+
+                # clip urbanization file
+                infile = '"' + datadir + model + '/' + ssp + '/urbanization-' + str(year) + '.tiff"'
+
+                clipped = '"' + datadir + model + '/' + ssp + '/urbanization-' + str(year) + '-clipped.tiff"'
+
+                os.system('gdalwarp -te '+ extent +' -wo NUM_THREADS=ALL_CPUS -co NUM_THREADS=ALL_CPUS -co COMPRESS=LZW -srcnodata -2147483648 '+infile+' '+clipped+' >> log.txt')
 
     # Now we'll go through again to figure out what the maximum value in any
     # of the rasters is, so that we can apply the the same color scale to all
     maxPop = 0
-    minPop = 100000000 # we just pick something super high here...
+    minPop = 10000000 # we just pick something super high here...
+
+
+    # at the same time, we'll pick up the numbers to generate our charts:
+
+
     for model in models:
         for ssp in SSPs:
+
+            totalpop = []
+            urbanpop = []
+            years    = []
+
+
             for year in range(2010,2101,10):
 
-                a = openTIFFasNParray(datadir + model + '/' + ssp + '/popmean-' + str(year) + '-clipped.tiff')
+                pop = openTIFFasNParray(datadir + model + '/' + ssp + '/popmean-' + str(year) + '-clipped.tiff')
 
-                if(np.max(a) > maxPop):
-                    maxPop = np.max(a)
+                if(np.max(pop) > maxPop):
+                    maxPop = np.max(pop)
 
-                if(np.min(a) < minPop):
-                    minPop = np.min(a)
+                if(np.min(pop) < minPop):
+                    minPop = np.min(pop)
 
+                # populate the arrays for our charts:
+                urb = openTIFFasNParray(datadir + model + '/' + ssp + '/urbanization-' + str(year) + '-clipped.tiff')
+
+                # total population in map extent for the current year
+                totalpop.append(np.sum(pop))
+                # urban population in map extent for the current year
+                urbanpop.append(np.sum(pop[urb == 2]))
+                # current year
+                years.append(year)
+
+                print(f"Total pop: {totalpop}")
+                print(f"Urban pop: {urbanpop}")
+
+
+            # Create the output folder:
+
+            makeSafe(outputdir+'figures') # put the figures in a subfolder
+
+            # Make a stacked area chart in seaborn
+            plt.stackplot(year , [urbanpop, totalpop],
+                          labels = ['Urban population', 'Total population'])
+            plt.legend(loc='upper left')
+            plt.savefig(outputdir+'figures/'+model+'-'+ssp+'-'+place+'-chart.png', dpi=300)
 
     # Now that we know what the min and max population in the area is,
     # we can generate a sequential color scale for the numbers:
@@ -129,24 +180,23 @@ for place in places:
                 labelfile =  '"' + datadir + model + '/' + ssp + '/popmean-' + str(year) + '-label.tiff"'
 
                 # colorize
-                os.system('gdaldem color-relief '+infile+' popcolor.txt '+colorfile)
+                os.system('gdaldem color-relief '+infile+' popcolor.txt '+colorfile+' >> log.txt')
 
                 # resize
-                os.system('convert '+colorfile+' -resize 250x250 '+colorfile)
+                os.system('convert '+colorfile+' -resize 250x250 '+colorfile+' >> log.txt')
 
                 # label with year and delete the colorfile
-                os.system('convert '+colorfile+' -font Helvetica-Neue -pointsize 15 -fill black -gravity southwest -annotate +20+20 '+str(year)+' '+labelfile+'; rm '+colorfile)
+                os.system('convert '+colorfile+' -font Helvetica-Neue -pointsize 15 -fill black -gravity southwest -annotate +20+20 '+str(year)+' '+labelfile+' >> log.txt; rm '+colorfile)
 
             print("Done coloring, making a GIF")
 
             # All files have been colorized and labeled, let's make a GIF:
-            makeSafe(outputdir+'gifs') # put the GIFs in a subfolder
 
             folder = '"' + datadir + model + '/' + ssp +'"'
-            os.system('cd '+folder+'; convert -delay 40 -loop 0 *label.tiff "'+outputdir+'gifs/'+model+'-'+ssp+'-'+place+'-pop.gif"')
+            os.system('cd '+folder+'; convert -delay 40 -loop 0 *label.tiff "'+outputdir+'figures/'+model+'-'+ssp+'-'+place+'-pop.gif" >> log.txt')
 
             # clean up:
-            os.system('cd '+folder+'; rm *label.tiff; rm *clipped.tiff')
+            os.system('cd '+folder+'; rm *label.tiff; rm *clipped.tiff; ')
 
 
 
@@ -172,7 +222,7 @@ for place in places:
 
                 clipped = '"' + datadir + model + '/' + ssp + '/diff-pop-' + str(year) + '-clipped.tiff"'
 
-                os.system('gdalwarp -te '+ extent +' -wo NUM_THREADS=ALL_CPUS -co NUM_THREADS=ALL_CPUS -co COMPRESS=LZW -srcnodata -2147483648 '+infile+' '+clipped)
+                os.system('gdalwarp -te '+ extent +' -wo NUM_THREADS=ALL_CPUS -co NUM_THREADS=ALL_CPUS -co COMPRESS=LZW -srcnodata -2147483648 '+infile+' '+clipped+' >> log.txt')
 
     # Now we'll go through again to figure out what the maximum value in any
     # of the rasters is, so that we can apply the the same color scale to all
@@ -222,21 +272,21 @@ for place in places:
                 labelfile =  '"' + datadir + model + '/' + ssp + '/diff-pop-' + str(year) + '-label.tiff"'
 
                 # colorize
-                os.system('gdaldem color-relief '+infile+' color.txt '+colorfile)
+                os.system('gdaldem color-relief '+infile+' color.txt '+colorfile+' >> log.txt')
 
                 # resize
-                os.system('convert '+colorfile+' -resize 250x250 '+colorfile)
+                os.system('convert '+colorfile+' -resize 250x250 '+colorfile+' >> log.txt')
 
                 # label with year
-                os.system('convert '+colorfile+' -font Helvetica-Neue -pointsize 15 -fill black -gravity southwest -annotate +20+20 '+str(year)+' '+labelfile)
+                os.system('convert '+colorfile+' -font Helvetica-Neue -pointsize 15 -fill black -gravity southwest -annotate +20+20 '+str(year)+' '+labelfile+' >> log.txt')
 
             print("Done coloring, making a GIF")
 
             # All files have been colorized and labeled, let's make a GIF:
-            makeSafe(outputdir+'gifs') # put the GIFs in a subfolder
+            makeSafe(outputdir+'figures') # put the figures in a subfolder
 
             folder = '"' + datadir + model + '/' + ssp +'"'
-            os.system('cd '+folder+'; convert -delay 40 -loop 0 *label.tiff "'+outputdir+'gifs/'+model+'-'+ssp+'-'+place+'-comparison.gif"')
+            os.system('cd '+folder+'; convert -delay 40 -loop 0 *label.tiff "'+outputdir+'figures/'+model+'-'+ssp+'-'+place+'-comparison.gif" >> log.txt')
 
             # clean up:
             os.system('cd '+folder+'; rm *label.tiff; rm *clipped.tiff')
@@ -308,21 +358,21 @@ for place in places:
           <td>
           <p class='vertical'>GlobCover</p>
           </td>
-          <td><img src='gifs/GlobCover-SSP1-"""+place+"""-pop.gif' /></td>
-          <td><img src='gifs/GlobCover-SSP2-"""+place+"""-pop.gif' /></td>
-          <td><img src='gifs/GlobCover-SSP3-"""+place+"""-pop.gif' /></td>
-          <td><img src='gifs/GlobCover-SSP4-"""+place+"""-pop.gif' /></td>
-          <td><img src='gifs/GlobCover-SSP5-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GlobCover-SSP1-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GlobCover-SSP2-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GlobCover-SSP3-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GlobCover-SSP4-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GlobCover-SSP5-"""+place+"""-pop.gif' /></td>
           </tr>
           <tr>
           <td>
           <p class='vertical'>GRUMP</p>
           </td>
-          <td><img src='gifs/GRUMP-SSP1-"""+place+"""-pop.gif' /></td>
-          <td><img src='gifs/GRUMP-SSP2-"""+place+"""-pop.gif' /></td>
-          <td><img src='gifs/GRUMP-SSP3-"""+place+"""-pop.gif' /></td>
-          <td><img src='gifs/GRUMP-SSP4-"""+place+"""-pop.gif' /></td>
-          <td><img src='gifs/GRUMP-SSP5-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GRUMP-SSP1-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GRUMP-SSP2-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GRUMP-SSP3-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GRUMP-SSP4-"""+place+"""-pop.gif' /></td>
+          <td><img src='figures/GRUMP-SSP5-"""+place+"""-pop.gif' /></td>
           </tr>
           <tr>
           <td></td>
@@ -368,21 +418,21 @@ for place in places:
             <td>
             <p class='vertical'>GlobCover</p>
             </td>
-            <td><img src='gifs/GlobCover-SSP1-"""+place+"""-comparison.gif' /></td>
-            <td><img src='gifs/GlobCover-SSP2-"""+place+"""-comparison.gif' /></td>
-            <td><img src='gifs/GlobCover-SSP3-"""+place+"""-comparison.gif' /></td>
-            <td><img src='gifs/GlobCover-SSP4-"""+place+"""-comparison.gif' /></td>
-            <td><img src='gifs/GlobCover-SSP5-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GlobCover-SSP1-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GlobCover-SSP2-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GlobCover-SSP3-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GlobCover-SSP4-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GlobCover-SSP5-"""+place+"""-comparison.gif' /></td>
             </tr>
             <tr>
             <td>
             <p class='vertical'>GRUMP</p>
             </td>
-            <td><img src='gifs/GRUMP-SSP1-"""+place+"""-comparison.gif' /></td>
-            <td><img src='gifs/GRUMP-SSP2-"""+place+"""-comparison.gif' /></td>
-            <td><img src='gifs/GRUMP-SSP3-"""+place+"""-comparison.gif' /></td>
-            <td><img src='gifs/GRUMP-SSP4-"""+place+"""-comparison.gif' /></td>
-            <td><img src='gifs/GRUMP-SSP5-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GRUMP-SSP1-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GRUMP-SSP2-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GRUMP-SSP3-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GRUMP-SSP4-"""+place+"""-comparison.gif' /></td>
+            <td><img src='figures/GRUMP-SSP5-"""+place+"""-comparison.gif' /></td>
             </tr>
             <tr>
             <td></td>
