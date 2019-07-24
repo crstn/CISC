@@ -60,3 +60,7 @@ UHI-NOAA/stations_with_nearest_neighbor copy.csv
 UHI-NOAA/data_1975_with_stations.csv
 UHI-NOAA/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/*
 UHI-NOAA/GHS_POP_GPW41975_GLOBE_R2015A_54009_250_v1_0/*
+UHI-NOAA/stations_with_nearest_neighbor_2015.csv
+UHI-NOAA/stations_with_nearest_neighbor_fixed_elevation_2015.csv
+UHI-NOAA/stations_moll_inraster_pop2015.csv
+UHI-NOAA/2015.csv.gz
