@@ -66,3 +66,11 @@ UHI-NOAA/stations_moll_inraster_pop2015.csv
 UHI-NOAA/2015.csv.gz
 UHI-NOAA/data_2015_complete.csv
 UHI-NOAA/Global_1986-2010_KG_5m.kmz
+UHI-NOAA/GHS_POP_GPW4*
+UHI-NOAA/stations_moll_inraster_pop2015_2000.csv
+UHI-NOAA/stations_moll_inraster_pop2015_2000_1990.csv
+UHI-NOAA/stations_moll_inraster_pop2015_2000_1990_1975.csv
+UHI-NOAA/stations_with_nearest_neighbor_data.csv
+UHI-NOAA/stations_with_nearest_neighbor_data_differences.csv
+UHI-NOAA/stations_with_nearest_neighbor_data_fixed_elevation.csv
+UHI-NOAA/Map_KG-Global/*
