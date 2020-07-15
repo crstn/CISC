@@ -23,7 +23,7 @@ CREATE EXTENSION postgis;
 
 Stations were loaded into QGIS, filtered to stations in the tropic zone (see above; that leaves about 16,000 stations) and then imported to PostGIS using the database manager into a table called ```stations``` (with a spatial index), at the same time projecting the dataset to Mollweide ([ESPG:54009](https://epsg.io/54009)) to get an equal area projection.
 
-🔥 insert screenshot!
+![](db-import.png)
 
 To remove the columns that we don't need:
 
@@ -111,8 +111,6 @@ WHERE median1975 = 0;
 
 🤔 Medians are very low when there are a bunch of stations with no population in the grid cell → **use mean instead?** (problem with that is that it doesn't give us a 50/50 split of the stations within the cell, so let's keep it like that for now.)
 
-🔥 Repeat for other 3 years
-
 ## Calculate the mean population for each group
 
 ```sql
@@ -140,8 +138,6 @@ WHERE stations.g50 = grid50.id
 AND stations.pop1975 <= grid50.median1975
 GROUP BY stations.g50);
 ```
-
-🔥 Repeat for other 3 years (everything from here...)!
 
 1. Load the temperature data for the 5 years "around" the population snapshot, keeping only TMIN
 
